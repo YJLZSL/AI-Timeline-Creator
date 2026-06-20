@@ -392,6 +392,26 @@ export function runMigrations(): void {
         asset_id text NOT NULL,
         role text NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS ai_conversations (
+        id text PRIMARY KEY NOT NULL,
+        workspace_id text NOT NULL,
+        title text DEFAULT '新对话' NOT NULL,
+        messages_json text DEFAULT '[]' NOT NULL,
+        summary text DEFAULT '',
+        created_at integer NOT NULL,
+        updated_at integer NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS ai_cache (
+        id text PRIMARY KEY NOT NULL,
+        workspace_id text NOT NULL,
+        query_hash text NOT NULL,
+        query_text text NOT NULL,
+        response text NOT NULL,
+        model text NOT NULL,
+        hit_count integer DEFAULT 0 NOT NULL,
+        created_at integer NOT NULL,
+        updated_at integer NOT NULL
+      );
     `);
 
     // 索引（IF NOT EXISTS 保证幂等）
@@ -442,6 +462,11 @@ export function runMigrations(): void {
       CREATE INDEX IF NOT EXISTS revisions_workspace_idx ON revisions (workspace_id);
       CREATE INDEX IF NOT EXISTS revisions_entity_idx ON revisions (entity_type, entity_id);
       CREATE INDEX IF NOT EXISTS revisions_created_idx ON revisions (created_at);
+      CREATE INDEX IF NOT EXISTS ai_conversations_workspace_idx ON ai_conversations (workspace_id);
+      CREATE INDEX IF NOT EXISTS ai_conversations_created_idx ON ai_conversations (created_at);
+      CREATE INDEX IF NOT EXISTS ai_cache_workspace_idx ON ai_cache (workspace_id);
+      CREATE UNIQUE INDEX IF NOT EXISTS ai_cache_hash_idx ON ai_cache (workspace_id, query_hash);
+      CREATE INDEX IF NOT EXISTS ai_cache_hit_idx ON ai_cache (hit_count);
     `);
 
     sqlite.pragma('foreign_keys = ON');
@@ -572,6 +597,18 @@ function ensureSchemaCompatibility(): void {
 
   // character_assets
   ensureColumn('character_assets', 'display_order', 'integer', '0');
+
+  // ai_conversations (v3.5)
+  ensureColumn('ai_conversations', 'title', 'text', "'新对话'");
+  ensureColumn('ai_conversations', 'messages_json', 'text', "'[]'");
+  ensureColumn('ai_conversations', 'summary', 'text', "''");
+
+  // ai_cache (v3.5)
+  ensureColumn('ai_cache', 'query_hash', 'text', "''");
+  ensureColumn('ai_cache', 'query_text', 'text', "''");
+  ensureColumn('ai_cache', 'response', 'text', "''");
+  ensureColumn('ai_cache', 'model', 'text', "''");
+  ensureColumn('ai_cache', 'hit_count', 'integer', '0');
 }
 
 export function closeDb(): void {

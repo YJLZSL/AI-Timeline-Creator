@@ -5,6 +5,8 @@ import { useUIStore } from '@/stores/useUIStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
 import { scrollSelectedIntoView } from '@/utils/revealInBestView';
 import { getTreeConnectionColor } from '@/lib/colors';
+import { EmptyState } from '@/components/_shared/EmptyState';
+import { TreeIcon } from '@/lib/icons';
 import type { TimelineEvent, Connection } from '../../../shared/types';
 
 const NODE_WIDTH = 200;
@@ -80,10 +82,13 @@ export function TreeTimelineView() {
   if (events.length === 0) {
     return (
       <div className="flex h-full items-center justify-center bg-background text-muted-foreground">
-        <div className="text-center">
-          <div className="mb-2 text-base">暂无事件</div>
-          <div className="text-sm">先在时间轴或大纲创建事件</div>
-        </div>
+        <EmptyState
+          size="lg"
+          icon={<TreeIcon size={32} className="text-primary/70" />}
+          title="暂无事件"
+          description="先在时间轴或大纲创建事件"
+          className="max-w-md w-full"
+        />
       </div>
     );
   }

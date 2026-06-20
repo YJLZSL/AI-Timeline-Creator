@@ -55,7 +55,7 @@ const VIEW_TABS: ViewTab[] = [
   { id: 'timeline', label: 'Timeline', icon: TimeIcon },
   { id: 'outline', label: 'Outline', icon: ListIcon },
   { id: 'narrative', label: 'Narrative', icon: BookOpenIcon },
-  { id: 'gantt', label: 'Gantt', icon: ChartHistogramIcon },
+  { id: 'gantt', label: 'Gantt Chart', icon: ChartHistogramIcon },
   { id: 'tree', label: 'Tree', icon: TreeIcon },
   { id: 'stats', label: 'Stats', icon: PieIcon },
   { id: 'relationship', label: 'Graph', icon: RelationalGraphIcon },
@@ -85,24 +85,19 @@ export function TopToolbar() {
       content: ws.name,
       value: ws.id,
       active: ws.id === currentWorkspaceId,
-      children: [
-        {
-          content: t('workspace.switchTo'),
-          value: ws.id,
-          prefixIcon: <FolderOpenIcon />,
-        },
-        {
-          content: t('workspace.deleteWorkspace'),
-          value: `${ACTION_DELETE_PREFIX}${ws.id}`,
-          theme: 'error' as const,
-          prefixIcon: <DeleteIcon />,
-        },
-      ],
+      prefixIcon: <FolderOpenIcon />,
     })),
+    ...(workspaces || []).length > 0 ? [{ content: '', value: '__divider__', divider: true }] : [],
+    ...(workspaces || []).map((ws) => ({
+      content: `${t('workspace.deleteWorkspace')}「${ws.name}」`,
+      value: `${ACTION_DELETE_PREFIX}${ws.id}`,
+      theme: 'error' as const,
+      prefixIcon: <DeleteIcon />,
+    })),
+    ...(workspaces || []).length > 0 ? [{ content: '', value: '__divider2__', divider: true }] : [],
     {
       content: t('workspace.createNewWorkspace'),
       value: ACTION_NEW,
-      divider: true,
       prefixIcon: <PlusIcon />,
     },
   ];
@@ -110,6 +105,7 @@ export function TopToolbar() {
   const handleDropdownClick = (option: DropdownOption) => {
     const value = option.value;
     if (typeof value !== 'string') return;
+    if (value.startsWith('__header__:')) return; // 忽略父选项点击
     if (value === ACTION_NEW) {
       createWorkspaceMutation.mutate(
         { name: t('workspace.defaultName', { date: new Date().toLocaleDateString() }) },
@@ -140,11 +136,11 @@ export function TopToolbar() {
 
   return (
     <header
-      className="relative flex h-11 items-center gap-2 border-b border-border/60 bg-background/90 px-3 backdrop-blur"
+      className="relative flex h-(--toolbar-height) items-center gap-2 border-b border-border/40 glass-v2 px-3"
       style={{ zIndex: 'var(--z-toolbar)' }}
     >
       {/* 左侧：品牌 + 工作区 */}
-      <div className="flex items-center gap-2">
+      <div className={cn('flex items-center gap-2', '2xl:flex-1 2xl:min-w-0')}>
         <div className="flex items-center gap-1.5 pr-2 group loom-warp">
           <LayersIcon className="size-5 text-primary transition-transform duration-300 group-hover:rotate-12" />
           <span className="hidden select-none font-serif text-sm font-semibold tracking-tight sm:inline">
@@ -172,7 +168,12 @@ export function TopToolbar() {
       </div>
 
       {/* 中间：视图 Tab */}
-      <nav className="flex flex-1 items-center justify-center">
+      <nav
+        className={cn(
+          'flex items-center justify-center',
+          'flex-1 2xl:flex-none',
+        )}
+      >
         <div className="flex items-center gap-0.5 rounded-xl bg-muted/40 p-1">
           {VIEW_TABS.map((tab) => {
             const Icon = tab.icon;
@@ -182,14 +183,15 @@ export function TopToolbar() {
                 key={tab.id}
                 onClick={() => setActiveView(tab.id)}
                 className={cn(
-                  'relative flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs transition-all duration-200',
+                  'ripple-btn relative flex h-(--toolbar-tab-height) items-center gap-1.5 rounded-lg px-2.5 text-xs transition-all duration-200 whitespace-nowrap shrink-0',
                   isActive
                     ? 'bg-background font-medium text-foreground shadow-sm'
                     : 'text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground',
                 )}
+                title={t(`views.${tab.id}` as const)}
               >
-                <Icon className={cn('size-3.5 transition-colors', isActive ? 'text-primary' : '')} />
-                <span className="hidden sm:inline">{t(`views.${tab.id}` as const)}</span>
+                <Icon className={cn('size-3.5 shrink-0 transition-colors', isActive ? 'text-primary' : '')} />
+                <span className="hidden md:inline whitespace-nowrap">{t(`views.${tab.id}` as const)}</span>
                 {isActive && (
                   <span className="absolute -bottom-px left-2 right-2 h-0.5 rounded-full bg-primary" />
                 )}
@@ -199,144 +201,129 @@ export function TopToolbar() {
         </div>
       </nav>
 
-      {/* 右侧：操作按钮 */}
+      {/* 右侧：操作按钮区 - 精简设计 */}
       <div className="flex items-center gap-1">
-        <TTooltip content={t('topbar.zoomOut')} placement="bottom">
-          <TButton
-            variant="text"
-            size="small"
-            shape="square"
-            className="size-7 btn-lift hover:bg-muted/80"
-            onClick={() => zoomOut(0.1)}
-          >
-            <ZoomOutIcon className="size-4 text-muted-foreground" />
-          </TButton>
-        </TTooltip>
-
-        <div className="flex w-28 flex-col gap-0 px-1">
-          <span className="text-center text-[9px] font-mono tabular-nums text-muted-foreground/60">
-            {Math.round(zoom * 100)}%
-          </span>
-          <TSlider
-            value={Math.round(zoom * 100)}
-            min={50}
-            max={300}
-            step={1}
-            onChange={(v) => setZoom((v as number) / 100)}
-            label={false}
-            inputNumberProps={false}
-            className="w-full"
-          />
+        {/* 缩放控制组 */}
+        <div className="flex items-center gap-0.5 rounded-xl bg-muted/50 px-1.5 py-1">
+          <TTooltip content={t('topbar.zoomOut')} placement="bottom">
+            <button
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground active:scale-90"
+              onClick={() => zoomOut(0.1)}
+            >
+              <ZoomOutIcon size={18} />
+            </button>
+          </TTooltip>
+          <div className="flex w-20 flex-col gap-0 px-0.5">
+            <TSlider
+              value={Math.round(zoom * 100)}
+              min={50}
+              max={300}
+              step={1}
+              onChange={(v) => setZoom((v as number) / 100)}
+              label={false}
+              inputNumberProps={false}
+              className="w-full"
+            />
+          </div>
+          <TTooltip content={t('topbar.zoomIn')} placement="bottom">
+            <button
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground active:scale-90"
+              onClick={() => zoomIn(0.1)}
+            >
+              <ZoomInIcon size={18} />
+            </button>
+          </TTooltip>
         </div>
 
-        <TTooltip content={t('topbar.zoomIn')} placement="bottom">
-          <TButton
-            variant="text"
-            size="small"
-            shape="square"
-            className="size-7 btn-lift hover:bg-muted/80"
-            onClick={() => zoomIn(0.1)}
-          >
-            <ZoomInIcon className="size-4 text-muted-foreground" />
-          </TButton>
-        </TTooltip>
+        {/* 分隔线 */}
+        <div className="h-5 w-px bg-border/50" />
 
-        <div className="mx-1 h-5 w-px bg-border/60" />
-
-        <TTooltip content={t('topbar.zenMode')} placement="bottom">
-          <TButton
-            variant="text"
-            size="small"
-            shape="square"
-            className="size-7 btn-lift hover:bg-muted/80"
-            onClick={() => useUIStore.getState().toggleZenMode()}
-          >
-            <FullScreenIcon className="size-4 text-muted-foreground" />
-          </TButton>
-        </TTooltip>
-
-        <TTooltip content={t('topbar.newEvent')} placement="bottom">
-          <TButton
-            variant="text"
-            size="small"
-            theme="success"
-            className="gap-1 text-xs btn-lift hover:bg-green-50/50 dark:hover:bg-green-900/20"
-            onClick={ctx.createEvent}
-          >
-            <PlusIcon className="size-4" />
-            {t('topbar.new')}
-          </TButton>
-        </TTooltip>
-
-        <TTooltip content={t('topbar.saveShortcut')} placement="bottom">
-          <TButton
-            variant="text"
-            size="small"
-            className="gap-1 text-xs btn-lift hover:bg-muted/80"
-            onClick={ctx.save}
-          >
-            <SaveIcon className="size-4 text-muted-foreground" />
-            {t('common.save')}
-          </TButton>
-        </TTooltip>
-
-        <div className="mx-1 h-5 w-px bg-border/60" />
-
-        <TTooltip content={t('topbar.commandPaletteShortcut')} placement="bottom">
-          <TButton
-            variant="outline"
-            size="small"
-            className="gap-1 text-xs border-border/60 btn-lift hover:bg-muted/50"
-            onClick={() => setCommandPaletteOpen(true)}
-          >
-            <CommandIcon className="size-3.5" />
-            <span className="hidden text-[10px] text-muted-foreground sm:inline">Ctrl+K</span>
-          </TButton>
-        </TTooltip>
-
-        <LanguageSelector />
-
-        <TTooltip content={t('topbar.settings')} placement="bottom">
-          <TButton
-            variant="text"
-            size="small"
-            shape="square"
-            className="size-7 btn-lift hover:bg-muted/80"
-            aria-label={t('topbar.settings')}
-            onClick={() => setSettingsOpen(true)}
-          >
-            <SettingIcon className="size-4 text-muted-foreground" />
-          </TButton>
-        </TTooltip>
-
-        <TPopup
-          trigger="click"
-          placement="bottom-right"
-          content={
-            <div
-              className="w-80 space-y-3 p-3"
-              style={{
-                backgroundColor: 'rgb(var(--popover))',
-                border: '1px solid rgb(var(--border))',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-lg)',
-              }}
+        {/* 操作组：禅模式 + 新建 + 保存 */}
+        <div className="flex items-center gap-0.5 rounded-xl bg-muted/50 px-1.5 py-1">
+          <TTooltip content={t('topbar.zenMode')} placement="bottom">
+            <button
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground active:scale-90"
+              onClick={() => useUIStore.getState().toggleZenMode()}
             >
-              <div className="text-sm font-medium">{t('topbar.selectTheme')}</div>
-              <ThemeSelector />
-            </div>
-          }
-        >
-          <TButton
-            variant="text"
-            size="small"
-            shape="square"
-            className="size-7 btn-lift hover:bg-muted/80"
-            aria-label={t('topbar.selectTheme')}
+              <FullScreenIcon size={18} />
+            </button>
+          </TTooltip>
+
+          <TTooltip content={t('topbar.newEvent')} placement="bottom">
+            <TButton
+              variant="base"
+              size="small"
+              theme="success"
+              className="h-8 gap-1.5 rounded-lg px-3 text-xs font-medium"
+              onClick={ctx.createEvent}
+            >
+              <PlusIcon size={16} />
+              <span className="hidden sm:inline">{t('topbar.new')}</span>
+            </TButton>
+          </TTooltip>
+
+          <TTooltip content={t('topbar.saveShortcut')} placement="bottom">
+            <button
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground active:scale-90"
+              onClick={ctx.save}
+            >
+              <SaveIcon size={18} />
+            </button>
+          </TTooltip>
+        </div>
+
+        {/* 分隔线 */}
+        <div className="h-5 w-px bg-border/50" />
+
+        {/* 辅助工具组：命令面板 + 设置 + 主题 */}
+        <div className="flex items-center gap-0.5 rounded-xl bg-muted/50 px-1.5 py-1">
+          <TTooltip content={`${t('topbar.commandPaletteShortcut')} (Ctrl+K)`} placement="bottom">
+            <button
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground active:scale-90"
+              onClick={() => setCommandPaletteOpen(true)}
+            >
+              <CommandIcon size={18} />
+            </button>
+          </TTooltip>
+
+          <LanguageSelector />
+
+          <TTooltip content={t('topbar.settings')} placement="bottom">
+            <button
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground active:scale-90"
+              aria-label={t('topbar.settings')}
+              onClick={() => setSettingsOpen(true)}
+            >
+              <SettingIcon size={18} />
+            </button>
+          </TTooltip>
+
+          <TPopup
+            trigger="click"
+            placement="bottom-right"
+            content={
+              <div
+                className="w-80 space-y-3 p-3"
+                style={{
+                  backgroundColor: 'rgb(var(--popover))',
+                  border: '1px solid rgb(var(--border))',
+                  borderRadius: 'var(--radius-lg)',
+                  boxShadow: 'var(--shadow-lg)',
+                }}
+              >
+                <div className="text-sm font-medium">{t('topbar.selectTheme')}</div>
+                <ThemeSelector />
+              </div>
+            }
           >
-            <PaletteIcon className="size-4 text-muted-foreground" />
-          </TButton>
-        </TPopup>
+            <button
+              className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground active:scale-90"
+              aria-label={t('topbar.selectTheme')}
+            >
+              <PaletteIcon size={18} />
+            </button>
+          </TPopup>
+        </div>
       </div>
     </header>
   );

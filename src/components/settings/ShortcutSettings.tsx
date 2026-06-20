@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { KeyboardIcon, UndoIcon, CheckIcon, PencilIcon } from '@/lib/icons';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { Button as TButton, NotificationPlugin, DialogPlugin } from 'tdesign-react';
 import {
   Dialog,
@@ -195,39 +200,41 @@ export function ShortcutsTab() {
               return (
                 <div
                   key={s.id}
-                  className={`flex items-center justify-between px-3 py-2 rounded-md border border-border transition-colors ${
+                  className={`flex items-center gap-3 px-3 py-2 rounded-md border border-border transition-colors min-w-0 ${
                     isRecording ? 'ring-2 ring-primary' : ''
                   } ${s.enabled ? '' : 'opacity-40'}`}
                 >
-                  <div className="flex flex-col gap-0.5">
-                    <span className="text-sm">{s.description}</span>
-                    <span className="text-[10px] text-muted-foreground">
+                  <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                    <span className="text-sm truncate" title={s.description}>
+                      {s.description}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground truncate">
                       {WHEN_LABELS[s.when]}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0 flex-nowrap">
                     {isRecording ? (
-                      <span className="text-xs text-primary animate-pulse px-2">
-                        请按下新快捷键...（Esc 取消）
+                      <span className="text-xs text-primary animate-pulse whitespace-nowrap px-1">
+                        按新快捷键…
                       </span>
                     ) : (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 shrink-0">
                         {s.keys.length === 0 ? (
-                          <span className="text-[10px] text-muted-foreground italic px-1.5 py-0.5">
+                          <span className="text-[10px] text-muted-foreground italic px-1.5 py-0.5 whitespace-nowrap">
                             未设置
                           </span>
                         ) : (
                           s.keys.map((k, i) => (
                             <kbd
                               key={i}
-                              className="px-1.5 py-0.5 rounded bg-background text-[10px] font-mono border border-border"
+                              className="px-1.5 py-0.5 rounded bg-background text-[10px] font-mono border border-border whitespace-nowrap"
                             >
                               {formatKey(k)}
                             </kbd>
                           ))
                         )}
                         {isModified && (
-                          <CheckIcon size={14} className="text-muted-foreground ml-0.5" />
+                          <CheckIcon size={14} className="text-muted-foreground ml-0.5 shrink-0" />
                         )}
                       </div>
                     )}
@@ -236,15 +243,25 @@ export function ShortcutsTab() {
                       variant="outline"
                       disabled={isRecording}
                       onClick={() => setRecordingCommandId(s.id)}
+                      className="shrink-0"
                     >
                       <PencilIcon size={14} className="mr-1" />
                       修改
                     </TButton>
                     {isModified && (
-                      <TButton size="small" variant="text" onClick={() => resetShortcut(s.id)}>
-                        <UndoIcon size={14} className="mr-1" />
-                        还原默认
-                      </TButton>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <TButton
+                            size="small"
+                            variant="text"
+                            onClick={() => resetShortcut(s.id)}
+                            className="shrink-0 px-1.5"
+                          >
+                            <UndoIcon size={14} />
+                          </TButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="top">还原默认</TooltipContent>
+                      </Tooltip>
                     )}
                   </div>
                 </div>

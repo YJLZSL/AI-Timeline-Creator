@@ -239,10 +239,10 @@ export function TimelineEventCard({
 
   const getShadowStyle = () => {
     if (isSelected) {
-      return `0 0 0 2px ${eventColor}33, 0 0 12px ${eventColor}1a`;
+      return `0 0 0 2px ${eventColor}33, 0 0 16px -2px ${eventColor}33`;
     }
     if (isDragging) {
-      return `0 8px 24px -4px ${eventColor}26, 0 4px 12px -2px ${eventColor}1a`;
+      return `0 12px 32px -4px ${eventColor}33, 0 4px 8px -2px ${eventColor}1a, 0 0 0 1px ${eventColor}40`;
     }
     return undefined;
   };
@@ -254,9 +254,9 @@ export function TimelineEventCard({
       data-event-id={event.id}
       ref={cardRef}
       data-instant={isInstant ? 'true' : 'false'}
-      className={`absolute rounded-xl border select-none overflow-hidden backdrop-blur-sm transition-all duration-200 ease-out ${getBorderClass()} ${
+      className={`timeline-glow absolute rounded-xl border select-none overflow-hidden backdrop-blur-sm transition-all duration-200 ease-out ${getBorderClass()} ${
         isDragging ? 'cursor-grabbing' : 'cursor-grab'
-      }`}
+      } ${isSelected ? 'selected' : ''} ${isDragging ? 'drag-ghost' : ''}`}
       style={{
         left: left + dragOffsetPx,
         top,
@@ -282,9 +282,10 @@ export function TimelineEventCard({
       <div
         className="absolute left-0 top-0 bottom-0 rounded-l-xl transition-all duration-300"
         style={{
-          width: isSelected ? 4 : 3,
+          width: isSelected ? 4 : isHovered ? 3.5 : 3,
           background: `linear-gradient(to bottom, ${eventColor}, ${eventColor}66)`,
-          boxShadow: isHovered || isSelected ? `2px 0 8px -1px ${eventColor}40` : 'none',
+          boxShadow: isHovered || isSelected ? `3px 0 12px -1px ${eventColor}50` : 'none',
+          transition: 'width 0.3s ease, box-shadow 0.3s ease',
         }}
       />
 
@@ -401,7 +402,7 @@ export function TimelineEventCard({
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ delay: i * 0.05, duration: 0.15, ease: [0.16, 1, 0.3, 1] as const }}
               onClick={btn.onClick}
-              className="w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 transition-all duration-150 shadow-sm hover:shadow-md"
+              className="ripple-btn w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 transition-all duration-150 shadow-sm hover:shadow-md"
               title={btn.title}
             >
               {btn.icon}

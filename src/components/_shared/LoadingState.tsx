@@ -23,8 +23,11 @@ export function LoadingState({ text, className, size = 'md', children }: Loading
   const s = sizeMap[size];
 
   return (
-    <div className={cn('flex flex-col items-center justify-center gap-2 text-muted-foreground', className)}>
-      <LoadingIcon size={s.icon} className="animate-spin" />
+    <div className={cn('flex flex-col items-center justify-center gap-3 text-muted-foreground loading-pulse-shimmer', className)}>
+      <div className="relative">
+        <LoadingIcon size={s.icon} className="animate-spin" />
+        <div className="absolute inset-0 rounded-full animate-ping opacity-20 bg-primary" />
+      </div>
       {text && <span className={cn(s.text, 'font-medium')}>{text}</span>}
       {children}
     </div>

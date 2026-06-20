@@ -5,6 +5,34 @@
 > v3.0.1 起 GitHub Releases 列表只保留当前最新版（旧版本仍可通过 git tag 回溯，不再以 Release 形式陈列）。
 > **v1.0.0 是全面重构后的正式版本，代表 Storyloom 进入稳定阶段。**
 
+## [1.1.4] — 2026-06-21
+
+### 关键修复
+- **自动更新/版本号**：修复 `package.json` 中 `build.publish.owner` 指向错误仓库 (`YJLZSL`) 的问题，改为正确的 `liteli1987gmail`。这是老版本无法自动更新的根本原因。
+- **设置关闭按钮重叠**：移除 `SettingsDialog` 自定义关闭按钮，修复与 `DialogContent` 默认关闭按钮的叠加问题。
+- **隐藏时间轴恢复**：将恢复按钮从 `TButton` 改为原生 `<button>`，解决 TDesign 组件内部事件拦截导致点击无响应。
+- **滚轮交互**：`TimelineCanvas` 的 `scrollRef` 添加 `tabIndex={0}` 确保可接收滚轮事件（普通滚轮→水平平移，Ctrl+滚轮→缩放）。
+- **工作区删除**：Dropdown 父选项改为 `disabled` + `__header__:` 前缀，防止父选项 value 与子选项混淆。
+
+### 新功能
+- **每日目标字数**：新增 `useDailyGoalStore`（持久化），默认 2000 字/天，自动跨天重置，进度条 + 连续达标统计。
+- **番茄钟移至左侧面板**：从右上角移至左侧「专注工具」区域，更便于使用。
+
+### 内容补充
+- **全部 11 个教程完成**：之前仅 `getting-started.md` 有内容，其余全部显示 "TODO: 待补充"。现通过并行子代理完成全部教程。
+
+### 视觉强化
+- Glassmorphism 2.0、阴影/圆角/弹性动画系统升级
+- 按钮发光、时间轴刻度精致化、选中状态发光、轨道头部悬浮强化
+
+### 文件清理
+- 删除过时文档：`CHANGELOG-v1.1.2/3.md`、`plan-v2/v3.5.md`、`KNOWN_ISSUES.md` 等
+- 删除临时文件：`test_workspace.json`、`tsconfig.app.tsbuildinfo`、`screenshot-*.png` 等
+- 删除过时测试脚本：`comprehensive_v1_0_0_test.py` 等 11 个
+- 删除冗余目录：`docs/tutorials/`（与 `public/tutorials/` 重复）、`reports/`（过时报告）
+
+---
+
 ## [1.0.0] — 2026-06-20
 
 **全面前端重构 + 设计系统统一 + 视觉升级 + 教程大全 + 洛笙参考架构重构 + Zen Mode + 测试国际化。**

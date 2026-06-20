@@ -10,7 +10,7 @@ const VIEW_LABELS: Record<string, string> = {
   timeline: '时间轴',
   outline: '大纲',
   narrative: '叙事',
-  gantt: '甘特',
+  gantt: '甘特图',
   statistics: '统计',
   relationship: '关系图',
 };
@@ -57,16 +57,16 @@ export function StatusBar() {
   const saveStatus = isMutating > 0 ? '保存中…' : isFetching > 0 ? '同步中…' : '就绪';
 
   return (
-    <footer className="flex h-7 items-center gap-3 border-t border-border/60 bg-card/80 px-3 text-xs backdrop-blur-sm">
+    <footer className="flex h-8 items-center gap-4 border-t border-border/60 bg-card/80 px-4 text-xs backdrop-blur-sm">
       {/* 左侧统计信息 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         <StatusDot active={isWorking} />
         <span className="text-muted-foreground">{saveStatus}</span>
       </div>
 
-      <span className="h-3 w-px bg-border/60" />
+      <span className="h-3.5 w-px bg-border/60" />
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <StatItem label="轨道" value={trackCount} />
         <StatItem label="事件" value={eventCount} />
         <StatItem label="角色" value={characterCount} />
@@ -76,11 +76,11 @@ export function StatusBar() {
       <div className="flex-1" />
 
       {/* 右侧视图与缩放信息 */}
-      <div className="flex items-center gap-2">
-        <span className="rounded bg-muted/60 px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+      <div className="flex items-center gap-2.5">
+        <span className="rounded-md bg-muted/60 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
           {VIEW_LABELS[viewMode] || viewMode}
         </span>
-        <span className="h-3 w-px bg-border/60" />
+        <span className="h-3.5 w-px bg-border/60" />
         <span className="text-[10px] font-mono tabular-nums text-muted-foreground">
           {Math.round(zoom * 100)}%
         </span>

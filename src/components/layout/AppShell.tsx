@@ -30,6 +30,13 @@ import { useWorkspace } from '@/services/api-hooks';
 import { PanelLeftIcon, LayersIcon } from '@/lib/icons';
 import { TButton } from '@/components/ui-tdesign';
 import { cn } from '@/lib/utils';
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+} from '@/components/ui/ContextMenu';
 
 const viewVariants = {
   initial: { opacity: 0, y: 8, scale: 0.98 },
@@ -170,9 +177,22 @@ export function AppShell() {
           style={shellStyle}
         >
           <div className="flex flex-1 overflow-hidden">
-            <main className="min-w-0 flex-1 overflow-auto">
-              <MainCanvas />
-            </main>
+            <ContextMenu>
+              <ContextMenuTrigger asChild>
+                <main className="min-w-0 flex-1 overflow-auto">
+                  <MainCanvas />
+                </main>
+              </ContextMenuTrigger>
+              <ContextMenuContent>
+                <ContextMenuItem onClick={() => ctx.createEvent()}>新建事件</ContextMenuItem>
+                <ContextMenuItem onClick={() => ctx.save()}>保存</ContextMenuItem>
+                <ContextMenuItem onClick={() => useUIStore.getState().toggleFocusMode()}>切换专注模式</ContextMenuItem>
+                <ContextMenuItem onClick={() => useUIStore.getState().toggleZenMode()}>切换 Zen 模式</ContextMenuItem>
+                <ContextMenuSeparator />
+                <ContextMenuItem onClick={() => document.execCommand('copy')}>复制</ContextMenuItem>
+                <ContextMenuItem onClick={() => document.execCommand('paste')}>粘贴</ContextMenuItem>
+              </ContextMenuContent>
+            </ContextMenu>
             {activePanel && <ContextPanel />}
           </div>
           <CommandPalette />
@@ -221,9 +241,22 @@ export function AppShell() {
             <LeftPanel />
           )}
 
-          <main className="min-w-0 flex-1 overflow-auto">
-            <MainCanvas />
-          </main>
+          <ContextMenu>
+            <ContextMenuTrigger asChild>
+              <main className="min-w-0 flex-1 overflow-auto">
+                <MainCanvas />
+              </main>
+            </ContextMenuTrigger>
+            <ContextMenuContent>
+              <ContextMenuItem onClick={() => ctx.createEvent()}>新建事件</ContextMenuItem>
+              <ContextMenuItem onClick={() => ctx.save()}>保存</ContextMenuItem>
+              <ContextMenuItem onClick={() => useUIStore.getState().toggleFocusMode()}>切换专注模式</ContextMenuItem>
+              <ContextMenuItem onClick={() => useUIStore.getState().toggleZenMode()}>切换 Zen 模式</ContextMenuItem>
+              <ContextMenuSeparator />
+              <ContextMenuItem onClick={() => document.execCommand('copy')}>复制</ContextMenuItem>
+              <ContextMenuItem onClick={() => document.execCommand('paste')}>粘贴</ContextMenuItem>
+            </ContextMenuContent>
+          </ContextMenu>
 
           {/* 右栏 — 移动端 Sheet */}
           {isMobile ? (

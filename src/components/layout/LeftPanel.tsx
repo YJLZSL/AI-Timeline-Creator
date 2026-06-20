@@ -10,6 +10,7 @@ import {
   SettingIcon,
   EditIcon,
   SearchIcon,
+  TimeIcon,
   MenuUnfoldIcon,
   MenuFoldIcon,
   type IconParkIconProps,
@@ -18,8 +19,11 @@ import { TButton, TInput } from '@/components/ui-tdesign';
 import { useUIStore } from '@/stores/useUIStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
-import { useThemeStore } from '@/stores/useThemeStore';
 import { useCharacters, useEvents, useForeshadowings, useWorldSettings } from '@/services/api-hooks';
+import { PomodoroTimer } from '@/components/_shared/PomodoroTimer';
+import { DailyGoalWidget } from '@/stores/useDailyGoalStore';
+import { useTimelineStore } from '@/stores/useTimelineStore';
+import { toast } from 'sonner';
 
 /* ───────── 类型 ───────── */
 
@@ -56,15 +60,6 @@ export function LeftPanel() {
   const selectedEventId = useSelectionStore((s) => s.selectedEventId);
   const selectedCharacterId = useSelectionStore((s) => s.selectedCharacterId);
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
-  const isDark = useThemeStore((s) => {
-    const th = s.theme;
-    if (th === 'system') {
-      return typeof window !== 'undefined' && window.matchMedia
-        ? window.matchMedia('(prefers-color-scheme: dark)').matches
-        : false;
-    }
-    return th === 'midnight' || th === 'contrast';
-  });
 
   const { data: characters } = useCharacters(workspaceId);
   const { data: eventsData } = useEvents(workspaceId);
@@ -72,7 +67,23 @@ export function LeftPanel() {
   const { data: worldSettings } = useWorldSettings(workspaceId);
 
   const events = eventsData?.items ?? [];
-  const bgClass = isDark ? 'bg-card/90' : 'bg-card/80';
+
+  const scrollToEvent = useTimelineStore((s) => s.scrollToEvent);
+  const setViewMode = useTimelineStore((s) => s.setViewMode);
+
+  const filteredEvents = searchQuery.trim()
+    ? events.filter((e) =>
+        e.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (e.summary?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false)
+      )
+    : [];
+
+  const handleEventClick = (eventId: string, eventTitle: string) => {
+    scrollToEvent(eventId);
+    setViewMode('timeline');
+    setSearchQuery('');
+    toast.success(`已定位到事件「${eventTitle}」`);
+  };
 
   const handleToolClick = (panelId: ToolItem['panelId']) => {
     setActivePanel(activePanel === panelId ? null : panelId);
@@ -83,9 +94,8 @@ export function LeftPanel() {
   return (
     <aside
       className={cn(
-        'relative flex flex-col border-r border-border/60 backdrop-blur-sm transition-[width] duration-300 ease-in-out',
-        collapsed ? 'w-12' : 'w-60',
-        bgClass,
+        'relative flex flex-col border-r border-border/40 glass transition-[width] duration-300 ease-in-out',
+        collapsed ? 'w-12' : 'w-(--sidebar-width) lg:w-(--sidebar-width-lg) xl:w-(--sidebar-width-xl)',
       )}
       style={{ zIndex: 'var(--z-sidenav)' }}
     >
@@ -107,7 +117,7 @@ export function LeftPanel() {
           size="small"
           onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? t('leftPanel.expand') : t('leftPanel.collapse')}
-          className="size-7 btn-lift text-muted-foreground/60 hover:bg-accent/40 hover:text-accent-foreground transition-colors"
+          className="size-7 btn-lift ripple-btn text-muted-foreground/60 hover:bg-accent/40 hover:text-accent-foreground transition-colors"
         >
           <ToggleIcon size={16} />
         </TButton>
@@ -117,15 +127,40 @@ export function LeftPanel() {
         <div className="flex flex-1 flex-col gap-3 overflow-auto p-3">
           {/* 搜索 */}
           <div className="relative group">
-            <SearchIcon className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary/70 transition-colors" />
+            <SearchIcon className="search-icon absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary/70 transition-colors" />
             <TInput
               size="small"
-              placeholder={t('leftPanel.searchPlaceholder')}
+              placeholder={t('leftPanel.searchEventsPlaceholder') || '搜索事件...'}
               value={searchQuery}
               onChange={(v) => setSearchQuery(v as string)}
-              className="h-8 pl-8 text-xs border-border/50 focus:border-primary/50 transition-all input-glow"
+              className="h-8 pl-8 text-xs border-border/50 focus:border-primary/50 transition-all input-glow search-expand"
               clearable
             />
+            {/* 事件搜索结果 */}
+            {filteredEvents.length > 0 && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 max-h-48 overflow-auto rounded-lg border border-border/50 bg-background/95 backdrop-blur-sm shadow-lg">
+                {filteredEvents.map((event) => (
+                  <button
+                    key={event.id}
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs transition-colors hover:bg-accent/50"
+                    onClick={() => handleEventClick(event.id, event.title)}
+                  >
+                    <TimeIcon size={14} className="shrink-0 text-muted-foreground/60" />
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate font-medium">{event.title}</div>
+                      {event.summary && (
+                        <div className="truncate text-muted-foreground/70">{event.summary}</div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {searchQuery.trim() && filteredEvents.length === 0 && (
+              <div className="absolute left-0 right-0 top-full z-50 mt-1 rounded-lg border border-border/50 bg-background/95 backdrop-blur-sm shadow-lg px-3 py-2 text-xs text-muted-foreground">
+                未找到匹配的事件
+              </div>
+            )}
           </div>
 
           {/* 创作工具 */}
@@ -134,8 +169,21 @@ export function LeftPanel() {
           {/* 工具 */}
           <ToolSection title={t('leftPanel.tools')} tools={UTILITY_TOOLS} activePanel={activePanel} onToolClick={handleToolClick} />
 
+          {/* 专注工具 */}
+          <div className="space-y-2">
+            <div className="px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+              专注工具
+            </div>
+            <div className="rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm space-y-3">
+              <PomodoroTimer />
+            </div>
+          </div>
+
+          {/* 每日目标 */}
+          <DailyGoalWidget />
+
           {/* 快速统计 */}
-          <div className="mt-auto space-y-2 rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm card-lift">
+          <div className="mt-auto space-y-2 rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm card-hover-shadow">
             <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               {t('leftPanel.workspaceOverview')}
             </div>
@@ -178,15 +226,15 @@ export function LeftPanel() {
                 shape="square"
                 size="small"
                 className={cn(
-                  'size-9 rounded-lg transition-all duration-200',
+                  'size-10 rounded-xl transition-all duration-200',
                   isActive
                     ? 'bg-primary/10 text-primary shadow-sm'
-                    : 'text-muted-foreground/60 hover:bg-accent/40 hover:text-accent-foreground',
+                    : 'text-muted-foreground/60 hover:bg-accent/50 hover:text-accent-foreground',
                 )}
                 onClick={() => handleToolClick(item.panelId)}
                 title={t(`panels.${item.id === 'event-editor' ? 'eventEditor' : item.id}` as const)}
               >
-                <Icon size={18} />
+                <Icon size={20} />
               </TButton>
             );
           })}
@@ -223,11 +271,11 @@ function ToolSection({
     return t(keyMap[id] || id);
   };
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <div className="px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
         {title}
       </div>
-      <div className="flex flex-col gap-0.5">
+      <div className="flex flex-col gap-1">
         {tools.map((item) => {
           const Icon = item.icon;
           const isActive = activePanel === item.panelId;
@@ -236,16 +284,16 @@ function ToolSection({
               key={item.id}
               onClick={() => onToolClick(item.panelId)}
               className={cn(
-                'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-all duration-200 weave-border',
+                'ripple-btn flex items-center gap-2.5 rounded-xl px-3 py-2 text-xs transition-all duration-200 weave-border tool-bar-indicator',
                 isActive
-                  ? 'bg-primary/8 text-primary font-medium shadow-sm'
-                  : 'text-foreground/80 hover:bg-accent/40 hover:text-accent-foreground',
+                  ? 'bg-primary/10 text-primary font-medium shadow-sm active'
+                  : 'text-foreground/80 hover:bg-accent/50 hover:text-accent-foreground',
               )}
             >
-              <Icon size={16} className={cn('transition-colors', isActive ? 'text-primary' : 'text-muted-foreground/60')} />
+              <Icon size={18} className={cn('transition-colors', isActive ? 'text-primary' : 'text-muted-foreground/60')} />
               <span>{getToolLabel(item.id)}</span>
               {isActive && (
-                <span className="ml-auto inline-block h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                <span className="ml-auto inline-block h-2 w-2 rounded-full bg-primary animate-pulse" />
               )}
             </button>
           );

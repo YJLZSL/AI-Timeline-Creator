@@ -112,6 +112,9 @@ export const THEME_PREVIEW_TOKENS: Record<string, { bg: string; primary: string 
   forest:    { bg: '#E8F0E2', primary: '#2F7A41' },
   'ink-wash':{ bg: '#F5F5F0', primary: '#1A1A1A' },
   contrast:  { bg: '#000000', primary: '#FFFF00' },
+  sakura:    { bg: '#FFF0F5', primary: '#E88B9A' },
+  ocean:     { bg: '#0A1628', primary: '#5ECCD6' },
+  aurora:    { bg: '#0D1B1E', primary: '#8B5CF6' },
   system:    { bg: '#FAF6ED', primary: '#0F172A' },
 };
 

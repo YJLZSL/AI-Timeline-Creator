@@ -12,6 +12,8 @@ interface EmptyStateProps {
   showIllustration?: boolean;
   /** 副标题下方的提示文字 */
   hint?: string;
+  /** 尺寸：sm 适合卡片内，lg 适合全屏视图 */
+  size?: 'sm' | 'lg';
 }
 
 /**
@@ -28,12 +30,28 @@ export function EmptyState({
   variant = 'default',
   showIllustration = true,
   hint,
+  size = 'sm',
 }: EmptyStateProps) {
   const variantStyles = {
-    default: 'flex flex-col items-center justify-center text-center p-8 rounded-xl border border-border/60 bg-card/50',
-    dashed: 'flex flex-col items-center justify-center text-center p-8 rounded-xl border-2 border-dashed border-border/60 bg-card/30',
+    default: 'flex flex-col items-center justify-center text-center p-8 rounded-2xl border border-border bg-card/95 shadow-lg panel-enter',
+    dashed: 'flex flex-col items-center justify-center text-center p-8 rounded-2xl border-2 border-dashed border-border/60 bg-card/30 panel-enter',
     minimal: 'flex flex-col items-center justify-center text-center p-4',
   };
+
+  const sizeStyles = {
+    sm: {
+      icon: 'h-16 w-16',
+      title: 'text-sm',
+      desc: 'text-xs',
+    },
+    lg: {
+      icon: 'h-20 w-20',
+      title: 'text-base',
+      desc: 'text-sm',
+    },
+  };
+
+  const { icon: iconSize, title: titleSize, desc: descSize } = sizeStyles[size];
 
   return (
     <div className={cn(variantStyles[variant], 'relative overflow-hidden', className)}>
@@ -41,11 +59,11 @@ export function EmptyState({
       {showIllustration && (
         <div className="empty-illustration mb-4 flex items-center justify-center">
           {icon ? (
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground/70 transition-colors duration-300 hover:bg-muted/80 hover:text-primary/70">
+            <div className={cn('relative flex items-center justify-center rounded-2xl bg-muted/60 text-muted-foreground/70 transition-colors duration-300 hover:bg-muted/80 hover:text-primary/70', iconSize)}>
               {icon}
             </div>
           ) : (
-            <div className="relative flex h-16 w-16 items-center justify-center rounded-2xl bg-muted/60">
+            <div className={cn('relative flex items-center justify-center rounded-2xl bg-muted/60', iconSize)}>
               <svg
                 viewBox="0 0 48 48"
                 fill="none"
@@ -63,9 +81,9 @@ export function EmptyState({
         </div>
       )}
 
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      <h3 className={cn('font-semibold text-foreground', titleSize)}>{title}</h3>
       {description && (
-        <p className="mt-1.5 text-xs text-muted-foreground max-w-[240px] leading-relaxed">{description}</p>
+        <p className={cn('mt-1.5 text-muted-foreground max-w-[240px] leading-relaxed', descSize)}>{description}</p>
       )}
       {hint && (
         <p className="mt-2 text-[11px] text-muted-foreground/60 max-w-[240px] leading-relaxed italic">{hint}</p>

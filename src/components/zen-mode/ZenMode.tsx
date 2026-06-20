@@ -163,14 +163,14 @@ export function ZenMode({ onExit }: ZenModeProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.2 }}
-            className="zen-mode-toolbar flex items-center justify-center gap-1 px-4 py-2"
+            className="zen-mode-toolbar z-[102] flex items-center justify-center gap-1 px-4 py-2"
           >
             <div className="flex items-center gap-1 rounded-2xl border border-border/40 bg-card/80 backdrop-blur-md px-3 py-1.5 shadow-lg">
               <TButton
                 variant="text"
                 size="small"
                 shape="square"
-                className="size-8"
+                className="size-8 ripple-btn"
                 onClick={() => setFontSize((s) => Math.max(s - 1, 12))}
                 title="缩小字号 (Ctrl+-)"
               >
@@ -183,7 +183,7 @@ export function ZenMode({ onExit }: ZenModeProps) {
                 variant="text"
                 size="small"
                 shape="square"
-                className="size-8"
+                className="size-8 ripple-btn"
                 onClick={() => setFontSize((s) => Math.min(s + 1, 24))}
                 title="放大字号 (Ctrl+=)"
               >
@@ -196,7 +196,7 @@ export function ZenMode({ onExit }: ZenModeProps) {
                 variant="text"
                 size="small"
                 shape="square"
-                className="size-8"
+                className="size-8 ripple-btn"
                 onClick={() => setLineHeight((h) => (h === 1.8 ? 2.0 : h === 2.0 ? 1.5 : 1.8))}
                 title="切换行高"
               >
@@ -207,7 +207,7 @@ export function ZenMode({ onExit }: ZenModeProps) {
                 variant="text"
                 size="small"
                 shape="square"
-                className="size-8"
+                className="size-8 ripple-btn"
                 onClick={() => setDarkPaper((v) => !v)}
                 title="切换暗色纸张 (Ctrl+D)"
               >
@@ -220,7 +220,7 @@ export function ZenMode({ onExit }: ZenModeProps) {
                 variant="text"
                 size="small"
                 shape="square"
-                className="size-8"
+                className="size-8 ripple-btn"
                 onClick={() => {
                   if (event && workspaceId) {
                     updateEvent.mutate({
@@ -240,7 +240,7 @@ export function ZenMode({ onExit }: ZenModeProps) {
                 variant="text"
                 size="small"
                 shape="square"
-                className="size-8"
+                className="size-8 ripple-btn"
                 onClick={toggleFullscreen}
                 title="全屏 (F11)"
               >
@@ -257,12 +257,26 @@ export function ZenMode({ onExit }: ZenModeProps) {
                 variant="text"
                 size="small"
                 shape="square"
-                className="size-8 text-muted-foreground hover:text-destructive"
+                className="size-8 ripple-btn"
+                onClick={toggleFullscreen}
+                title="全屏 (F11)"
+              >
+                {document.fullscreenElement ? (
+                  <XIcon size={14} />
+                ) : (
+                  <FullScreenIcon size={14} />
+                )}
+              </TButton>
+
+              <div className="mx-1 h-4 w-px bg-border/50" />
+
+              <button
                 onClick={onExit}
+                className="size-8 flex items-center justify-center rounded-lg hover:bg-muted/80 transition-colors"
                 title="退出专注模式 (Esc)"
               >
                 <XIcon size={14} />
-              </TButton>
+              </button>
             </div>
           </motion.div>
         )}
@@ -270,7 +284,7 @@ export function ZenMode({ onExit }: ZenModeProps) {
 
       {/* Hover area for toolbar */}
       <div
-        className="fixed top-0 left-0 right-0 h-12 z-[101]"
+        className="fixed top-0 left-0 right-0 h-16 z-[101]"
         onMouseEnter={() => setShowToolbar(true)}
       />
 

@@ -5,6 +5,7 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
 import { scrollSelectedIntoView } from '@/utils/revealInBestView';
+import { EmptyState } from '@/components/_shared/EmptyState';
 
 interface DragState {
   eventId: string;
@@ -140,8 +141,14 @@ export function NarrativeView() {
 
       <div ref={listRef} className="space-y-2 max-w-3xl">
         {sortedEvents.length === 0 && (
-          <div className="text-center text-sm text-muted-foreground py-12 font-sans">
-            暂无事件，请先在时间轴中创建
+          <div className="flex justify-center py-8">
+            <EmptyState
+              size="lg"
+              icon={<BookOpenIcon size={32} className="text-primary/70" />}
+              title="暂无叙事事件"
+              description="请先在时间轴中创建事件，然后在这里调整叙事顺序"
+              className="w-full max-w-md"
+            />
           </div>
         )}
         {sortedEvents.map((event, index) => {

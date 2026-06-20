@@ -52,6 +52,15 @@ function LoomSvg() {
         <line x1="20" y1="120" x2="190" y2="120" stroke="currentColor" strokeWidth="1" />
         <line x1="20" y1="155" x2="190" y2="155" stroke="currentColor" strokeWidth="1" />
       </g>
+      {/* 编织线动画 */}
+      <g opacity="0.4">
+        <line x1="20" y1="40" x2="180" y2="40" stroke="currentColor" strokeWidth="1" 
+          strokeDasharray="100" strokeDashoffset="100" className="weave-thread" />
+        <line x1="20" y1="75" x2="180" y2="75" stroke="currentColor" strokeWidth="1"
+          strokeDasharray="100" strokeDashoffset="100" className="weave-thread weave-thread-delay-1" />
+        <line x1="20" y1="110" x2="180" y2="110" stroke="currentColor" strokeWidth="1"
+          strokeDasharray="100" strokeDashoffset="100" className="weave-thread weave-thread-delay-2" />
+      </g>
       {/* 交织点（小圆点） */}
       <g opacity="0.3">
         <circle cx="30" cy="50" r="2.5" fill="currentColor" />
@@ -126,6 +135,9 @@ export function EmptyShell() {
                 <p className="mt-1.5 text-sm text-muted-foreground tracking-wide">
                   把时间织成故事
                 </p>
+                <h2 className="mt-2 font-serif text-lg font-bold tracking-wide text-foreground">
+                  <span className="typewriter-text">故事从这里开始编织</span>
+                </h2>
               </div>
               <div className="w-16 h-[1px] bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
               <p className="text-xs text-muted-foreground/70 text-center leading-relaxed max-w-[200px]">

@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useRef } from 'react';
-import { ChartHistogramIcon, GroupIcon, RemindIcon, LinkIcon, ClockIcon } from '@/lib/icons';
+import { ChartHistogramIcon, GroupIcon, RemindIcon, LinkIcon, ClockIcon, UserIcon } from '@/lib/icons';
+import { EmptyState } from '@/components/_shared/EmptyState';
 import { useEvents, useCharacters, useTracks, useConnections, useForeshadowings } from '@/services/api-hooks';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
@@ -127,7 +128,13 @@ export function StatsView() {
         <div className="border border-border rounded-xl p-5 bg-card shadow-sm">
           <h3 className="font-serif text-lg font-semibold mb-4">轨道事件分布</h3>
           {trackDistribution.length === 0 ? (
-            <EmptyState message="暂无轨道" hint="创建轨道后，这里会显示每条轨道上的事件分布" />
+            <EmptyState
+              variant="minimal"
+              icon={<ChartHistogramIcon size={24} className="text-muted-foreground/60" />}
+              title="暂无轨道"
+              description="创建轨道后，这里会显示每条轨道上的事件分布"
+              className="py-12"
+            />
           ) : (
             <div className="space-y-3">
               {trackDistribution.map((track) => (
@@ -177,7 +184,13 @@ export function StatsView() {
               <ForeshadowingStat label="已废弃" count={foreshadowingStats.abandoned} color="bg-muted-foreground" onClick={handleForeshadowingStatClick} />
             </div>
           ) : (
-            <EmptyState message="暂无伏笔" hint="在伏笔面板创建伏笔后，这里会显示生命周期分布" />
+            <EmptyState
+              variant="minimal"
+              icon={<RemindIcon size={24} className="text-muted-foreground/60" />}
+              title="暂无伏笔"
+              description="在伏笔面板创建伏笔后，这里会显示生命周期分布"
+              className="py-12"
+            />
           )}
         </div>
 
@@ -185,7 +198,13 @@ export function StatsView() {
         <div className="border border-border rounded-xl p-5 bg-card shadow-sm">
           <h3 className="font-serif text-lg font-semibold mb-4">角色出场频率</h3>
           {characterFrequency.length === 0 ? (
-            <EmptyState message="暂无角色关联数据" hint="给事件分配角色后，这里会显示角色出场频率" />
+            <EmptyState
+              variant="minimal"
+              icon={<UserIcon size={24} className="text-muted-foreground/60" />}
+              title="暂无角色关联数据"
+              description="给事件分配角色后，这里会显示角色出场频率"
+              className="py-12"
+            />
           ) : (
             <div className="space-y-2">
               {characterFrequency.map((char) => (
@@ -264,7 +283,7 @@ export function StatsView() {
 
 function StatCard({ title, value, icon }: { title: string; value: string | number; icon?: React.ReactNode }) {
   return (
-    <div className="stat-card">
+    <div className="stat-card card-hover-shadow cursor-default">
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2 font-sans">
         {icon}
         {title}
@@ -292,23 +311,6 @@ function ForeshadowingStat({ label, count, color, onClick }: { label: string; co
   );
 }
 
-function EmptyState({ message, hint }: { message: string; hint: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-12 text-center panel-enter">
-      <div className="empty-illustration mb-3">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground/60">
-          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
-            <path d="M7 9h4M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
-          </svg>
-        </div>
-      </div>
-      <div className="text-sm text-muted-foreground font-medium mb-1">{message}</div>
-      <div className="text-xs text-muted-foreground/70 max-w-[240px] leading-relaxed">{hint}</div>
-    </div>
-  );
-}
-
 function getTimeSpan(events: Array<{ startTime: Date | null }>): string {
   const times = events
     .map((e) => e.startTime)
@@ -332,7 +334,15 @@ function EventDensityHeatmap({
     .map((t) => new Date(t));
 
   if (times.length === 0) {
-    return <EmptyState message="暂无数据" hint="创建带日期的事件后，这里会按月显示事件密度" />;
+    return (
+      <EmptyState
+        variant="minimal"
+        icon={<ChartHistogramIcon size={24} className="text-muted-foreground/60" />}
+        title="暂无数据"
+        description="创建带日期的事件后，这里会按月显示事件密度"
+        className="py-12"
+      />
+    );
   }
 
   const byMonth = new Map<string, number>();
@@ -349,7 +359,7 @@ function EventDensityHeatmap({
       {entries.map(([month, count]) => (
         <div
           key={month}
-          className="heatmap-cell aspect-square rounded-md flex items-center justify-center text-xs font-mono hover:scale-105 transition-transform cursor-default"
+          className="heatmap-cell aspect-square rounded-md flex items-center justify-center text-xs font-mono hover:scale-105 hover:shadow-md transition-all duration-200 cursor-default card-hover-shadow"
           style={{
             backgroundColor: `rgb(var(--primary) / ${0.1 + (count / maxCount) * 0.9})`,
           }}

@@ -1,10 +1,12 @@
 import { useRef, useCallback, useEffect, useState, useMemo } from 'react';
 import { DateRangePicker } from 'tdesign-react';
 import type { DateRangeValue } from 'tdesign-react';
-import { TButton, TPopup, TSwitch } from '@/components/ui-tdesign';
-import { PlusIcon, SettingConfigIcon, LinkIcon, XIcon } from '@/lib/icons';
-import { useEvents, useTracks, useConnections, useUpdateEvent } from '@/services/api-hooks';
+import { PlusIcon, SettingConfigIcon, EyesIcon, IdeaIcon } from '@/lib/icons';
+import { TButton, TTooltip } from '@/components/ui-tdesign';
+import { TrackManagerDialog } from './TrackManagerDialog';
+import { useEvents, useTracks, useConnections, useUpdateEvent, useUpdateTrack } from '@/services/api-hooks';
 import { Skeleton } from '@/components/_shared/Skeleton';
+import { EmptyState } from '@/components/_shared/EmptyState';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useUIStore } from '@/stores/useUIStore';
@@ -14,11 +16,14 @@ import { TimelineTrack, TRACK_HEIGHT, TRACK_GAP, HEADER_WIDTH } from './Timeline
 import { TimelineConnections } from './TimelineConnections';
 import { TimelineMinimap } from './TimelineMinimap';
 import { CreateTrackDialog } from './CreateTrackDialog';
+import { toast } from 'sonner';
 import type { Track as TrackType, TimelineEvent } from '../../../shared/types';
 
 const BASE_PIXELS_PER_DAY = 80;
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const PADDING_MS = MS_PER_DAY;
+const WHEEL_ZOOM_STEP = 0.05;
+const WHEEL_PAN_FACTOR = 2;
 
 function toDateString(ms: number): string {
   const d = new Date(ms);
@@ -31,6 +36,7 @@ function toDateString(ms: number): string {
 export function TimelineCanvas() {
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const zoom = useTimelineStore((s) => s.zoom);
+  const setZoom = useTimelineStore((s) => s.setZoom);
   const showConnectionLines = useTimelineStore((s) => s.showConnectionLines);
   const toggleConnectionLines = useTimelineStore((s) => s.toggleConnectionLines);
   const scrollToEventId = useTimelineStore((s) => s.scrollToEventId);
@@ -47,9 +53,11 @@ export function TimelineCanvas() {
   const [viewport, setViewport] = useState({ scrollLeft: 0, width: 0, scrollTop: 0, height: 0 });
   const rafRef = useRef<number | null>(null);
   const [createTrackOpen, setCreateTrackOpen] = useState(false);
+  const [trackManagerOpen, setTrackManagerOpen] = useState(false);
 
   const events = eventsData?.items || [];
   const allTracks: TrackType[] = tracks || [];
+  const updateTrack = useUpdateTrack();
 
   const dataReferenceDateMs = useMemo(() => {
     const times = events
@@ -90,6 +98,7 @@ export function TimelineCanvas() {
   }, [endDateMs, referenceDateMs, pixelsPerMs]);
 
   const visibleTracks = useMemo(() => allTracks.filter((t) => t.isVisible), [allTracks]);
+  const hiddenTracks = useMemo(() => allTracks.filter((t) => !t.isVisible), [allTracks]);
 
   const eventsByTrack = useMemo(() => {
     const map = new Map<string, TimelineEvent[]>();
@@ -138,21 +147,8 @@ export function TimelineCanvas() {
     const ro = new ResizeObserver(() => handleScroll());
     ro.observe(el);
 
-    const handleWheel = (e: WheelEvent) => {
-      if (!e.ctrlKey) return;
-      e.preventDefault();
-      const { zoomIn, zoomOut } = useTimelineStore.getState();
-      if (e.deltaY > 0) {
-        zoomOut(0.1);
-      } else if (e.deltaY < 0) {
-        zoomIn(0.1);
-      }
-    };
-    el.addEventListener('wheel', handleWheel, { passive: false });
-
     return () => {
       el.removeEventListener('scroll', handleScroll);
-      el.removeEventListener('wheel', handleWheel);
       ro.disconnect();
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
@@ -253,7 +249,7 @@ export function TimelineCanvas() {
   } as React.CSSProperties;
 
   return (
-    <div className="flex flex-col h-full w-full" style={canvasStyle}>
+    <div className="flex flex-col h-full w-full zoom-smooth" style={canvasStyle}>
       {/* Top toolbar */}
       <div className="shrink-0 flex items-center gap-3 px-4 py-2 border-b border-border bg-card/80">
         <TButton
@@ -266,59 +262,23 @@ export function TimelineCanvas() {
           新建轨道
         </TButton>
 
-        <TPopup
-          trigger="click"
-          placement="bottom-left"
-          content={
-            <div
-              className="w-52 p-2 space-y-2"
-              style={{
-                backgroundColor: 'rgb(var(--popover))',
-                border: '1px solid rgb(var(--border))',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'var(--shadow-lg)',
-              }}
-            >
-              <div className="flex items-center justify-between px-1 py-1">
-                <span className="text-sm text-foreground flex items-center gap-1.5">
-                  <LinkIcon size={14} />
-                  显示事件关联线
-                </span>
-                <TSwitch
-                  size="small"
-                  value={showConnectionLines}
-                  onChange={(v) => {
-                    if (v !== showConnectionLines) toggleConnectionLines();
-                  }}
-                />
-              </div>
-              {visibleDateRange && (
-                <TButton
-                  theme="default"
-                  variant="text"
-                  size="small"
-                  block
-                  icon={<XIcon size={14} />}
-                  onClick={() => setVisibleDateRange(null)}
-                >
-                  重置显示范围
-                </TButton>
-              )}
-            </div>
-          }
+        <TButton
+          theme="default"
+          variant="outline"
+          size="small"
+          icon={<SettingConfigIcon size={14} />}
+          disabled={!workspaceId}
+          onClick={() => setTrackManagerOpen(true)}
         >
-          <TButton
-            theme="default"
-            variant="outline"
-            size="small"
-            icon={<SettingConfigIcon size={14} />}
-            disabled={!workspaceId}
-          >
-            时间线管理
-          </TButton>
-        </TPopup>
+          时间线管理
+        </TButton>
 
         <div className="flex items-center gap-2 ml-auto">
+          <TTooltip content="Ctrl + 滚轮 = 缩放 | 滚轮 = 水平滚动" placement="bottom">
+            <button className="flex size-7 items-center justify-center rounded-lg text-muted-foreground/60 transition hover:bg-muted/80 hover:text-foreground">
+              <IdeaIcon size={16} />
+            </button>
+          </TTooltip>
           <span className="text-xs text-muted-foreground">显示范围：</span>
           <DateRangePicker
             value={dateRangeValue}
@@ -358,7 +318,8 @@ export function TimelineCanvas() {
       {!isLoadingEvents && !isLoadingTracks && (
         <div
           ref={scrollRef}
-          className="flex-1 overflow-auto bg-background relative"
+          tabIndex={0}
+          className="flex-1 overflow-auto bg-background relative outline-none"
           style={{
             backgroundImage: `
               linear-gradient(to right, rgb(var(--border) / 0.04) 1px, transparent 1px),
@@ -371,6 +332,18 @@ export function TimelineCanvas() {
           onClick={() => {
             useSelectionStore.getState().clear();
           }}
+          onWheel={(e) => {
+            e.preventDefault();
+            const el = scrollRef.current;
+            if (!el) return;
+            if (e.ctrlKey || e.metaKey) {
+              const delta = e.deltaY > 0 ? -WHEEL_ZOOM_STEP : WHEEL_ZOOM_STEP;
+              const newZoom = Math.max(0.5, Math.min(3.0, zoom + delta));
+              setZoom(newZoom);
+            } else {
+              el.scrollLeft += e.deltaY * WHEEL_PAN_FACTOR;
+            }
+          }}
         >
         {/* Theme texture overlay */}
         <div
@@ -381,25 +354,25 @@ export function TimelineCanvas() {
           }}
         />
         {showEmptyState ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10">
-            <div className="text-center max-w-md p-8 rounded-2xl border border-border bg-card/95 shadow-lg">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <PlusIcon size={24} className="text-primary" />
-              </div>
-              <div className="text-base font-semibold text-card-foreground mb-2">还没有轨道</div>
-              <p className="text-sm text-muted-foreground mb-5">
-                点击上方"新建轨道"创建第一条轨道，开始组织你的故事时间线
-              </p>
-              <TButton
-                theme="success"
-                size="small"
-                icon={<PlusIcon size={16} />}
-                onClick={() => setCreateTrackOpen(true)}
-                disabled={!workspaceId}
-              >
-                新建轨道
-              </TButton>
-            </div>
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 backdrop-blur-sm z-10 empty-state-refined">
+            <EmptyState
+              size="lg"
+              icon={<PlusIcon size={36} className="text-primary/70" />}
+              title="还没有轨道"
+              description='点击上方"新建轨道"创建第一条轨道，开始组织你的故事时间线'
+              action={
+                <TButton
+                  theme="success"
+                  size="small"
+                  icon={<PlusIcon size={16} />}
+                  onClick={() => setCreateTrackOpen(true)}
+                  disabled={!workspaceId}
+                >
+                  新建轨道
+                </TButton>
+              }
+              className="max-w-md w-full card-hover-shadow"
+            />
           </div>
         ) : (
           <div
@@ -460,6 +433,61 @@ export function TimelineCanvas() {
               )}
 
               {events.length === 0 && <TimelineEmptyState />}
+
+              {/* 隐藏轨道管理区域 */}
+              {hiddenTracks.length > 0 && workspaceId && (
+                <div
+                  className="absolute left-0 right-0 border-t-2 border-dashed border-border/50"
+                  style={{
+                    top: tracksHeight + 16,
+                    width: contentWidth + HEADER_WIDTH,
+                  }}
+                >
+                  <div className="px-4 py-2 bg-muted/20 backdrop-blur-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        已隐藏 {hiddenTracks.length} 条轨道
+                      </span>
+                      <span className="text-[10px] text-muted-foreground/60">点击恢复显示</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {hiddenTracks.map((track) => (
+                        <button
+                          key={track.id}
+                          disabled={updateTrack.isPending}
+                          className="relative z-10 pointer-events-auto inline-flex items-center gap-2 px-3 py-2 text-sm rounded-md border border-border bg-background transition hover:bg-accent hover:text-accent-foreground active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                            updateTrack.mutate(
+                              {
+                                workspaceId,
+                                trackId: track.id,
+                                data: { isVisible: true },
+                              },
+                              {
+                                onSuccess: () => {
+                                  toast.success(`轨道「${track.name}」已恢复显示`);
+                                },
+                                onError: (err) => {
+                                  toast.error(`恢复轨道失败: ${err.message}`);
+                                },
+                              }
+                            );
+                          }}
+                        >
+                          <EyesIcon size={16} />
+                          <span
+                            className="max-w-[120px] truncate"
+                            style={{ color: track.color || undefined }}
+                          >
+                            {track.name}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -482,59 +510,77 @@ export function TimelineCanvas() {
           onClose={() => setCreateTrackOpen(false)}
         />
       )}
+      {workspaceId && (
+        <TrackManagerDialog
+          open={trackManagerOpen}
+          onClose={() => setTrackManagerOpen(false)}
+          workspaceId={workspaceId}
+          tracks={allTracks}
+          showConnectionLines={showConnectionLines}
+          onToggleConnectionLines={toggleConnectionLines}
+          visibleDateRange={visibleDateRange}
+          onResetDateRange={() => setVisibleDateRange(null)}
+        />
+      )}
     </div>
+  );
+}
+
+function WeaveIllustration() {
+  return (
+    <svg
+      viewBox="0 0 96 64"
+      fill="none"
+      className="w-14 h-10 text-primary empty-icon"
+      aria-hidden="true"
+    >
+      <style>{`
+        @keyframes weave-draw {
+          0% { stroke-dashoffset: 100; }
+          100% { stroke-dashoffset: 0; }
+        }
+        .weave-line {
+          stroke-dasharray: 4 4;
+          animation: weave-draw 3s ease-out infinite alternate;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .weave-line { animation: none; }
+        }
+      `}</style>
+      <line x1="4" y1="32" x2="92" y2="32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.3" className="weave-line" />
+      <rect x="12" y="10" width="18" height="26" rx="4" fill="currentColor" opacity="0.12" />
+      <rect x="12" y="10" width="4" height="26" rx="2" fill="currentColor" />
+      <circle cx="12" cy="32" r="4" fill="currentColor" />
+      <rect x="42" y="26" width="18" height="26" rx="4" fill="currentColor" opacity="0.12" />
+      <rect x="42" y="26" width="4" height="26" rx="2" fill="currentColor" />
+      <circle cx="42" cy="32" r="4" fill="currentColor" />
+      <rect x="72" y="6" width="18" height="30" rx="4" fill="currentColor" opacity="0.12" />
+      <rect x="72" y="6" width="4" height="30" rx="2" fill="currentColor" />
+      <circle cx="72" cy="32" r="4" fill="currentColor" />
+    </svg>
   );
 }
 
 function TimelineEmptyState() {
   return (
-    <div className="absolute inset-0 flex items-center justify-center z-10">
-      <div className="text-center max-w-md p-8 rounded-2xl border border-border bg-card/95 shadow-lg backdrop-blur-sm">
-        <svg
-          width="96"
-          height="64"
-          viewBox="0 0 96 64"
-          fill="none"
-          className="mx-auto text-primary"
-          aria-hidden="true"
-        >
-          <style>{`
-            @keyframes weave-draw {
-              0% { stroke-dashoffset: 100; }
-              100% { stroke-dashoffset: 0; }
-            }
-            .weave-line {
-              stroke-dasharray: 4 4;
-              animation: weave-draw 3s ease-out infinite alternate;
-            }
-            @media (prefers-reduced-motion: reduce) {
-              .weave-line { animation: none; }
-            }
-          `}</style>
-          <line x1="4" y1="32" x2="92" y2="32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.3" className="weave-line" />
-          <rect x="12" y="10" width="18" height="26" rx="4" fill="currentColor" opacity="0.12" />
-          <rect x="12" y="10" width="4" height="26" rx="2" fill="currentColor" />
-          <circle cx="12" cy="32" r="4" fill="currentColor" />
-          <rect x="42" y="26" width="18" height="26" rx="4" fill="currentColor" opacity="0.12" />
-          <rect x="42" y="26" width="4" height="26" rx="2" fill="currentColor" />
-          <circle cx="42" cy="32" r="4" fill="currentColor" />
-          <rect x="72" y="6" width="18" height="30" rx="4" fill="currentColor" opacity="0.12" />
-          <rect x="72" y="6" width="4" height="30" rx="2" fill="currentColor" />
-          <circle cx="72" cy="32" r="4" fill="currentColor" />
-        </svg>
-        <div className="text-base font-semibold text-card-foreground mt-5 mb-2">故事从这里开始编织</div>
-        <p className="text-sm text-muted-foreground mb-5">
-          在时间轴中添加事件，让灵感编织成可追溯的故事经纬
-        </p>
-        <TButton
-          theme="success"
-          size="medium"
-          icon={<PlusIcon size={16} />}
-          onClick={() => useUIStore.getState().setActivePanel('event-editor')}
-        >
-          创建第一个事件
-        </TButton>
-      </div>
+    <div className="absolute inset-0 flex items-center justify-center z-10 empty-state-refined">
+      <EmptyState
+        size="lg"
+        icon={<WeaveIllustration />}
+        title="故事从这里开始编织"
+        description="在时间轴中添加事件，让灵感编织成可追溯的故事经纬"
+        action={
+          <TButton
+            theme="success"
+            size="medium"
+            icon={<PlusIcon size={16} />}
+            onClick={() => useUIStore.getState().setActivePanel('event-editor')}
+          >
+            创建第一个事件
+          </TButton>
+        }
+        className="max-w-md w-full card-hover-shadow"
+      />
     </div>
   );
 }

@@ -1,11 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-export type ThemeId = 'luosheng' | 'midnight' | 'forest' | 'ink-wash' | 'contrast' | 'system';
+export type ThemeId = 'luosheng' | 'midnight' | 'forest' | 'ink-wash' | 'contrast' | 'sakura' | 'ocean' | 'aurora' | 'system';
 
 export type Theme = ThemeId;
 
-const VALID_THEMES: ThemeId[] = ['luosheng', 'midnight', 'forest', 'ink-wash', 'contrast', 'system'];
+const VALID_THEMES: ThemeId[] = ['luosheng', 'midnight', 'forest', 'ink-wash', 'contrast', 'sakura', 'ocean', 'aurora', 'system'];
 
 const LEGACY_MAP: Record<string, ThemeId> = {
   light: 'luosheng',
@@ -14,6 +14,9 @@ const LEGACY_MAP: Record<string, ThemeId> = {
   ink: 'midnight',
   green: 'forest',
   parchment: 'luosheng',
+  sakura: 'sakura',
+  ocean: 'ocean',
+  aurora: 'aurora',
 };
 
 function normalizeTheme(value: unknown): ThemeId {

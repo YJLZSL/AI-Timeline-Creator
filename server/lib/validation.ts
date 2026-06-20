@@ -273,7 +273,7 @@ export const aiChatBody = {
         },
       },
     },
-    provider: { type: 'string', enum: ['siliconflow', 'openai'] },
+    provider: { type: 'string', enum: ['siliconflow', 'openai', 'deepseek', 'kimi', 'minimax', 'glm', 'custom'] },
     apiKey: { type: 'string' },
     model: { type: 'string' },
     stream: { type: 'boolean' },
@@ -284,7 +284,7 @@ export const aiChatBody = {
 export const aiTestBody = {
   type: 'object',
   properties: {
-    provider: { type: 'string', enum: ['siliconflow', 'openai'] },
+    provider: { type: 'string', enum: ['siliconflow', 'openai', 'deepseek', 'kimi', 'minimax', 'glm', 'custom'] },
     apiKey: { type: 'string' },
   },
 } as const;

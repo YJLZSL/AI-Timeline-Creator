@@ -7,7 +7,7 @@ import {
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from '@/components/ui/ContextMenu';
-import { TButton, TPopup } from '@/components/ui-tdesign';
+import { TPopup } from '@/components/ui-tdesign';
 import { EditIcon, EyesIcon, EyesOffIcon, DeleteIcon, PaletteIcon } from '@/lib/icons';
 import { useUpdateTrack, useDeleteTrack } from '@/services/api-hooks';
 import { useTrackStore } from '@/stores/useTrackStore';
@@ -138,9 +138,9 @@ export const TimelineTrack = memo(function TimelineTrack({
 
   const headerInner = (
     <div
-      className={`sticky left-0 z-20 shrink-0 border border-border/60 rounded-xl flex items-center px-3 gap-2 cursor-pointer transition-all duration-200 ${
+      className={`group sticky left-0 z-20 shrink-0 border border-border/60 rounded-xl flex items-center px-3 gap-2 cursor-pointer transition-all duration-200 ${
         isSelected ? 'bg-accent/15 shadow-[var(--shadow-sm)]' : 'bg-card/60 shadow-[var(--shadow-sm)] hover:bg-card/80 hover:shadow-[var(--shadow-md)]'
-      } backdrop-blur-md`}
+      } glass-v2 track-header-float`}
       style={{ width: HEADER_WIDTH, height: 'calc(var(--timeline-track-height) * var(--zoom))' }}
       onClick={() => !isReadOnly && setSelectedTrack(track.id)}
     >
@@ -176,18 +176,17 @@ export const TimelineTrack = memo(function TimelineTrack({
         </span>
       )}
       {!isReadOnly && (
-        <>
-          <TButton
-            size="small"
-            variant="text"
-            shape="square"
-            icon={<EditIcon size={14} />}
+        <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-muted/80 hover:text-foreground active:scale-90"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               setEditingTrack(track.id);
             }}
             title="重命名"
-          />
+          >
+            <EditIcon size={16} />
+          </button>
           <TPopup
             trigger="click"
             placement="bottom-left"
@@ -196,17 +195,12 @@ export const TimelineTrack = memo(function TimelineTrack({
             content={
               <div className="p-2 flex gap-1.5 flex-wrap" style={{ width: 200 }}>
                 {TRACK_COLORS.map((c) => (
-                  <TButton
+                  <button
                     key={c}
-                    shape="circle"
-                    size="small"
-                    variant="text"
                     onClick={() => handleChangeColor(c)}
+                    className="size-6 rounded-full transition-all duration-200 hover:scale-110 active:scale-95"
                     style={{
                       backgroundColor: c,
-                      width: 24,
-                      height: 24,
-                      minWidth: 24,
                       border: track.color === c ? '2px solid rgb(var(--foreground))' : '2px solid transparent',
                     }}
                     title={c}
@@ -215,27 +209,35 @@ export const TimelineTrack = memo(function TimelineTrack({
               </div>
             }
           >
-            <TButton
-              size="small"
-              variant="text"
-              shape="square"
-              icon={<PaletteIcon size={14} />}
+            <button
+              className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-muted/80 hover:text-foreground active:scale-90"
               onClick={(e: React.MouseEvent) => e.stopPropagation()}
               title="修改颜色"
-            />
+            >
+              <PaletteIcon size={16} />
+            </button>
           </TPopup>
-          <TButton
-            size="small"
-            variant="text"
-            shape="square"
-            icon={track.isVisible ? <EyesIcon size={14} /> : <EyesOffIcon size={14} />}
+          <button
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-muted/80 hover:text-foreground active:scale-90"
             onClick={(e: React.MouseEvent) => {
               e.stopPropagation();
               handleToggleVisible();
             }}
             title={track.isVisible ? '隐藏此轨道' : '显示此轨道'}
-          />
-        </>
+          >
+            <EyesOffIcon size={16} />
+          </button>
+          <button
+            className="flex size-7 items-center justify-center rounded-lg text-muted-foreground transition-all duration-200 hover:bg-red-50 hover:text-red-500 active:scale-90"
+            onClick={(e: React.MouseEvent) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
+            title="删除轨道"
+          >
+            <DeleteIcon size={16} />
+          </button>
+        </div>
       )}
     </div>
   );

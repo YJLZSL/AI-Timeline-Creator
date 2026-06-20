@@ -1,4 +1,5 @@
 import type { AIChatRequest } from '../../shared/types.js';
+import { getAIConfig } from '@/lib/ai-config.js';
 
 export interface AIChatMessage {
   role: 'system' | 'user' | 'assistant';
@@ -29,10 +30,20 @@ export function streamAIChat(options: StreamAIChatOptions): AbortController {
     else signal.addEventListener('abort', () => abortController.abort(), { once: true });
   }
 
+  // 获取 AI 配置
+  const aiConfig = getAIConfig();
+
   const requestBody: AIChatRequest = {
     messages: messages.map((m) => ({ role: m.role, content: m.content })),
     stream: true,
   };
+
+  // 如果有配置，传递 provider、apiKey 和 model
+  if (aiConfig) {
+    requestBody.provider = aiConfig.provider;
+    requestBody.apiKey = aiConfig.apiKey;
+    requestBody.model = aiConfig.model;
+  }
 
   fetch(`${API_BASE}/api/ai/chat?stream=true`, {
     method: 'POST',

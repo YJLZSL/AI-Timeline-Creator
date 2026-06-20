@@ -294,3 +294,38 @@ export const revisions = sqliteTable('revisions', {
   entityIdx: index('revisions_entity_idx').on(table.entityType, table.entityId),
   createdIdx: index('revisions_created_idx').on(table.createdAt),
 }));
+
+// ============================================
+// AI 对话历史缓存表 (v3.5)
+// ============================================
+export const aiConversations = sqliteTable('ai_conversations', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  title: text('title').notNull().default('新对话'),
+  messagesJson: text('messages_json').notNull().default('[]'),  // JSON array of {role, content, timestamp}
+  summary: text('summary').default(''),  // 自动生成的对话摘要
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+}, (table) => ({
+  workspaceIdx: index('ai_conversations_workspace_idx').on(table.workspaceId),
+  createdIdx: index('ai_conversations_created_idx').on(table.createdAt),
+}));
+
+// ============================================
+// AI 语义缓存表 (v3.5) — 缓存相似查询的响应，减少 API 调用
+// ============================================
+export const aiCache = sqliteTable('ai_cache', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  queryHash: text('query_hash').notNull(),  // 查询文本的 SHA-256 哈希
+  queryText: text('query_text').notNull(),  // 原始查询文本（用于调试和显示）
+  response: text('response').notNull(),      // 缓存的 AI 响应
+  model: text('model').notNull(),             // 使用的模型
+  hitCount: integer('hit_count').notNull().default(0),  // 命中次数
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+}, (table) => ({
+  workspaceIdx: index('ai_cache_workspace_idx').on(table.workspaceId),
+  hashIdx: uniqueIndex('ai_cache_hash_idx').on(table.workspaceId, table.queryHash),
+  hitIdx: index('ai_cache_hit_idx').on(table.hitCount),
+}));

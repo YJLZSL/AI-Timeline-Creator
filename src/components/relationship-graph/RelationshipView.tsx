@@ -9,6 +9,8 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
+import { EmptyState } from '@/components/_shared/EmptyState';
+import { RelationalGraphIcon } from '@/lib/icons';
 import { LEGEND_ITEMS } from '@/lib/colors';
 import {
   RelationshipGraph,
@@ -160,9 +162,13 @@ export function RelationshipView() {
   if (nodes.length === 0 && links.length === 0) {
     return (
       <div className="flex h-full items-center justify-center p-8">
-        <p className="text-center text-sm text-muted-foreground">
-          暂无关系数据，添加角色和关联以可视化关系
-        </p>
+        <EmptyState
+          size="lg"
+          icon={<RelationalGraphIcon size={40} className="text-primary/70" />}
+          title="暂无关系数据"
+          description="添加角色、事件关联或世界观条目后，关系会在这里可视化"
+          className="max-w-md w-full"
+        />
       </div>
     );
   }

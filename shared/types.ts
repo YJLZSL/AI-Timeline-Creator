@@ -26,7 +26,7 @@ export interface Workspace {
 /** 工作区设置（settingsJson 解析后的结构） */
 export interface WorkspaceSettings {
   theme?: string;
-  aiProvider?: 'siliconflow' | 'openai';
+  aiProvider?: 'siliconflow' | 'openai' | 'deepseek' | 'kimi' | 'minimax' | 'glm' | 'custom';
   aiModel?: string;
   aiApiKey?: string;
   [key: string]: unknown;
@@ -619,7 +619,7 @@ export interface AIChatRequest {
     role: 'system' | 'user' | 'assistant';
     content: string;
   }>;
-  provider?: 'siliconflow' | 'openai';
+  provider?: 'siliconflow' | 'openai' | 'deepseek' | 'kimi' | 'minimax' | 'glm' | 'custom';
   apiKey?: string;
   model?: string;
   stream?: boolean;

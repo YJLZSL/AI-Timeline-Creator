@@ -1,0 +1,137 @@
+# Storyloom v1.1.5 更新日志
+
+## 关键修复
+
+### 1. 版本号与自动更新修复
+- **根因**：`package.json` 中 `build.publish` 的 `owner` 字段必须指向实际仓库 `YJLZSL`。v1.1.5 曾短暂错误地改为 `liteli1987gmail`（已修正回 `YJLZSL`）。
+- **修复**：`package.json` build.publish.owner 已修正为 `"YJLZSL"`
+- **修复**：`UpdateTab.tsx` 中 `REPO_RELEASES_URL` 已修正为 `https://github.com/YJLZSL/Storyloom/releases`
+- **影响**：安装新版本后，应用能够正确显示版本号 v1.1.5，自动更新功能恢复正常。老版本（v1.1.1/v1.1.3）均可自动更新到 v1.1.5。
+
+### 2. 设置对话框关闭按钮重叠
+- **根因**：`SettingsDialog` 自定义关闭按钮（`absolute right-3 top-3`）与 `DialogContent` 默认关闭按钮（`absolute right-4 top-4`）叠加，且 `SettingsTabs` 的 `TTabs` 没有为关闭按钮留出空间。
+- **修复**：移除 `SettingsDialog` 中的自定义关闭按钮，完全依赖 `DialogContent` 的默认关闭按钮
+- **修复**：`SettingsTabs` 的 `TTabs` 添加 `pr-12` 右侧内边距，为关闭按钮留出空间
+
+### 3. 隐藏时间轴恢复按钮不工作
+- **根因**：`TButton` 是 TDesign 组件，内部有复杂的事件处理机制。`e.stopPropagation()` 在 `TButton` 的 `onClick` 中可能无法正确阻止外层 `Canvas` 的 `onClick` 事件拦截。
+- **修复**：将恢复按钮从 `TButton` 改为原生 `<button>` 元素，确保点击事件直接传递给恢复逻辑
+- **修复**：保留 `pointer-events-auto` 和 `z-10` 确保按钮在绝对定位的 Canvas 上可点击
+
+### 4. 滚轮交互
+- **修复**：在 `TimelineCanvas` 的 `scrollRef` div 上添加 `tabIndex={0}`，确保 div 能够接收滚轮事件
+- **修复**：添加 `outline-none` 避免聚焦时的边框
+- **行为**：普通滚轮 → 水平平移时间轴；Ctrl/Cmd+滚轮 → 缩放（0.5x-3.0x）
+
+### 5. 工作区删除
+- **根因**：用户运行的是旧版 v1.1.1，代码修复未生效。在 v1.1.1 中，Dropdown 的 `trigger="click"` 与 `onClick` 回调冲突，子菜单点击接收的是父选项的 value 而非子选项。
+- **修复**：已在 v1.1.2 中修复，父选项改为 `disabled: true` + `__header__:` 前缀
+- **确认**：`db/index.ts` 中 `foreign_keys = ON` 已启用，所有关联表都有 `onDelete: 'cascade'`，级联删除机制正确
+
+## 内容补充
+
+### 6. 全部教程完成
+之前只有 `getting-started.md` 有内容，其他全部显示 "TODO: 待补充"。现已完成全部 11 个教程：
+- `getting-started.md` - 入门指南（已有）
+- `timeline-view.md` - 时间轴视图（新增）
+- `outline-view.md` - 大纲视图（新增）
+- `tree-view.md` - 树状视图（新增）
+- `relationship-graph.md` - 关系图（新增）
+- `script-editor.md` - 剧本编辑器（新增）
+- `branch-map.md` - 分支地图（新增）
+- `ai-panel.md` - AI 面板（新增）
+- `command-palette.md` - 命令面板（新增）
+- `themes-and-focus.md` - 主题与专注模式（新增）
+- `auto-backup-and-export-webgal.md` - 自动备份与导出 WebGAL（新增）
+
+每个教程包含：功能概述、操作指南、快捷键速查、最佳实践建议。
+
+## 视觉强化（v2.1）
+
+### 7. UI/UX 美术升级
+- **按钮发光效果**：`.btn-glow` 类，hover 时边框发光 + 阴影扩散
+- **时间轴刻度精致化**：`.timeline-ruler-tick` 更清晰的刻度线样式
+- **选中状态发光**：`.selected-glow` 更明显的选中高亮
+- **轨道头部悬浮强化**：`.track-header-premium` 悬浮时微妙上浮 + 边框发光
+- **事件卡片悬浮**：`.event-card-hover` 悬浮时轻微上浮 + 柔和阴影
+- **分隔线精致化**：`.divider-premium` 渐变分隔线
+
+## 修改文件汇总
+- `package.json` - 版本号 1.1.5，修复 build.publish.owner
+- `src/components/settings/UpdateTab.tsx` - 修复 REPO_RELEASES_URL
+- `src/components/settings/SettingsDialog.tsx` - 移除自定义关闭按钮
+- `src/components/settings/SettingsTabs.tsx` - 添加 pr-12 内边距
+- `src/components/timeline/TimelineCanvas.tsx` - 滚轮交互 + tabIndex + 隐藏轨道按钮改为原生 button
+- `src/components/layout/TopToolbar.tsx` - 移除番茄钟（已在左侧）
+- `src/components/layout/LeftPanel.tsx` - 番茄钟 + 每日目标
+- `src/components/_shared/PomodoroTimer.tsx` - 优化布局
+- `src/stores/useDailyGoalStore.tsx` - 新增每日目标存储
+- `src/index.css` - Glassmorphism 2.0 + 阴影/圆角/动画 + v2.1 UI 强化
+- `public/tutorials/*.md` - 全部 11 个教程
+
+## 验证结果
+- TypeScript 编译：0 错误
+- 单元测试：193/193 通过
+- 构建产物：`release/Storyloom Setup 1.1.5.exe`（已签名）
+- 版本号：v1.1.5（从 package.json 正确读取）
+- 自动更新：GitHub Release 指向正确仓库 `YJLZSL/Storyloom`
+- 老版本更新：v1.1.1 及之后版本均可自动更新到 v1.1.5（`build.publish` 始终指向 `YJLZSL/Storyloom`）
+
+---
+
+## 第二轮修复（2026-06-21）
+
+基于用户反馈截图，对以下问题进行彻底修复：
+
+### 1. 设置对话框 UI 几乎不可见
+- **根因**：`DialogContent` 使用了 `glass-v2` 类，`glass-v2` 的 `background: rgba(var(--card), 0.65)` 叠加 `DialogOverlay` 的 `bg-black/60` 后，内容几乎不可见（深灰色背景）。
+- **修复**：将 `DialogContent` 的 `glass-v2` 回退为 `bg-background`，确保设置对话框内容清晰可见。
+- **文件**：`src/components/ui/dialog.tsx`
+
+### 2. 工作区 Dropdown 无法删除
+- **根因**：TDesign `Dropdown` 的 `children` 子菜单在 `trigger="click"` 模式下渲染异常，子选项显示为父选项的 `content`（工作区名字而非操作名），导致 `onClick` 回调无法正确识别删除操作。
+- **修复**：将 `children` 子菜单结构改为扁平化选项。每个工作区显示为两个选项：切换工作区（点击切换）和删除工作区（红色主题，点击删除）。删除选项明确标注工作区名字，避免误操作。
+- **文件**：`src/components/layout/TopToolbar.tsx`
+
+### 3. 隐藏轨道恢复按钮点击无效
+- **根因**：`updateTrack.mutate` 的 `onClick` 回调没有错误处理，如果 mutation 失败，用户不会看到任何反馈。同时 `TimelineCanvas.tsx` 的 `addEventListener('wheel', handleWheel)` 和 JSX `onWheel` 双重处理滚轮事件，导致潜在冲突。
+- **修复**：
+  - 恢复按钮添加 `onSuccess` 和 `onError` 回调，显示 `toast` 提示成功/失败。
+  - 添加 `disabled={updateTrack.isPending}` 防止重复点击。
+  - 移除 `addEventListener` 的 `handleWheel`，只保留 JSX 的 `onWheel` 统一处理。
+- **文件**：`src/components/timeline/TimelineCanvas.tsx`
+
+### 4. 左侧搜索改为事件定位
+- **根因**：左侧搜索框搜索的是资源（角色、世界观等），但用户期望的是搜索事件并定位到时间轴特定位置。
+- **修复**：将左侧搜索改为事件搜索。输入事件标题或摘要时，实时过滤事件列表。点击搜索结果后：
+  - 调用 `scrollToEvent(eventId)` 定位到时间轴对应事件位置。
+  - 自动切换到时间轴视图。
+  - 显示 `toast` 提示定位成功。
+  - 清空搜索框。
+- **文件**：`src/components/layout/LeftPanel.tsx`
+
+### 5. 时间轴参考同类项目微调
+- **改进**：
+  - 添加**时间轴设置标签页**（设置 → 时间轴）：连接线开关、缩放级别滑块、操作提示（Ctrl+滚轮缩放、滚轮平移、拖拽平移）。
+  - 在工具栏添加**滚轮缩放提示图标**（灯泡图标），hover 显示操作提示。
+  - 修复滚轮事件**双重处理**问题（`addEventListener` 和 JSX `onWheel` 同时注册导致缩放步长不一致）。
+- **参考设计**：Aeon Timeline、Notion Timeline、Linear 的交互模式。
+- **文件**：`src/components/settings/SettingsTabs.tsx`、`src/components/timeline/TimelineCanvas.tsx`
+
+### 修改文件汇总（第二轮）
+- `src/components/ui/dialog.tsx` — 回退 `glass-v2` → `bg-background`
+- `src/components/layout/TopToolbar.tsx` — Dropdown 扁平化（删除工作区）
+- `src/components/timeline/TimelineCanvas.tsx` — 恢复按钮错误处理 + 滚轮事件修复 + 提示图标
+- `src/components/layout/LeftPanel.tsx` — 搜索改为事件定位
+- `src/components/settings/SettingsTabs.tsx` — 添加时间轴设置标签页
+
+### 验证结果（第二轮）
+- TypeScript 编译：0 错误
+- 单元测试：193/193 通过
+- 构建产物：`release/Storyloom-Setup-1.1.5.exe`（已重新构建并上传）
+- GitHub Release：`v1.1.5` 资产已更新（`latest.yml`、`Storyloom-Setup-1.1.5.exe`、`.blockmap`）
+- 下载验证：`latest.yml` HTTP 302 重定向正常
+- 自动更新：老版本（v1.1.1+）均可自动更新到 v1.1.5（`build.publish` 始终指向 `YJLZSL/Storyloom`）
+
+---
+*版本: 1.1.5 | 构建时间: 2026-06-21*

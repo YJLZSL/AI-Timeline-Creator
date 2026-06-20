@@ -40,6 +40,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
 import { scrollSelectedIntoView } from '@/utils/revealInBestView';
 import { safeJsonArray } from '@/lib/utils';
+import { EmptyState } from '@/components/_shared/EmptyState';
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -562,38 +563,19 @@ export function OutlineView() {
 
       {totalEvents === 0 && !search && stageFilter === 'all' ? (
         <div className="flex-1 flex items-center justify-center">
-          <div className="relative max-w-sm w-full rounded-2xl border border-border bg-card/80 p-8 text-center shadow-sm overflow-hidden">
-            <div
-              className="absolute inset-0 opacity-[0.03] pointer-events-none"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 20% 20%, rgb(var(--primary)) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgb(var(--primary)) 0%, transparent 40%)',
-              }}
-            />
-            <div className="relative">
-              <div className="mx-auto mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                <BookOpenIcon size={36} className="text-primary/70" />
-              </div>
-              <h3 className="mb-2 font-serif text-xl font-semibold text-foreground">大纲还是一片空白</h3>
-              <p className="mb-6 text-sm text-muted-foreground leading-relaxed">
-                在时间轴上创建事件后，它们会在这里以卡片形式整齐排列，方便你随时编排与调整。
-              </p>
-              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-                <TTag theme="success" variant="light" size="small" className="inline-flex items-center gap-1">
-                  <CheckIcon size={12} />
-                  已完成
-                </TTag>
-                <TTag theme="primary" variant="light" size="small" className="inline-flex items-center gap-1">
-                  <ClockIcon size={12} />
-                  进行中
-                </TTag>
-                <TTag theme="warning" variant="light" size="small" className="inline-flex items-center gap-1">
-                  <RoundIcon size={12} />
-                  待处理
-                </TTag>
-              </div>
-            </div>
-          </div>
+          <EmptyState
+            size="lg"
+            icon={<BookOpenIcon size={40} className="text-primary/70" />}
+            title="大纲还是一片空白"
+            description="在时间轴上创建事件后，它们会在这里以卡片形式整齐排列，方便你随时编排与调整。"
+            action={
+              <TButton theme="success" size="small" disabled={!workspaceId} onClick={() => ctx.createEvent()}>
+                <PlusIcon size={16} />
+                新建章节
+              </TButton>
+            }
+            className="max-w-sm w-full"
+          />
         </div>
       ) : (
         <div className="space-y-5">
@@ -631,13 +613,13 @@ export function OutlineView() {
                 >
                   <div className="p-3 grid grid-cols-1 gap-3 relative">
                     {trackEvents.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 px-4 text-center rounded-xl border border-dashed border-border bg-muted/20">
-                        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/5">
-                          <IdeaIcon size={20} className="text-primary/50" />
-                        </div>
-                        <p className="text-sm text-muted-foreground font-sans">该轨道下暂无事件</p>
-                        <p className="text-xs text-muted-foreground/70 mt-1">点击时间轴添加新事件</p>
-                      </div>
+                      <EmptyState
+                        variant="dashed"
+                        icon={<IdeaIcon size={20} className="text-primary/50" />}
+                        title="该轨道下暂无事件"
+                        description="点击时间轴添加新事件"
+                        className="py-6 px-4"
+                      />
                     ) : (
                       trackEvents.map((event, index) => {
                         const status = getEventStatus(event);
@@ -868,7 +850,13 @@ export function OutlineView() {
           每次打开此面板会自动保存一份当前大纲快照（5 分钟内仅保留一次）。
         </div>
         {(!outlineVersions || outlineVersions.length === 0) ? (
-          <div className="text-center text-sm text-muted-foreground py-8 font-sans">暂无版本记录</div>
+          <EmptyState
+            variant="minimal"
+            icon={<HistoryIcon size={24} className="text-muted-foreground/60" />}
+            title="暂无版本记录"
+            description="保存第一份大纲快照后，这里会显示历史版本"
+            className="py-8"
+          />
         ) : (
           <div className="space-y-2">
             {outlineVersions.map((v) => {

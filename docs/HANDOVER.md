@@ -1,0 +1,185 @@
+# Storyloom 项目交接文档
+
+> 本文档面向接替开发的 AI Agent。阅读本文档后，你应该能在 10 分钟内理解项目全貌、已知问题和待办事项。
+
+---
+
+## 1. 项目概述
+
+**Storyloom** 是一款面向小说/剧本创作者的时间轴管理桌面应用。用户可以在时间轴上创建事件、角色、伏笔、世界观设定，并通过关联线梳理故事逻辑。应用内置 AI 助手，可读取工作区数据辅助创作。
+
+- **技术栈**：Electron 42 + React 19 + TypeScript + Vite 6 + Tailwind CSS v4 + TDesign React + Fastify 5 + SQLite (better-sqlite3) + Drizzle ORM
+- **版本**：v1.1.1（已发布）
+- **仓库**：https://github.com/YJLZSL/Storyloom
+- **工作目录**：`D:\AIKFCC\Storyloom`
+- **Node 版本**：v24.15.1（通过 `C:\Users\23501\.astrbot_launcher\components\nodejs\`）
+
+---
+
+## 2. 项目结构（核心文件速查）
+
+```
+D:\AIKFCC\Storyloom
+├── package.json                # 依赖 + electron-builder 配置
+├── vite.config.ts              # Vite 构建配置
+├── tsconfig.json               # 前端 TypeScript 配置
+├── tsconfig.server.json        # 后端 TypeScript 配置
+├── tsconfig.electron.json      # Electron 主进程 TS 配置
+├── electron/                   # Electron 主进程代码
+│   ├── main.ts                 # 主进程入口
+│   └── loading.html            # 启动加载页
+├── src/                        # 前端源码
+│   ├── App.tsx                 # 根组件
+│   ├── main.tsx                # 前端入口
+│   ├── index.css               # ~2600 行，含主题系统 + 动画 + 玻璃拟态 + 交互工具类
+│   ├── lib/
+│   │   ├── icons.ts            # IconPark 图标统一导出（约 60 个图标）
+│   │   ├── ai-config.ts        # AI 配置本地存储（localStorage）
+│   │   └── ai-icons.tsx        # AI 厂商品牌 SVG 图标（7 个）
+│   ├── components/
+│   │   ├── layout/             # AppShell, TopToolbar, LeftPanel, ContextPanel, StatusBar
+│   │   ├── timeline/           # TimelineCanvas, TimelineTrack, TimelineEventCard, TimelineRuler, TrackManagerDialog
+│   │   ├── ai-panel/           # AIPanel, AIConfigPanel, AIMessage, AIInput, AIConversationList
+│   │   ├── settings/           # SettingsDialog, SettingsTabs, AISettingsTab, ShortcutSettings, ThemeSelector
+│   │   ├── events/             # EventEditorDialog, EventDetailView
+│   │   ├── workspace/          # WorkspaceSelector, CreateWorkspaceDialog
+│   │   └── ...
+│   └── stores/                 # Zustand 状态管理
+├── server/                     # 后端源码
+│   ├── index.ts                # Fastify 服务器入口
+│   ├── db/
+│   │   ├── index.ts            # 数据库连接 + 迁移（硬编码 DDL 兜底）
+│   │   └── schema.ts           # Drizzle ORM 表定义（17 表 + 2 新增 AI 表）
+│   ├── routes/                 # API 路由
+│   │   ├── ai.ts               # /api/ai/* — AI 代理路由（7 个厂商）
+│   │   └── ...
+│   ├── services/
+│   │   └── ai-proxy.ts         # AI 代理核心（7 个提供商）
+│   └── lib/
+│       └── validation.ts       # Fastify schema 校验
+├── shared/
+│   └── types.ts                 # 前后端共享类型定义
+├── release/                     # 构建产物（NSIS 安装包）
+└── docs/                        # 本文档
+```
+
+---
+
+## 3. 已完成的修改（v1.1.1）
+
+### 前端 UI 全面修复（v1.1.0 + v1.1.1）
+- [x] 顶部导航栏响应式布局：CSS 变量 `--toolbar-height`、`--toolbar-tab-height`
+- [x] 左侧边栏响应式宽度：`w-60 lg:w-72 xl:w-80`
+- [x] 7 个主视图空状态统一使用 `EmptyState` 组件
+- [x] 新增 `TrackManagerDialog`，支持轨道显隐/颜色/重命名/删除
+- [x] 隐藏轨道恢复按钮放大并修复点击事件（stopPropagation + z-index）
+- [x] `TimelineTrack.tsx` 中 `TButton` 统一使用原生 button 替代
+- [x] AISettingsTab 使用真实品牌 SVG 图标（7 个厂商）
+- [x] 模型卡片添加 `min-w-[200px]`、`truncate` 与 Tooltip
+- [x] SettingsTabs 使用 Framer Motion `AnimatePresence` 切换动画
+- [x] ShortcutSettings 改为紧凑卡片布局，适配 1280px
+- [x] AI 面板标题栏与按钮尺寸统一
+- [x] PomodoroTimer 重新设计：环形 SVG 进度环 + 时间+模式标签
+- [x] TopToolbar 右侧工具栏全面重做：四组独立容器 + 图标增大 + 按压反馈
+- [x] 左侧边栏工具项图标增大（18px/20px）、按钮增大（40px）、圆角升级
+- [x] 轨道操作按钮：hover 显示组、图标 16px、红色删除警示
+- [x] 全局 CSS 增强：btn-lift / card-hover-shadow / icon-btn / tool-group 工具类
+
+### 后端增强
+- [x] `shared/types.ts` 扩展 `AIChatRequest.provider` 为 7 个厂商
+- [x] `server/lib/validation.ts` 扩展 provider enum
+- [x] `server/db/schema.ts` 新增 `aiConversations` 和 `aiCache` 表
+- [x] `server/db/index.ts` 硬编码 DDL 兜底 + 兼容列检测
+- [x] `server/services/ai-proxy.ts` 扩展为 7 个厂商 + `listModels` 函数
+- [x] `server/routes/ai.ts` 新增 `/models` 和 `/workspace-context` 端点
+- [x] `src/services/ai-stream.ts` 传递 provider/apiKey/model 到后端
+
+---
+
+## 4. 已知问题与待办
+
+### 仍待解决（P1）
+- **AI 工作区上下文读取未在前端实现**：后端 `/api/ai/workspace-context` 已就绪，但 `AIPanel.tsx` 未调用
+- **AI 对话历史未持久化到数据库**：`aiConversations`/`aiCache` 表已创建，需后端 CRUD 路由 + 前端 hook 改 API
+- **状态栏小屏幕截断**：`StatusBar.tsx` 小屏幕下内容被截断
+
+### 用户反馈（需要关注）
+- 用户认为"美术还是没什么改变"——需要更大幅度的视觉风格转变（如全新配色系统、更精致的阴影、更流畅的动画）
+- 建议方向：引入更现代的玻璃拟态、更柔和的多层阴影、更精细的微交互（如弹性动画、更明显的 hover 状态）
+
+---
+
+## 5. 技术约束（⚠️ 必须遵守）
+
+### 5.1 图标使用规范
+**TDesign Button 的 `icon` prop 不兼容 IconPark 图标！** 必须始终使用 children 模式：
+```tsx
+// ✅ 正确
+<TButton><ZoomOutIcon /></TButton>
+
+// ❌ 错误 — 会导致 TypeScript 报错或运行时异常
+<TButton icon={<ZoomOutIcon />} />
+```
+
+### 5.2 构建环境
+- Windows 环境，使用 Git Bash（无 PowerShell）
+- NSIS 构建脚本：`scripts/build-nsis.cjs`（CommonJS）
+- 原生模块重建：`npm run electron:rebuild`
+- 构建顺序：`npm run build && npm run build:server && npm run build:electron && npm run build:nsis`
+
+### 5.3 GitHub Release 文件名
+GitHub 自动将空格替换为点：`"Storyloom Setup 1.1.1.exe"` → URL 中 `"Storyloom-Setup-1.1.1.exe"`
+
+### 5.4 数据库迁移
+- 不使用 drizzle 的迁移文件（`drizzle/` 目录不存在）
+- 迁移逻辑在 `server/db/index.ts` 的 `runMigrations()` 和 `ensureSchemaCompatibility()` 中
+- 新增表必须同时修改 `schema.ts` + `index.ts` 的硬编码 DDL + `ensureSchemaCompatibility` 的列检测
+
+---
+
+## 6. 快速启动命令
+
+```bash
+# 进入工作目录
+cd D:\AIKFCC\Storyloom
+
+# TypeScript 严格检查
+npm run typecheck
+
+# 运行测试
+npm test
+
+# 构建前端
+npm run build
+
+# 构建后端
+npm run build:server
+
+# 构建 Electron
+npm run build:electron
+
+# 构建 NSIS 安装包
+node scripts/build-nsis.cjs
+
+# 完整构建（先执行 electron:rebuild 确保原生模块）
+npm run build && npm run build:server && npm run build:electron && npm run build:nsis
+```
+
+---
+
+## 7. 测试数据
+
+测试运行结果：`193/193 passing`，`~18s`（`22 test files`）。
+
+---
+
+## 8. 相关文档
+
+- [快速参考](docs/QUICKSTART.md)
+- [已知问题详细](docs/KNOWN_ISSUES.md)
+- [技术架构](docs/ARCHITECTURE.md)
+- [计划文档](plan-v3.5.md)
+
+---
+
+*本文档最后更新：2026-06-20（v1.1.1 已发布）*

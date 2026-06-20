@@ -39,6 +39,21 @@ const STATUS_FILTERS: { key: StatusFilter; label: string }[] = [
   { key: 'linked', label: '关联中' },
 ];
 
+function HighlightText({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>;
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const index = lowerText.indexOf(lowerQuery);
+  if (index === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, index)}
+      <span className="search-highlight-match">{text.slice(index, index + query.length)}</span>
+      {text.slice(index + query.length)}
+    </>
+  );
+}
+
 export function CharacterPanel() {
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const setViewMode = useTimelineStore((s) => s.setViewMode);
@@ -287,7 +302,7 @@ export function CharacterPanel() {
                         bordered
                         hoverShadow
                         size="small"
-                        className={`cursor-default transition-all card-lift ${
+                        className={`cursor-default transition-all card-hover-shadow ${
                           isSelected ? 'ring-1 ring-primary/40 border-primary' : ''
                         }`}
                         avatar={
@@ -297,7 +312,7 @@ export function CharacterPanel() {
                       }
                       title={
                         <div className="flex items-center gap-1.5">
-                          <span className="truncate">{char.name}</span>
+                          <span className="truncate"><HighlightText text={char.name} query={search} /></span>
                           <TTag variant="light" size="small" theme={status.theme}>
                             {status.label}
                           </TTag>
@@ -306,7 +321,7 @@ export function CharacterPanel() {
                       description={
                         <div className="space-y-1">
                           {char.role && (
-                            <div className="text-xs text-muted-foreground truncate">{char.role}</div>
+                            <div className="text-xs text-muted-foreground truncate"><HighlightText text={char.role} query={search} /></div>
                           )}
                           {char.description && (
                             <div className="text-xs text-muted-foreground/70 line-clamp-2">{char.description}</div>
@@ -374,8 +389,8 @@ export function CharacterPanel() {
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-6 text-center card-lift">
-            <GroupIcon size={32} className="text-muted-foreground/40 mb-2" />
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-6 text-center empty-state-refined card-hover-shadow">
+            <GroupIcon size={32} className="text-muted-foreground/40 mb-2 empty-icon" />
             <p className="text-sm text-muted-foreground font-sans">暂无角色</p>
             <p className="text-xs text-muted-foreground/70 font-sans mt-1">在上方创建第一个角色</p>
           </div>

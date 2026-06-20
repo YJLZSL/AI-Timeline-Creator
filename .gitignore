@@ -66,3 +66,4 @@ test-install/
 audit_frontend.py
 screenshot-*.png
 test_workspace.json
+docs/screenshots/browser-audit-current/

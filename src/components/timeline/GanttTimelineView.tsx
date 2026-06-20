@@ -1,10 +1,12 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChartHistogramIcon, FilterIcon, GroupIcon } from '@/lib/icons';
 import { useEvents, useCharacters, useTracks } from '@/services/api-hooks';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
 import { scrollSelectedIntoView } from '@/utils/revealInBestView';
+import { EmptyState } from '@/components/_shared/EmptyState';
 import type { Character } from '../../../shared/types';
 
 interface RowSegment {
@@ -23,6 +25,7 @@ interface Row {
 }
 
 export function GanttTimelineView() {
+  const { t } = useTranslation();
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const selectEvent = useSelectionStore((s) => s.selectEvent);
   const selectedEventId = useSelectionStore((s) => s.selectedEventId);
@@ -189,7 +192,7 @@ export function GanttTimelineView() {
     <div ref={containerRef} className="h-full flex flex-col p-6 overflow-auto">
       <div className="flex items-center gap-3 mb-4">
         <ChartHistogramIcon size={24} className="text-primary" />
-        <h2 className="font-serif text-2xl font-semibold tracking-tight">事序图</h2>
+        <h2 className="font-serif text-2xl font-semibold tracking-tight">{t('views.gantt')}</h2>
         <div className="flex-1" />
         {/* 筛选模式切换 */}
         <div className="flex items-center gap-1 p-1 rounded-md bg-muted/50">
@@ -242,8 +245,14 @@ export function GanttTimelineView() {
       )}
 
       {rows.length === 0 ? (
-        <div className="text-center text-sm text-muted-foreground py-12 font-sans">
-          暂无可显示的事序数据，请先为事件设置时间与角色/轨道
+        <div className="flex-1 flex items-center justify-center">
+          <EmptyState
+            size="lg"
+            icon={<ChartHistogramIcon size={32} className="text-primary/70" />}
+            title="暂无可显示的甘特图数据"
+            description="请先为事件设置时间与角色/轨道"
+            className="max-w-md w-full"
+          />
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden">

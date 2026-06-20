@@ -16,6 +16,9 @@ const THEME_OPTIONS: ThemeOption[] = [
   { id: 'forest', name: '森林', description: '舒缓绿调' },
   { id: 'ink-wash', name: '水墨', description: '灰白晕染' },
   { id: 'contrast', name: '高对比', description: '黑底亮字' },
+  { id: 'sakura', name: '桜', description: '樱花粉白' },
+  { id: 'ocean', name: '深海', description: '蓝青神秘' },
+  { id: 'aurora', name: '极光', description: '紫绿幻梦' },
   { id: 'system', name: '跟随系统', description: '随系统切换' },
 ];
 

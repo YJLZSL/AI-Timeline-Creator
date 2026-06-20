@@ -1,4 +1,5 @@
 import { PlusIcon, DeleteIcon, MessageIcon } from '@/lib/icons';
+import { TButton } from '@/components/ui-tdesign';
 import type { AIConversation } from './useAIConversations';
 
 interface AIConversationListProps {
@@ -20,13 +21,14 @@ export function AIConversationList({
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between px-2 py-1.5 border-b border-border">
         <span className="text-[11px] font-medium text-muted-foreground">对话列表</span>
-        <button
+        <TButton
+          variant="text"
+          shape="square"
+          size="small"
           onClick={onCreate}
-          className="p-1 rounded hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
           title="新建对话"
-        >
-          <PlusIcon size={14} />
-        </button>
+          icon={<PlusIcon size={14} />}
+        />
       </div>
 
       <div className="flex-1 overflow-auto py-1">

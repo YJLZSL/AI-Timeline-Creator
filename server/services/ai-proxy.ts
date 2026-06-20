@@ -3,38 +3,77 @@ import type { AIChatRequest, AIChatResponse } from '../../shared/types.js';
 
 const aiLog = pino({ name: 'ai-proxy' });
 
+export type AIProvider = 'siliconflow' | 'openai' | 'deepseek' | 'kimi' | 'minimax' | 'glm' | 'custom';
+
 interface AIProviderConfig {
   apiKey: string;
   baseUrl: string;
   model: string;
 }
 
-/** 获取 AI 提供商配置 */
-function getProviderConfig(provider: 'siliconflow' | 'openai', apiKey?: string): AIProviderConfig {
-  if (provider === 'siliconflow') {
-    return {
-      apiKey: apiKey || process.env.SILICONFLOW_API_KEY || '',
-      baseUrl: process.env.SILICONFLOW_BASE_URL || 'https://api.siliconflow.cn/v1',
-      model: process.env.SILICONFLOW_MODEL || 'deepseek-ai/DeepSeek-V3',
-    };
-  }
+const PROVIDER_DEFAULTS: Record<AIProvider, { baseUrl: string; model: string; envKey: string; envUrl: string }> = {
+  siliconflow: {
+    baseUrl: 'https://api.siliconflow.cn/v1',
+    model: 'deepseek-ai/DeepSeek-V3',
+    envKey: 'SILICONFLOW_API_KEY',
+    envUrl: 'SILICONFLOW_BASE_URL',
+  },
+  openai: {
+    baseUrl: 'https://api.openai.com/v1',
+    model: 'gpt-4o',
+    envKey: 'OPENAI_API_KEY',
+    envUrl: 'OPENAI_BASE_URL',
+  },
+  deepseek: {
+    baseUrl: 'https://api.deepseek.com',
+    model: 'deepseek-chat',
+    envKey: 'DEEPSEEK_API_KEY',
+    envUrl: 'DEEPSEEK_BASE_URL',
+  },
+  kimi: {
+    baseUrl: 'https://api.moonshot.cn/v1',
+    model: 'moonshot-v1-8k',
+    envKey: 'KIMI_API_KEY',
+    envUrl: 'KIMI_BASE_URL',
+  },
+  minimax: {
+    baseUrl: 'https://api.minimax.chat/v1',
+    model: 'abab6.5-chat',
+    envKey: 'MINIMAX_API_KEY',
+    envUrl: 'MINIMAX_BASE_URL',
+  },
+  glm: {
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    model: 'glm-4',
+    envKey: 'GLM_API_KEY',
+    envUrl: 'GLM_BASE_URL',
+  },
+  custom: {
+    baseUrl: '',
+    model: '',
+    envKey: 'CUSTOM_API_KEY',
+    envUrl: 'CUSTOM_BASE_URL',
+  },
+};
 
-  return {
-    apiKey: apiKey || process.env.OPENAI_API_KEY || '',
-    baseUrl: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
-    model: process.env.OPENAI_MODEL || 'gpt-4o',
-  };
+/** 获取 AI 提供商配置 */
+function getProviderConfig(provider: AIProvider, apiKey?: string, baseUrl?: string, model?: string): AIProviderConfig {
+  const defaults = PROVIDER_DEFAULTS[provider];
+  const key = apiKey || process.env[defaults.envKey] || '';
+  const url = baseUrl || process.env[defaults.envUrl] || defaults.baseUrl;
+  const mdl = model || defaults.model;
+  return { apiKey: key, baseUrl: url, model: mdl };
 }
 
 /** 检查是否有可用的 API Key */
-export function hasApiKey(provider: 'siliconflow' | 'openai', apiKey?: string): boolean {
+export function hasApiKey(provider: AIProvider, apiKey?: string): boolean {
   const config = getProviderConfig(provider, apiKey);
   return config.apiKey.length > 0;
 }
 
 /** 测试 AI 连接 */
-export async function testConnection(provider: 'siliconflow' | 'openai', apiKey?: string): Promise<{ success: boolean; message: string }> {
-  const config = getProviderConfig(provider, apiKey);
+export async function testConnection(provider: AIProvider, apiKey?: string, baseUrl?: string, model?: string): Promise<{ success: boolean; message: string }> {
+  const config = getProviderConfig(provider, apiKey, baseUrl, model);
 
   if (!config.apiKey) {
     return { success: false, message: '未配置 API Key' };
@@ -52,6 +91,27 @@ export async function testConnection(provider: 'siliconflow' | 'openai', apiKey?
     return { success: false, message: `连接失败: ${response.status} ${response.statusText}` };
   } catch (err) {
     return { success: false, message: `连接失败: ${err instanceof Error ? err.message : '未知错误'}` };
+  }
+}
+
+/** 获取可用模型列表 */
+export async function listModels(provider: AIProvider, apiKey?: string, baseUrl?: string): Promise<{ id: string; name: string }[]> {
+  const config = getProviderConfig(provider, apiKey, baseUrl);
+  if (!config.apiKey) return [];
+
+  try {
+    const response = await fetch(`${config.baseUrl}/models`, {
+      headers: { 'Authorization': `Bearer ${config.apiKey}` },
+      signal: AbortSignal.timeout(10000),
+    });
+
+    if (!response.ok) return [];
+
+    const data = await response.json() as { data?: Array<{ id: string }> };
+    return (data.data || []).map((m) => ({ id: m.id, name: m.id }));
+  } catch (err) {
+    aiLog.error({ err, provider }, 'listModels failed');
+    return [];
   }
 }
 
@@ -81,8 +141,8 @@ function getSimulatedResponse(messages: Array<{ role: string; content: string }>
 
 /** 发送 AI 聊天请求（非流式） */
 export async function chatCompletion(request: AIChatRequest): Promise<AIChatResponse> {
-  const provider = request.provider || 'siliconflow';
-  const config = getProviderConfig(provider, request.apiKey);
+  const provider = (request.provider || 'siliconflow') as AIProvider;
+  const config = getProviderConfig(provider, request.apiKey, undefined, request.model);
 
   // 无 API Key 时返回模拟响应
   if (!config.apiKey) {
@@ -134,8 +194,8 @@ export async function chatCompletion(request: AIChatRequest): Promise<AIChatResp
 
 /** 发送 AI 聊天请求（流式 SSE） */
 export async function* chatCompletionStream(request: AIChatRequest): AsyncGenerator<string> {
-  const provider = request.provider || 'siliconflow';
-  const config = getProviderConfig(provider, request.apiKey);
+  const provider = (request.provider || 'siliconflow') as AIProvider;
+  const config = getProviderConfig(provider, request.apiKey, undefined, request.model);
 
   // 无 API Key 时模拟流式响应
   if (!config.apiKey) {

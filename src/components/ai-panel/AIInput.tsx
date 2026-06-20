@@ -32,14 +32,14 @@ export function AIInput({
         onEnter={handleEnter}
         placeholder="输入消息…（Enter 发送）"
         disabled={disabled}
-        size="medium"
+        size="small"
         clearable
         suffixIcon={
           isStreaming ? (
             <button
               type="button"
               onClick={onStop}
-              className="p-1 rounded bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity"
+              className="size-7 inline-flex items-center justify-center rounded bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity"
               title="停止生成"
             >
               <PauseIcon size={16} />
@@ -49,7 +49,7 @@ export function AIInput({
               type="button"
               onClick={onSend}
               disabled={!value.trim() || disabled}
-              className="p-1 rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="size-7 inline-flex items-center justify-center rounded bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
               title="发送"
             >
               <SendIcon size={16} />

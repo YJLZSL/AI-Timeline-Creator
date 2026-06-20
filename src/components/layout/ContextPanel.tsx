@@ -90,17 +90,17 @@ export function ContextPanel() {
 
   return (
     <aside
-      className="relative flex flex-col border-l border-border bg-card panel-enter"
+      className="relative flex flex-col border-l border-border/40 glass panel-enter card-hover-shadow"
       style={{ width: `var(--panel-width)` }}
     >
       {/* 左侧拖拽 handle */}
       <div
-        className="absolute inset-y-0 left-0 w-1 cursor-col-resize transition-colors hover:bg-primary/40 hover:shadow-[2px_0_6px_rgb(var(--primary)/0.15)]"
+        className="absolute inset-y-0 left-0 w-1 cursor-col-resize transition-all duration-200 hover:bg-primary/40 hover:shadow-[2px_0_6px_rgb(var(--primary)/0.15)] hover:w-1.5"
         onMouseDown={handleDragStart}
       />
 
       {/* 标题栏 */}
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 bg-muted/30 backdrop-blur-sm">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/30 px-4 glass-subtle">
         <h2 className="font-serif text-sm font-semibold text-foreground">{title}</h2>
         <div className="flex items-center gap-2">
           {viewMode === 'outline' && (
@@ -153,8 +153,18 @@ export function ContextPanel() {
 
 function Placeholder({ label }: { label: string }) {
   return (
-    <div className="flex h-full items-center justify-center panel-enter">
-      <p className="text-center text-sm text-muted-foreground">{label}</p>
+    <div className="flex h-full items-center justify-center panel-enter empty-state-refined">
+      <div className="flex flex-col items-center text-center gap-3 px-6">
+        <div className="empty-illustration">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground/60 empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+              <path d="M12 7v6l4 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+        <p className="text-center text-sm text-muted-foreground">{label}</p>
+      </div>
     </div>
   );
 }
@@ -162,10 +172,10 @@ function Placeholder({ label }: { label: string }) {
 function EmptyState() {
   const { t } = useTranslation();
   return (
-    <div className="flex h-full items-center justify-center panel-enter">
+    <div className="flex h-full items-center justify-center panel-enter empty-state-refined">
       <div className="flex flex-col items-center text-center gap-3 px-6">
         <div className="empty-illustration">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground/60">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground/60 empty-icon">
             <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
               <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
               <path d="M12 7v6l4 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />

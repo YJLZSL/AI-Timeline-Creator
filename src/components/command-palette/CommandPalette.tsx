@@ -86,6 +86,22 @@ const FORESHADOWING_STATUS_LABELS: Record<string, string> = {
   abandoned: '已放弃',
 };
 
+/* 高亮匹配文字 */
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>;
+  const lowerText = text.toLowerCase();
+  const lowerQuery = query.toLowerCase();
+  const index = lowerText.indexOf(lowerQuery);
+  if (index === -1) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, index)}
+      <span className="search-highlight-match">{text.slice(index, index + query.length)}</span>
+      {text.slice(index + query.length)}
+    </>
+  );
+}
+
 const CATEGORY_ORDER: CommandCategory[] = ['view', 'action', 'edit', 'system', 'theme'];
 
 const COMMAND_ICON_MAP: Record<string, React.ReactNode> = {
@@ -403,6 +419,7 @@ export function CommandPalette() {
 
   const renderItem = (item: ListItem) => {
     const selected = activeId === item.id;
+    const isCmd = !isSearchItem(item);
     return (
       <div
         key={item.id}
@@ -415,7 +432,7 @@ export function CommandPalette() {
         onMouseEnter={() => setActiveId(item.id)}
         className={`
           flex cursor-pointer select-none items-center gap-3 rounded-lg px-3 py-2.5 text-sm
-          transition-colors relative overflow-hidden
+          transition-all duration-150 relative overflow-hidden
           ${selected ? 'bg-accent/60 text-accent-foreground' : 'hover:bg-accent/30'}
         `}
       >
@@ -425,12 +442,20 @@ export function CommandPalette() {
         )}
         <span className={`shrink-0 ${selected ? 'text-accent-foreground' : 'text-muted-foreground'}`}>{item.icon}</span>
         <div className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate font-medium">{item.title}</span>
-          {!isSearchItem(item) ? null : (
-            <span className="truncate text-xs text-muted-foreground/80">{item.subtitle}</span>
+          <span className="truncate font-medium">
+            {isCmd ? (
+              <HighlightMatch text={item.title} query={query} />
+            ) : (
+              <HighlightMatch text={item.title} query={query} />
+            )}
+          </span>
+          {!isCmd && (
+            <span className="truncate text-xs text-muted-foreground/80">
+              <HighlightMatch text={item.subtitle} query={query} />
+            </span>
           )}
         </div>
-        {!isSearchItem(item) && item.shortcut && (
+        {isCmd && item.shortcut && (
           <span className="ml-auto shrink-0 text-[11px] tracking-wider text-muted-foreground/60 font-mono">
             {formatKeysForDisplay(item.shortcut.split('+'))}
           </span>

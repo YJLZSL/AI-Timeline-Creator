@@ -168,6 +168,30 @@ export function AIPanel() {
     sendMessage(userText, convId);
   };
 
+  // 上下文压缩：历史消息过长时自动摘要
+  function compressHistory(
+    messages: Array<{ role: string; content: string }>,
+  ): StreamChatMessage[] {
+    const totalLength = messages.reduce((sum, m) => sum + m.content.length, 0);
+    if (totalLength < 4000) {
+      return messages.map((m) => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content }));
+    }
+
+    // 压缩：保留最近 3 条完整消息，对更早的消息进行摘要
+    const recent = messages.slice(-3);
+    const older = messages.slice(0, -3);
+
+    const summary = older
+      .filter((m) => m.role !== 'system')
+      .map((m) => `${m.role === 'user' ? '用户' : 'AI'}: ${m.content.slice(0, 100)}...`)
+      .join('\n');
+
+    return [
+      { role: 'system', content: `历史对话摘要：\n${summary}` },
+      ...recent.map((m) => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content })),
+    ];
+  }
+
   const sendMessage = (userText: string, convId: string) => {
     // 构建上下文系统消息
     const contextParts: string[] = [];
@@ -184,15 +208,15 @@ export function AIPanel() {
     // 添加 assistant 占位消息
     const placeholderId = addMessage(convId, { role: 'assistant', content: '' });
 
-    // 构建发送给 API 的消息数组
-    const messagesForAPI: StreamChatMessage[] = [];
+    // 添加上下文压缩后的消息
+    let messagesForAPI: StreamChatMessage[] = compressHistory(history);
+
+    // 添加上下文系统消息（如果有）
     if (contextParts.length > 0) {
-      messagesForAPI.push({ role: 'system', content: contextParts.join('\n\n') });
+      messagesForAPI = [{ role: 'system', content: contextParts.join('\n\n') }, ...messagesForAPI];
     }
-    for (const m of history) {
-      if (m.role === 'system') continue;
-      messagesForAPI.push({ role: m.role, content: m.content });
-    }
+
+    // 添加当前用户消息
     messagesForAPI.push({ role: 'user', content: userText });
 
     setIsStreaming(true);
@@ -279,8 +303,8 @@ export function AIPanel() {
   return (
     <div className="h-full flex flex-col">
       {/* 顶部工具栏 */}
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border shrink-0">
-        <div className="flex items-center gap-1">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border/30 px-4 glass-subtle">
+        <div className="flex items-center gap-1 min-w-0">
           <TButton
             variant="text"
             shape="square"
@@ -289,7 +313,7 @@ export function AIPanel() {
             title={showList ? '隐藏对话列表' : '显示对话列表'}
             icon={showList ? <MenuFoldIcon size={16} /> : <MenuUnfoldIcon size={16} />}
           />
-          <span className="text-xs text-muted-foreground">
+          <span className="font-serif text-sm font-semibold text-foreground truncate">
             {currentConversation ? currentConversation.title : 'AI 助手'}
           </span>
         </div>
@@ -334,7 +358,7 @@ export function AIPanel() {
           </div>
 
           {/* 模型信息条 */}
-          <div className="shrink-0 mx-3 mt-2 px-3 py-2 rounded-lg border border-border bg-card/80 flex items-center gap-2 flex-wrap card-lift">
+          <div className="shrink-0 mx-3 mt-2 px-3 py-2 rounded-lg border border-border bg-card/80 flex items-center gap-2 flex-wrap card-hover-shadow">
             <TTag variant="light" size="small" theme="primary">
               AI 配置已就绪
             </TTag>

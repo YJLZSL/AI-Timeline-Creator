@@ -56,6 +56,7 @@ import {
   Translate,
   Send,
   Pause,
+  Play,
   Compass,
   Group,
   Message,
@@ -70,6 +71,7 @@ import {
   Monitor,
   Undo,
   Redo,
+  Return,
   Download,
   FullScreen,
   LeftC,
@@ -109,6 +111,7 @@ function withDefaults(Icon: ComponentType<IconParkIconProps>) {
 }
 
 export const TimeIcon = withDefaults(Time as ComponentType<IconParkIconProps>);
+export const TimerIcon = withDefaults(Time as ComponentType<IconParkIconProps>);
 export const ListIcon = withDefaults(List as ComponentType<IconParkIconProps>);
 export const BookOpenIcon = withDefaults(BookOpen as ComponentType<IconParkIconProps>);
 export const ChartHistogramIcon = withDefaults(ChartHistogram as ComponentType<IconParkIconProps>);
@@ -159,6 +162,7 @@ export const MinusIcon = withDefaults(Minus as ComponentType<IconParkIconProps>)
 export const LanguagesIcon = withDefaults(Translate as ComponentType<IconParkIconProps>);
 export const SendIcon = withDefaults(Send as ComponentType<IconParkIconProps>);
 export const PauseIcon = withDefaults(Pause as ComponentType<IconParkIconProps>);
+export const PlayIcon = withDefaults(Play as ComponentType<IconParkIconProps>);
 export const CompassIcon = withDefaults(Compass as ComponentType<IconParkIconProps>);
 export const GroupIcon = withDefaults(Group as ComponentType<IconParkIconProps>);
 export const MessageIcon = withDefaults(Message as ComponentType<IconParkIconProps>);
@@ -173,6 +177,7 @@ export const CheckIcon = withDefaults(Check as ComponentType<IconParkIconProps>)
 export const MonitorIcon = withDefaults(Monitor as ComponentType<IconParkIconProps>);
 export const UndoIcon = withDefaults(Undo as ComponentType<IconParkIconProps>);
 export const RedoIcon = withDefaults(Redo as ComponentType<IconParkIconProps>);
+export const ResetIcon = withDefaults(Return as ComponentType<IconParkIconProps>);
 export const DownloadIcon = withDefaults(Download as ComponentType<IconParkIconProps>);
 export const FullScreenIcon = withDefaults(FullScreen as ComponentType<IconParkIconProps>);
 export const PanelLeftIcon = withDefaults(LeftC as ComponentType<IconParkIconProps>);
