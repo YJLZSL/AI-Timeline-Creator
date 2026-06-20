@@ -1,5 +1,6 @@
 import { Dropdown } from 'tdesign-react';
 import type { DropdownOption } from 'tdesign-react';
+import { cn } from '@/lib/utils';
 import {
   ZoomInIcon,
   ZoomOutIcon,
@@ -18,9 +19,10 @@ import {
   RelationalGraphIcon,
   SettingIcon,
   PaletteIcon,
+  LayersIcon,
   type IconParkIconProps,
 } from '@/lib/icons';
-import { TButton, TSlider, TTooltip, TPopup, TTabs, TTabPanel } from '@/components/ui-tdesign';
+import { TButton, TSlider, TTooltip, TPopup } from '@/components/ui-tdesign';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
@@ -135,10 +137,20 @@ export function TopToolbar() {
 
   return (
     <header
-      className="relative flex flex-col border-b border-border bg-background/80 backdrop-blur"
+      className="relative flex h-11 items-center gap-2 border-b border-border bg-background/80 px-3 backdrop-blur"
       style={{ zIndex: 'var(--z-toolbar)' }}
     >
-      <div className="flex h-12 items-center gap-2 px-3">
+      {/* 左侧：品牌 + 工作区 */}
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 pr-2">
+          <LayersIcon className="size-5 text-primary" />
+          <span className="hidden select-none font-serif text-sm font-semibold tracking-tight sm:inline">
+            Storyloom
+          </span>
+        </div>
+
+        <div className="h-5 w-px bg-border" />
+
         <Dropdown
           options={workspaceOptions}
           trigger="click"
@@ -147,151 +159,162 @@ export function TopToolbar() {
           onClick={handleDropdownClick}
         >
           <TButton variant="text" size="small" className="gap-1.5 font-medium">
-            <FolderOpenIcon />
-            <span className="max-w-[160px] truncate">
+            <FolderOpenIcon className="size-4" />
+            <span className="max-w-[120px] truncate text-xs">
               {currentWorkspace?.name || '选择工作区'}
             </span>
-            <DownIcon className="opacity-60" />
+            <DownIcon className="size-3 opacity-60" />
           </TButton>
         </Dropdown>
-
-        <div className="flex-1" />
-
-        <div className="flex items-center gap-1">
-          <TTooltip content="缩小 (Ctrl+-)" placement="bottom">
-            <TButton
-              variant="text"
-              size="small"
-              shape="square"
-              icon={<ZoomOutIcon />}
-              onClick={() => zoomOut(0.1)}
-            />
-          </TTooltip>
-
-          <div className="flex w-40 flex-col gap-0.5 px-2">
-            <span className="text-center text-[10px] font-mono tabular-nums text-muted-foreground">
-              Zoom: {Math.round(zoom * 100)}%
-            </span>
-            <TSlider
-              value={Math.round(zoom * 100)}
-              min={50}
-              max={300}
-              step={1}
-              onChange={(v) => setZoom((v as number) / 100)}
-              label={false}
-              inputNumberProps={false}
-              className="w-full"
-            />
-          </div>
-
-          <TTooltip content="放大 (Ctrl+=)" placement="bottom">
-            <TButton
-              variant="text"
-              size="small"
-              shape="square"
-              icon={<ZoomInIcon />}
-              onClick={() => zoomIn(0.1)}
-            />
-          </TTooltip>
-
-          <div className="mx-1 h-6 w-px bg-border" />
-
-          <TTooltip content="新建事件" placement="bottom">
-            <TButton
-              variant="text"
-              size="small"
-              theme="success"
-              icon={<PlusIcon />}
-              onClick={ctx.createEvent}
-            >
-              新建事件
-            </TButton>
-          </TTooltip>
-
-          <TTooltip content="保存 (Ctrl+S)" placement="bottom">
-            <TButton variant="text" size="small" icon={<SaveIcon />} onClick={ctx.save}>
-              保存
-            </TButton>
-          </TTooltip>
-
-          <div className="mx-1 h-6 w-px bg-border" />
-
-          <TTooltip content="命令面板 (Ctrl+K)" placement="bottom">
-            <TButton
-              variant="outline"
-              size="small"
-              icon={<CommandIcon />}
-              onClick={() => setCommandPaletteOpen(true)}
-            >
-              <span className="text-xs text-muted-foreground">Ctrl+K</span>
-            </TButton>
-          </TTooltip>
-
-          <LanguageSelector />
-
-          <TTooltip content="设置" placement="bottom">
-            <TButton
-              variant="text"
-              size="small"
-              shape="square"
-              icon={<SettingIcon />}
-              aria-label="设置"
-              onClick={() => setSettingsOpen(true)}
-            />
-          </TTooltip>
-
-          <TPopup
-            trigger="click"
-            placement="bottom-right"
-            content={
-              <div
-                className="w-80 space-y-3 p-3"
-                style={{
-                  backgroundColor: 'rgb(var(--popover))',
-                  border: '1px solid rgb(var(--border))',
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: 'var(--shadow-lg)',
-                }}
-              >
-                <div className="text-sm font-medium">主题</div>
-                <ThemeSelector />
-              </div>
-            }
-          >
-            <TButton
-              variant="text"
-              size="small"
-              shape="square"
-              icon={<PaletteIcon />}
-              aria-label="选择主题"
-            />
-          </TPopup>
-        </div>
       </div>
 
-      <div className="flex h-9 items-center gap-1 border-t border-border/50 bg-background/50 px-2">
-        <TTabs
-          value={activeView}
-          onChange={(value) => setActiveView(value as ViewId)}
-          theme="normal"
-          className="toolbar-tabs h-full"
-        >
+      {/* 中间：视图 Tab */}
+      <nav className="flex flex-1 items-center justify-center">
+        <div className="flex items-center gap-0.5 rounded-lg bg-muted/50 p-0.5">
           {VIEW_TABS.map((tab) => {
             const Icon = tab.icon;
+            const isActive = activeView === tab.id;
             return (
-              <TTabPanel
+              <button
                 key={tab.id}
-                value={tab.id}
-                label={
-                  <span className="flex items-center gap-1.5">
-                    <Icon className="size-4" />
-                    {tab.label}
-                  </span>
-                }
-              />
+                onClick={() => setActiveView(tab.id)}
+                className={cn(
+                  'flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-all duration-200',
+                  isActive
+                    ? 'bg-background font-medium text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground',
+                )}
+              >
+                <Icon className="size-3.5" />
+                <span className="hidden sm:inline">{tab.label}</span>
+              </button>
             );
           })}
-        </TTabs>
+        </div>
+      </nav>
+
+      {/* 右侧：操作按钮 */}
+      <div className="flex items-center gap-1">
+        <TTooltip content="缩小 (Ctrl+-)" placement="bottom">
+          <TButton
+            variant="text"
+            size="small"
+            shape="square"
+            className="size-7"
+            icon={<ZoomOutIcon className="size-4" />}
+            onClick={() => zoomOut(0.1)}
+          />
+        </TTooltip>
+
+        <div className="flex w-28 flex-col gap-0 px-1">
+          <span className="text-center text-[9px] font-mono tabular-nums text-muted-foreground">
+            {Math.round(zoom * 100)}%
+          </span>
+          <TSlider
+            value={Math.round(zoom * 100)}
+            min={50}
+            max={300}
+            step={1}
+            onChange={(v) => setZoom((v as number) / 100)}
+            label={false}
+            inputNumberProps={false}
+            className="w-full"
+          />
+        </div>
+
+        <TTooltip content="放大 (Ctrl+=)" placement="bottom">
+          <TButton
+            variant="text"
+            size="small"
+            shape="square"
+            className="size-7"
+            icon={<ZoomInIcon className="size-4" />}
+            onClick={() => zoomIn(0.1)}
+          />
+        </TTooltip>
+
+        <div className="mx-1 h-5 w-px bg-border" />
+
+        <TTooltip content="新建事件" placement="bottom">
+          <TButton
+            variant="text"
+            size="small"
+            theme="success"
+            className="gap-1 text-xs"
+            icon={<PlusIcon className="size-4" />}
+            onClick={ctx.createEvent}
+          >
+            新建
+          </TButton>
+        </TTooltip>
+
+        <TTooltip content="保存 (Ctrl+S)" placement="bottom">
+          <TButton
+            variant="text"
+            size="small"
+            className="gap-1 text-xs"
+            icon={<SaveIcon className="size-4" />}
+            onClick={ctx.save}
+          >
+            保存
+          </TButton>
+        </TTooltip>
+
+        <div className="mx-1 h-5 w-px bg-border" />
+
+        <TTooltip content="命令面板 (Ctrl+K)" placement="bottom">
+          <TButton
+            variant="outline"
+            size="small"
+            className="gap-1 text-xs"
+            icon={<CommandIcon className="size-3.5" />}
+            onClick={() => setCommandPaletteOpen(true)}
+          >
+            <span className="hidden text-[10px] text-muted-foreground sm:inline">Ctrl+K</span>
+          </TButton>
+        </TTooltip>
+
+        <LanguageSelector />
+
+        <TTooltip content="设置" placement="bottom">
+          <TButton
+            variant="text"
+            size="small"
+            shape="square"
+            className="size-7"
+            icon={<SettingIcon className="size-4" />}
+            aria-label="设置"
+            onClick={() => setSettingsOpen(true)}
+          />
+        </TTooltip>
+
+        <TPopup
+          trigger="click"
+          placement="bottom-right"
+          content={
+            <div
+              className="w-80 space-y-3 p-3"
+              style={{
+                backgroundColor: 'rgb(var(--popover))',
+                border: '1px solid rgb(var(--border))',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'var(--shadow-lg)',
+              }}
+            >
+              <div className="text-sm font-medium">主题</div>
+              <ThemeSelector />
+            </div>
+          }
+        >
+          <TButton
+            variant="text"
+            size="small"
+            shape="square"
+            className="size-7"
+            icon={<PaletteIcon className="size-4" />}
+            aria-label="选择主题"
+          />
+        </TPopup>
       </div>
     </header>
   );

@@ -83,6 +83,14 @@
   --color-border: rgb(var(--border));
   --color-input: rgb(var(--input));
   --color-ring: rgb(var(--ring));
+
+  /* 洛笙风格扩展色桥接 */
+  --color-green: rgb(var(--green));
+  --color-green-foreground: rgb(var(--green-foreground));
+  --color-brown: rgb(var(--brown));
+  --color-brown-foreground: rgb(var(--brown-foreground));
+  --color-beige: rgb(var(--beige));
+  --color-beige-foreground: rgb(var(--beige-foreground));
 }
 
 /* ===== 主题：洛圣（暖米色） ===== */
@@ -114,6 +122,14 @@
   --success: 22 163 74;
   --warning: 217 119 6;
   --info: 59 130 246;
+
+  /* 洛笙风格：绿色 + 棕色 双色按钮 */
+  --green: 47 122 65;              /* #2F7A41 深绿 */
+  --green-foreground: 255 255 255;
+  --brown: 139 90 43;              /* #8B5A2B 棕色 */
+  --brown-foreground: 255 255 255;
+  --beige: 245 240 232;            /* #F5F0E8 米色 */
+  --beige-foreground: 60 40 20;
 
   --theme-shadow-intensity: 0.1;
   --theme-font-weight: 400;
@@ -913,3 +929,85 @@ body {
 }
 
 
+
+/* ===== 洛笙风格双色按钮 ===== */
+.btn-green {
+  background-color: rgb(var(--green));
+  color: rgb(var(--green-foreground));
+  border: 1px solid rgb(var(--green));
+}
+.btn-green:hover {
+  background-color: rgb(var(--green) / 0.85);
+}
+.btn-green:active {
+  background-color: rgb(var(--green) / 0.75);
+}
+
+.btn-brown {
+  background-color: rgb(var(--brown));
+  color: rgb(var(--brown-foreground));
+  border: 1px solid rgb(var(--brown));
+}
+.btn-brown:hover {
+  background-color: rgb(var(--brown) / 0.85);
+}
+.btn-brown:active {
+  background-color: rgb(var(--brown) / 0.75);
+}
+
+.btn-beige {
+  background-color: rgb(var(--beige));
+  color: rgb(var(--beige-foreground));
+  border: 1px solid rgb(var(--border));
+}
+.btn-beige:hover {
+  background-color: rgb(var(--beige) / 0.9);
+}
+
+/* ===== 移动端响应式规划 ===== */
+
+/* 移动端抽屉遮罩 */
+.mobile-drawer-overlay {
+  @media (max-width: 768px) {
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 0.4);
+    z-index: var(--z-overlay);
+  }
+}
+
+/* 移动端底部 Sheet */
+.mobile-sheet {
+  @media (max-width: 768px) {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 70vh;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    z-index: var(--z-overlay);
+  }
+}
+
+/* 触摸优化：增大点击区域 */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* 移动端隐藏 */
+@media (max-width: 768px) {
+  .hide-mobile { display: none !important; }
+}
+
+/* PC 端隐藏 */
+@media (min-width: 769px) {
+  .hide-desktop { display: none !important; }
+}
+
+/* 移动端文字大小调整 */
+@media (max-width: 768px) {
+  :root {
+    --timeline-base-font-size: 14px;
+  }
+}

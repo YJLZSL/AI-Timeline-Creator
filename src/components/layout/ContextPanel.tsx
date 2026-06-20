@@ -14,6 +14,7 @@ import { WorldBuildingPanel } from '@/components/worldbuilding/WorldBuildingPane
 import { ForeshadowingPanel } from '@/components/foreshadowing/ForeshadowingPanel';
 import { ConnectionPanel } from '@/components/connection/ConnectionPanel';
 import { ConsistencyPanel } from '@/components/consistency/ConsistencyPanel';
+import { EventContextPanel } from './EventContextPanel';
 import type { TimelineEvent } from '../../../shared/types';
 
 const PANEL_TITLES: Record<string, string> = {
@@ -79,6 +80,7 @@ export function ContextPanel() {
     selectedEvent ?? null,
     selectedEventId,
     selectedCharacterId,
+    workspaceId,
     handleClose,
     () => setSettingsOpen(true),
   );
@@ -179,10 +181,17 @@ function getPanelContent(
   selectedEvent: TimelineEvent | null,
   selectedEventId: string | null,
   selectedCharacterId: string | null,
+  workspaceId: string | null,
   onClose: () => void,
   onOpenSettings: () => void,
 ): { title: string; content: React.ReactNode } {
   if (!activePanel) {
+    if (selectedEventId && selectedEvent) {
+      return { title: '关联数据', content: <EventContextPanel event={selectedEvent} workspaceId={workspaceId} /> };
+    }
+    if (selectedCharacterId) {
+      return { title: '角色详情', content: <Placeholder label="请在角色面板中查看和编辑角色详情" /> };
+    }
     return { title: '上下文面板', content: <EmptyState /> };
   }
 

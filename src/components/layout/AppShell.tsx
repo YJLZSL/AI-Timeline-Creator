@@ -8,7 +8,7 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useSettingsStore, deserializeSettings } from '@/stores/useSettingsStore';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { TopToolbar } from './TopToolbar';
-import { SideNav } from './SideNav';
+import { LeftPanel } from './LeftPanel';
 import { ContextPanel } from './ContextPanel';
 import { StatusBar } from './StatusBar';
 import { TimelineView } from '@/components/timeline/TimelineView';
@@ -26,6 +26,8 @@ import { EventDetailView } from '@/components/events/EventDetailView';
 import { tryHandleShortcut, getCurrentContext } from '@/lib/shortcut-registry';
 import { setApiBase } from '@/services/api';
 import { useWorkspace } from '@/services/api-hooks';
+import { PanelLeftIcon, LayersIcon } from '@/lib/icons';
+import { TButton } from '@/components/ui-tdesign';
 
 const viewVariants = {
   initial: { opacity: 0, y: 8, scale: 0.98 },
@@ -75,15 +77,10 @@ function MainCanvas() {
 }
 
 export function AppShell() {
-  const [sideNavCollapsed, setSideNavCollapsed] = useState(false);
-  const sideNavManualOverride = useRef(false);
-  const isCompactScreen = useMediaQuery('(max-width: 1024px)');
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const [mobileLeftOpen, setMobileLeftOpen] = useState(false);
+  const [mobileRightOpen, setMobileRightOpen] = useState(false);
 
-  // 响应式自动折叠：< 1024px 自动折叠侧栏；用户手动切换后本会话保持手动状态。
-  useEffect(() => {
-    if (sideNavManualOverride.current) return;
-    setSideNavCollapsed(isCompactScreen);
-  }, [isCompactScreen]);
   const focusMode = useUIStore((s) => s.focusMode);
   const activePanel = useUIStore((s) => s.activePanel);
   const panelWidth = useUIStore((s) => s.panelWidth);
@@ -92,8 +89,6 @@ export function AppShell() {
   const ctx = useCommandContext();
   const ctxRef = useRef(ctx);
   ctxRef.current = ctx;
-
-  // 主题初始化由 useThemeStore 在 rehydrate 时完成（设置 data-theme），此处无需重复
 
   // 初始化 Electron 环境下的 API 基地址（动态获取实际服务器端口）
   useEffect(() => {
@@ -142,6 +137,19 @@ export function AppShell() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // 移动端 ESC 关闭面板
+  useEffect(() => {
+    if (!isMobile) return;
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setMobileLeftOpen(false);
+        setMobileRightOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [isMobile]);
+
   const shellStyle = {
     '--panel-width': `${panelWidth}px`,
   } as React.CSSProperties;
@@ -175,26 +183,65 @@ export function AppShell() {
   return (
     <TooltipProvider delayDuration={300}>
       <div
-        className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground"
+        className="relative flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground"
         style={shellStyle}
       >
         <TopToolbar />
 
         <div className="flex flex-1 overflow-hidden">
-          <SideNav
-            collapsed={sideNavCollapsed}
-            onToggle={() => {
-              sideNavManualOverride.current = true;
-              setSideNavCollapsed((c) => !c);
-            }}
-          />
+          {/* 左栏 — 移动端抽屉 */}
+          {isMobile ? (
+            <>
+              <MobileDrawer
+                open={mobileLeftOpen}
+                onClose={() => setMobileLeftOpen(false)}
+                position="left"
+              >
+                <LeftPanel />
+              </MobileDrawer>
+            </>
+          ) : (
+            <LeftPanel />
+          )}
+
           <main className="min-w-0 flex-1 overflow-auto">
             <MainCanvas />
           </main>
-          {activePanel && <ContextPanel />}
+
+          {/* 右栏 — 移动端 Sheet */}
+          {isMobile ? (
+            activePanel && (
+              <MobileDrawer
+                open={mobileRightOpen}
+                onClose={() => setMobileRightOpen(false)}
+                position="right"
+              >
+                <ContextPanel />
+              </MobileDrawer>
+            )
+          ) : (
+            activePanel && <ContextPanel />
+          )}
         </div>
 
         <StatusBar />
+
+        {/* 移动端浮动按钮 */}
+        {isMobile && (
+          <MobileFloatButtons
+            leftOpen={mobileLeftOpen}
+            onToggleLeft={() => {
+              setMobileLeftOpen((o) => !o);
+              setMobileRightOpen(false);
+            }}
+            rightOpen={mobileRightOpen}
+            onToggleRight={() => {
+              setMobileRightOpen((o) => !o);
+              setMobileLeftOpen(false);
+            }}
+            rightEnabled={!!activePanel}
+          />
+        )}
 
         <CommandPalette />
         <SettingsDialog />
@@ -202,5 +249,101 @@ export function AppShell() {
         <Toaster position="top-right" richColors />
       </div>
     </TooltipProvider>
+  );
+}
+
+/* ───────── 移动端抽屉 ───────── */
+
+function MobileDrawer({
+  open,
+  onClose,
+  position,
+  children,
+}: {
+  open: boolean;
+  onClose: () => void;
+  position: 'left' | 'right';
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      {/* 遮罩 */}
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[var(--z-overlay)] bg-black/40"
+            onClick={onClose}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* 面板 */}
+      <motion.div
+        initial={false}
+        animate={{
+          x: open ? 0 : position === 'left' ? '-100%' : '100%',
+        }}
+        transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+        className={
+          position === 'left'
+            ? 'fixed bottom-0 left-0 top-11 z-[var(--z-sidenav)] w-64 shadow-xl'
+            : 'fixed bottom-0 right-0 top-11 z-[var(--z-sidenav)] w-[var(--panel-width)] shadow-xl'
+        }
+        style={{ maxWidth: '80vw' }}
+      >
+        {children}
+      </motion.div>
+    </>
+  );
+}
+
+/* ───────── 移动端浮动按钮 ───────── */
+
+function MobileFloatButtons({
+  leftOpen,
+  onToggleLeft,
+  rightOpen,
+  onToggleRight,
+  rightEnabled,
+}: {
+  leftOpen: boolean;
+  onToggleLeft: () => void;
+  rightOpen: boolean;
+  onToggleRight: () => void;
+  rightEnabled: boolean;
+}) {
+  return (
+    <div className="fixed bottom-4 left-4 right-4 z-[var(--z-overlay)] flex justify-between pointer-events-none">
+      <TButton
+        variant={leftOpen ? 'base' : 'outline'}
+        shape="circle"
+        size="small"
+        className={
+          'pointer-events-auto h-11 w-11 shadow-lg ' +
+          (leftOpen ? 'btn-brown' : 'bg-background/90 backdrop-blur')
+        }
+        onClick={onToggleLeft}
+        icon={<PanelLeftIcon size={20} />}
+        aria-label="打开目录"
+      />
+      {rightEnabled && (
+        <TButton
+          variant={rightOpen ? 'base' : 'outline'}
+          shape="circle"
+          size="small"
+          className={
+            'pointer-events-auto h-11 w-11 shadow-lg ' +
+            (rightOpen ? 'btn-green' : 'bg-background/90 backdrop-blur')
+          }
+          onClick={onToggleRight}
+          icon={<LayersIcon size={20} />}
+          aria-label="打开面板"
+        />
+      )}
+    </div>
   );
 }
