@@ -1,7 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TTag } from '@/components/ui-tdesign';
-import { TimeIcon, LocalTwoIcon, TagIcon } from '@/lib/icons';
+import { TimeIcon, LocalTwoIcon, TagIcon, EditIcon, LinkIcon, FileTextIcon } from '@/lib/icons';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
@@ -65,6 +65,7 @@ export function TimelineEventCard({
   const selectEvent = useSelectionStore((s) => s.selectEvent);
   const setActivePanel = useUIStore((s) => s.setActivePanel);
   const setDetailEvent = useUIStore((s) => s.setDetailEvent);
+  const [isHovered, setIsHovered] = useState(false);
 
   const isCharacterFilterActive = !!selectedCharacterId;
   const isCharacterMatched = selectedCharacterId
@@ -84,6 +85,7 @@ export function TimelineEventCard({
   const endMs = event.endTime ? new Date(event.endTime).getTime() : null;
 
   const tags = safeJsonArray<string>(event.tagsJson, []);
+  const eventColor = event.color || 'rgb(var(--primary))';
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
@@ -95,6 +97,24 @@ export function TimelineEventCard({
     e.stopPropagation();
     selectEvent(event.id);
     setActivePanel('event-editor');
+  }, [event.id, selectEvent, setActivePanel]);
+
+  const handleEdit = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    selectEvent(event.id);
+    setActivePanel('event-editor');
+  }, [event.id, selectEvent, setActivePanel]);
+
+  const handleLink = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    selectEvent(event.id);
+    setActivePanel('connections');
+  }, [event.id, selectEvent, setActivePanel]);
+
+  const handleOutline = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    selectEvent(event.id);
+    setActivePanel('properties');
   }, [event.id, selectEvent, setActivePanel]);
 
   // Resize handle drag
@@ -160,6 +180,7 @@ export function TimelineEventCard({
     if (!startMs) return;
     const target = e.target as HTMLElement;
     if (target.closest('[data-resize-handle="true"]')) return;
+    if (target.closest('[data-quick-action="true"]')) return;
     e.stopPropagation();
     setDragState({
       startPointerX: e.clientX,
@@ -210,39 +231,68 @@ export function TimelineEventCard({
 
   const displayStart = liveStartMs ?? (isDragging && startMs !== null ? startMs + dragDeltaMs : startMs);
 
+  // Build border/shadow styles based on state
+  const getBorderClass = () => {
+    if (isSelected) return 'border-primary/50';
+    if (isDragging) return 'border-primary/60';
+    return 'border-border/40 hover:border-border/60';
+  };
+
+  const getShadowStyle = () => {
+    if (isSelected) {
+      return `0 0 0 2px ${eventColor}33, 0 0 12px ${eventColor}1a`;
+    }
+    if (isDragging) {
+      return `0 8px 24px -4px ${eventColor}26, 0 4px 12px -2px ${eventColor}1a`;
+    }
+    return undefined;
+  };
+
+  const showQuickActions = isHovered && !isDragging && !resizeState && width > 120;
+
   return (
     <motion.div
       data-event-id={event.id}
       ref={cardRef}
       data-instant={isInstant ? 'true' : 'false'}
-      className={`absolute rounded-xl border select-none overflow-hidden bg-card transition-[transform,box-shadow,colors] duration-200 ease-out ${
-        isInstant ? 'p-1.5' : 'p-2'
-      } ${isDragging ? 'cursor-grabbing' : 'cursor-grab'} ${
-        isSelected
-          ? 'border-primary shadow-md ring-2 ring-primary ring-offset-1 ring-offset-background'
-          : isDragging
-            ? 'border-primary shadow-md'
-            : 'border-border shadow-sm hover:-translate-y-0.5 hover:shadow-md'
+      className={`absolute rounded-xl border select-none overflow-hidden bg-card/80 backdrop-blur-sm transition-all duration-200 ease-out ${getBorderClass()} ${
+        isDragging ? 'cursor-grabbing' : 'cursor-grab'
       }`}
       style={{
         left: left + dragOffsetPx,
         top,
         width: Math.max(width, 40),
         height,
-        zIndex: isDragging ? 20 : isSelected ? 5 : 1,
-        opacity: isDragging ? 0.92 : isDimmed ? 0.3 : 1,
+        zIndex: isDragging ? 20 : isSelected ? 5 : isHovered ? 3 : 1,
+        opacity: isDragging ? 0.88 : isDimmed ? 0.3 : 1,
+        boxShadow: getShadowStyle(),
+        transform: isSelected ? 'scale(1.01)' : isDragging ? 'rotate(1deg)' : undefined,
       }}
       initial={{ opacity: 0, scale: 0.96, y: 4 }}
-      animate={{ opacity: isDimmed ? 0.3 : 1, scale: 1, y: 0 }}
+      animate={{ opacity: isDimmed ? 0.3 : 1, scale: isSelected ? 1.01 : 1, y: 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onPointerDown={handleCardPointerDown}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Left accent bar (wider for instant events as a time anchor) */}
+      {/* Left accent bar — 统一 4px */}
       <div
-        className={`absolute left-0 top-0 bottom-0 rounded-l-xl ${isInstant ? 'w-[3px]' : 'w-1'}`}
-        style={{ backgroundColor: event.color || 'rgb(var(--primary))' }}
+        className="absolute left-0 top-0 bottom-0 rounded-l-xl w-1 transition-shadow duration-300"
+        style={{
+          backgroundColor: eventColor,
+          boxShadow: isHovered ? `3px 0 8px -1px ${eventColor}40` : 'none',
+        }}
+      />
+
+      {/* 织线边框效果（伪元素模拟） */}
+      <div
+        className="absolute left-1 top-2 bottom-2 w-px pointer-events-none transition-opacity duration-200"
+        style={{
+          background: `repeating-linear-gradient(to bottom, ${eventColor}20 0px, ${eventColor}20 4px, transparent 4px, transparent 8px)`,
+          opacity: isHovered ? 0.6 : 0,
+        }}
       />
 
       {/* Resize handle - left */}
@@ -267,23 +317,27 @@ export function TimelineEventCard({
 
       {/* Content */}
       <div
-        className={`relative z-10 h-full flex flex-col ${isInstant ? 'pl-2' : 'pl-1.5'}`}
+        className={`relative z-10 h-full flex flex-col ${isInstant ? 'pl-2' : 'pl-2'}`}
         style={{ fontSize: 'calc(var(--timeline-base-font-size) * var(--zoom))' }}
       >
-        <h4 className="font-serif text-[1.08em] font-semibold truncate leading-tight text-card-foreground">{event.title}</h4>
+        <h4 className="font-serif text-[1.08em] font-semibold truncate leading-tight text-card-foreground tracking-[0.01em]">
+          {event.title}
+        </h4>
         {width > 100 && event.summary && (
-          <p className="text-[0.83em] text-muted-foreground mt-0.5 line-clamp-1 leading-tight">{event.summary}</p>
+          <p className="text-[0.83em] text-muted-foreground/90 mt-0.5 line-clamp-1 leading-tight">{event.summary}</p>
         )}
         <div className="flex items-center gap-1.5 flex-wrap mt-auto">
           {displayStart && (
-            <span className="flex items-center gap-0.5 text-[0.75em] text-muted-foreground font-mono">
+            <span className="flex items-center gap-1 text-[0.75em] text-muted-foreground font-mono">
               <TimeIcon size={10} />
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/40" />
               {formatTime(displayStart)}
             </span>
           )}
           {event.location && width > 100 && (
-            <span className="flex items-center gap-0.5 text-[0.75em] text-muted-foreground/80">
+            <span className="flex items-center gap-1 text-[0.75em] text-muted-foreground/80">
               <LocalTwoIcon size={10} />
+              <span className="w-1 h-1 rounded-full bg-muted-foreground/30" />
               {event.location}
             </span>
           )}
@@ -307,6 +361,40 @@ export function TimelineEventCard({
           </div>
         )}
       </div>
+
+      {/* Hover 快速操作 */}
+      {showQuickActions && (
+        <div
+          className="absolute top-1.5 right-1.5 flex gap-1 z-20"
+          data-quick-action="true"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={handleEdit}
+            className="w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-150 opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
+            style={{ animationDelay: '0ms' }}
+            title="编辑"
+          >
+            <EditIcon size={12} />
+          </button>
+          <button
+            onClick={handleLink}
+            className="w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-150 opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
+            style={{ animationDelay: '40ms' }}
+            title="关联"
+          >
+            <LinkIcon size={12} />
+          </button>
+          <button
+            onClick={handleOutline}
+            className="w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-150 opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
+            style={{ animationDelay: '80ms' }}
+            title="大纲"
+          >
+            <FileTextIcon size={12} />
+          </button>
+        </div>
+      )}
 
       {/* Resize tooltip */}
       {resizeState && (

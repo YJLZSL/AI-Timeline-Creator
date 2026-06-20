@@ -138,9 +138,9 @@ export const TimelineTrack = memo(function TimelineTrack({
 
   const headerInner = (
     <div
-      className={`sticky left-0 z-20 shrink-0 border border-border rounded-xl flex items-center px-3 gap-2 cursor-pointer transition-all duration-200 ${
-        isSelected ? 'bg-accent/15 shadow-sm' : 'bg-card shadow-sm hover:shadow-md'
-      } backdrop-blur-sm`}
+      className={`sticky left-0 z-20 shrink-0 border border-border/60 rounded-xl flex items-center px-3 gap-2 cursor-pointer transition-all duration-200 ${
+        isSelected ? 'bg-accent/15 shadow-[var(--shadow-sm)]' : 'bg-card/60 shadow-[var(--shadow-sm)] hover:bg-card/80 hover:shadow-[var(--shadow-md)]'
+      } backdrop-blur-md`}
       style={{ width: HEADER_WIDTH, height: 'calc(var(--timeline-track-height) * var(--zoom))' }}
       onClick={() => !isReadOnly && setSelectedTrack(track.id)}
     >
@@ -295,8 +295,8 @@ export const TimelineTrack = memo(function TimelineTrack({
       >
         {/* Track background */}
         <div
-          className="absolute inset-0 border-b border-border/40"
-          style={{ backgroundColor: track.color ? `${track.color}08` : undefined }}
+          className="absolute inset-0 border-b border-border/30"
+          style={{ backgroundColor: track.color ? `${track.color}06` : undefined }}
         />
 
         {/* Events */}

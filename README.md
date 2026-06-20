@@ -10,15 +10,14 @@
 
 Storyloom（絮织）是一款面向 **视觉小说 / 长篇小说 / 剧本创作者** 的本地桌面创作工作台。它把"故事"看作一台织机：以多视图时间轴（timeline / outline / narrative / gantt / tree / stats / relationship）为经，以角色与世界观、伏笔追踪、AI 写作助手为纬，最终可一键导出到主流 Visual Novel 引擎。整个应用以 Electron 打包，内置 Fastify + SQLite 服务端与 electron-updater 自动更新链路，离线优先、数据本地。本仓库托管完整源码、构建脚本与发版资产。
 
-## v1.0.0 重大更新
+## v1.0.0 设计升级
 
-- **统一设计系统**：全面整合 TDesign 组件库，消除 3 套弹窗/按钮/输入框混用
-- **调色板集中化**：68 处硬编码颜色全部迁移到 `src/lib/colors.ts` 设计令牌
-- **图标统一**：14 个文件的 lucide-react 图标全部迁移到 `@icon-park/react`
-- **共享组件**：新增 EmptyState、LoadingState、SettingsRow 统一组件
-- **主题完善**：动态主题预览、sonner 主题同步、SideNav 暗色判定修复
-- **新增 IPC**：`getUserDataPath` API，设置页显示真实用户数据路径
-- **教程大全**：完成 13 篇用户教程，覆盖全部核心功能
+- **织机隐喻界面**：EmptyShell 三栏布局 + 织机 SVG 动画 + 温暖品牌视觉
+- **织线卡片设计**：时间轴事件卡片左侧色条 + 织线虚线边框 + 毛玻璃背景
+- **沉浸时间轴**：双层网格背景（大格套小格）+ 纹理叠加 + 精致轨道头
+- **流畅动效**：Framer Motion 视图切换动画 + 骨架屏 shimmer + 命令面板 Spotlight 风格
+- **关系图升级**：节点阴影 + Hover 放大 + 主题色连线
+- **统一设计系统**：TDesign 组件库 + 6 套主题 + 集中调色板
 
 ## Quick Start
 

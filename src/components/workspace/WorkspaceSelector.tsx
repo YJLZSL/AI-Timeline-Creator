@@ -9,6 +9,7 @@ import { ChapterRail } from './ChapterRail.js';
 import { CreateWorkspaceDialog } from './CreateWorkspaceDialog.js';
 import { ExportDialog } from './ExportDialog.js';
 import { ImportDialog } from './ImportDialog.js';
+import { WorkspaceCardSkeleton } from '@/components/_shared/Skeleton.js';
 import type { Workspace } from '../../../shared/types.js';
 
 const containerVariant = {
@@ -49,7 +50,7 @@ export function WorkspaceSelector() {
 
   return (
     <div className="h-full overflow-auto bg-background">
-      <div className="mx-auto max-w-6xl px-8 py-12">
+      <div className="px-8 py-10">
         <motion.div
           variants={headerVariant}
           initial="hidden"
@@ -89,7 +90,7 @@ export function WorkspaceSelector() {
             style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
           >
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-44 animate-pulse rounded-xl border border-border bg-card" />
+              <WorkspaceCardSkeleton key={i} />
             ))}
           </div>
         ) : workspaces && workspaces.length > 0 ? (

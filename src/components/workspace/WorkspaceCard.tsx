@@ -34,12 +34,18 @@ export function WorkspaceCard({ workspace, onSelect, onDelete }: WorkspaceCardPr
 
   return (
     <motion.div
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -6 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={onSelect}
-      className="group relative cursor-pointer rounded-xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md"
+      className="group relative cursor-pointer rounded-xl border border-border/60 bg-card p-5 shadow-sm transition-shadow hover:shadow-[var(--shadow-card-hover)] overflow-hidden shimmer-effect"
     >
-      <div className="mb-3 flex items-start justify-between gap-3">
+      {/* 左侧色条 */}
+      <div
+        className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full transition-all duration-300 group-hover:shadow-[2px_0_8px_-1px_rgb(var(--primary)_0.3)]"
+        style={{ backgroundColor: 'rgb(var(--primary))' }}
+      />
+
+      <div className="mb-3 flex items-start justify-between gap-3 pl-2">
         <h3 className="line-clamp-1 font-serif text-lg font-semibold text-foreground">
           {safeWorkspaceName(workspace.name)}
         </h3>
@@ -54,11 +60,11 @@ export function WorkspaceCard({ workspace, onSelect, onDelete }: WorkspaceCardPr
         </TButton>
       </div>
 
-      <p className="mb-4 min-h-[2.5rem] line-clamp-2 text-sm text-muted-foreground">
+      <p className="mb-4 min-h-[2.5rem] line-clamp-2 text-sm text-muted-foreground pl-2">
         {safeDescription(workspace.description)}
       </p>
 
-      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between gap-2 text-xs text-muted-foreground pl-2">
         <TTag variant="light" size="small" className="gap-1 font-normal">
           <FileTextIcon size={12} />
           {eventCount} 事件

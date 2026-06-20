@@ -336,10 +336,12 @@ export function TimelineCanvas() {
         className="flex-1 overflow-auto bg-background relative"
         style={{
           backgroundImage: `
-            linear-gradient(to right, rgb(var(--border) / 0.15) 1px, transparent 1px),
-            linear-gradient(to bottom, rgb(var(--border) / 0.15) 1px, transparent 1px)
+            linear-gradient(to right, rgb(var(--border) / 0.04) 1px, transparent 1px),
+            linear-gradient(to bottom, rgb(var(--border) / 0.04) 1px, transparent 1px),
+            linear-gradient(to right, rgb(var(--border) / 0.08) 1px, transparent 1px),
+            linear-gradient(to bottom, rgb(var(--border) / 0.08) 1px, transparent 1px)
           `,
-          backgroundSize: '40px 40px',
+          backgroundSize: '20px 20px, 20px 20px, 40px 40px, 40px 40px',
         }}
         onClick={() => {
           useSelectionStore.getState().clear();
@@ -347,7 +349,7 @@ export function TimelineCanvas() {
       >
         {/* Theme texture overlay */}
         <div
-          className="pointer-events-none absolute inset-0 opacity-70"
+          className="pointer-events-none absolute inset-0 opacity-50"
           style={{
             backgroundImage: 'var(--theme-texture)',
             backgroundSize: 'var(--theme-texture-size)',
@@ -470,7 +472,20 @@ function TimelineEmptyState() {
           className="mx-auto text-primary"
           aria-hidden="true"
         >
-          <line x1="4" y1="32" x2="92" y2="32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.3" />
+          <style>{`
+            @keyframes weave-draw {
+              0% { stroke-dashoffset: 100; }
+              100% { stroke-dashoffset: 0; }
+            }
+            .weave-line {
+              stroke-dasharray: 4 4;
+              animation: weave-draw 3s ease-out infinite alternate;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .weave-line { animation: none; }
+            }
+          `}</style>
+          <line x1="4" y1="32" x2="92" y2="32" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.3" className="weave-line" />
           <rect x="12" y="10" width="18" height="26" rx="4" fill="currentColor" opacity="0.12" />
           <rect x="12" y="10" width="4" height="26" rx="2" fill="currentColor" />
           <circle cx="12" cy="32" r="4" fill="currentColor" />
@@ -481,17 +496,17 @@ function TimelineEmptyState() {
           <rect x="72" y="6" width="4" height="30" rx="2" fill="currentColor" />
           <circle cx="72" cy="32" r="4" fill="currentColor" />
         </svg>
-        <div className="text-base font-semibold text-card-foreground mt-5 mb-2">时间轴还是空的</div>
+        <div className="text-base font-semibold text-card-foreground mt-5 mb-2">故事从这里开始编织</div>
         <p className="text-sm text-muted-foreground mb-5">
-          在事件面板中添加事件，或点击下方按钮开始编写第一条时间轴事件
+          在时间轴中添加事件，让灵感编织成可追溯的故事经纬
         </p>
         <TButton
-          theme="primary"
-          size="small"
+          theme="success"
+          size="medium"
           icon={<PlusIcon size={16} />}
           onClick={() => useUIStore.getState().setActivePanel('event-editor')}
         >
-          创建事件
+          创建第一个事件
         </TButton>
       </div>
     </div>

@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/sonner';
@@ -26,27 +27,51 @@ import { tryHandleShortcut, getCurrentContext } from '@/lib/shortcut-registry';
 import { setApiBase } from '@/services/api';
 import { useWorkspace } from '@/services/api-hooks';
 
+const viewVariants = {
+  initial: { opacity: 0, y: 8, scale: 0.98 },
+  animate: { opacity: 1, y: 0, scale: 1 },
+  exit: { opacity: 0, y: -8, scale: 0.98 },
+};
+
 function MainCanvas() {
   const viewMode = useTimelineStore((s) => s.viewMode);
 
-  switch (viewMode) {
-    case 'timeline':
-      return <TimelineView />;
-    case 'outline':
-      return <OutlineView />;
-    case 'narrative':
-      return <NarrativeView />;
-    case 'gantt':
-      return <GanttTimelineView />;
-    case 'tree':
-      return <TreeTimelineView />;
-    case 'statistics':
-      return <StatsView />;
-    case 'relationship':
-      return <RelationshipView />;
-    default:
-      return <TimelineView />;
-  }
+  const renderView = () => {
+    switch (viewMode) {
+      case 'timeline':
+        return <TimelineView />;
+      case 'outline':
+        return <OutlineView />;
+      case 'narrative':
+        return <NarrativeView />;
+      case 'gantt':
+        return <GanttTimelineView />;
+      case 'tree':
+        return <TreeTimelineView />;
+      case 'statistics':
+        return <StatsView />;
+      case 'relationship':
+        return <RelationshipView />;
+      default:
+        return <TimelineView />;
+    }
+  };
+
+  return (
+    <AnimatePresence mode="wait">
+      <motion.div
+        key={viewMode}
+        className="h-full w-full"
+        variants={viewVariants}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+        transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+      >
+        {renderView()}
+      </motion.div>
+    </AnimatePresence>
+  );
 }
 
 export function AppShell() {

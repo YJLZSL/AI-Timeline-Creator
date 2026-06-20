@@ -77,11 +77,12 @@ export function RelationshipGraph({ nodes, links, onNodeClick, highlightedNodeId
     const link = g
       .append('g')
       .attr('stroke', 'currentColor')
-      .attr('stroke-opacity', 0.3)
+      .attr('stroke-opacity', 0.25)
       .selectAll('line')
       .data(localLinks)
       .join('line')
-      .attr('stroke-width', 1.5);
+      .attr('stroke-width', 1.5)
+      .style('stroke-linecap', 'round');
 
     const node = g
       .append('g')
@@ -96,7 +97,26 @@ export function RelationshipGraph({ nodes, links, onNodeClick, highlightedNodeId
       .attr('r', (d) => nodeRadius(d.degree, maxDegree))
       .attr('fill', (d) => getNodeColor(d.type))
       .style('stroke', 'rgb(var(--background))')
-      .attr('stroke-width', 2);
+      .style('filter', 'drop-shadow(0 2px 4px rgb(0 0 0 / 0.15))')
+      .attr('stroke-width', 2)
+      .style('transition', 'all 0.2s');
+
+    // Hover effect on nodes
+    node
+      .on('mouseenter', function() {
+        const datum = d3.select<SVGGElement, GraphNode>(this).datum();
+        d3.select(this).select('circle')
+          .transition().duration(200)
+          .attr('r', nodeRadius(datum.degree, maxDegree) + 3)
+          .style('filter', 'drop-shadow(0 4px 8px rgb(0 0 0 / 0.25))');
+      })
+      .on('mouseleave', function() {
+        const datum = d3.select<SVGGElement, GraphNode>(this).datum();
+        d3.select(this).select('circle')
+          .transition().duration(200)
+          .attr('r', nodeRadius(datum.degree, maxDegree))
+          .style('filter', 'drop-shadow(0 2px 4px rgb(0 0 0 / 0.15))');
+      });
 
     node
       .append('text')

@@ -7,13 +7,29 @@
 
 ## [1.0.0] — 2026-06-20
 
-**全面前端重构 + 设计系统统一 + 教程大全。**
+**全面前端重构 + 设计系统统一 + 视觉升级 + 教程大全。**
+
+### 视觉设计升级（Phase 1-4）
+- **EmptyShell 三栏布局**：品牌区（织机 SVG 动画 + 标语）+ 工作区卡片网格 + 快速操作面板
+- **织机隐喻**：抽象经线/纬线交织 SVG，subtle 波动动画，prefers-reduced-motion 自动禁用
+- **时间轴事件卡片重设计**：毛玻璃背景（backdrop-blur-sm）、左侧 4px 色条 + 光晕、织线虚线边框（hover 显示）、hover 快速操作按钮（编辑/关联/属性）
+- **选中态升级**：外发光 box-shadow（0 0 0 2px primary/0.2 + 0 0 12px primary/0.1）、scale(1.01)
+- **拖拽态升级**：opacity 0.88、微妙 rotate(1deg)、更大阴影
+- **TimelineCanvas 背景优化**：双层网格（20px 细线 + 40px 粗线）、纹理叠加更柔和、轨道头 backdrop-blur-md 毛玻璃
+- **主题纹理升级**：洛笙主题增加纸张横线纹理、午夜主题增加星空粒子
+- **工作区卡片升级**：左侧 3px 主色条、hover 上浮 6px + shimmer 光带扫过 + 更大阴影
+- **空状态升级**：SVG 编织动画（stroke-dashoffset）、温暖文案"故事从这里开始编织"
+- **关系图美化**：节点阴影（drop-shadow）、Hover 放大、更柔和的连线
+- **命令面板优化**：Spotlight 风格（backdrop-blur-xl、更大搜索框、左侧选中色条、等宽快捷键提示）
+- **视图切换动效**：Framer Motion AnimatePresence（淡入淡出 + 轻微缩放）
+- **骨架屏组件**：Skeleton / SkeletonGroup / TimelineSkeleton / WorkspaceCardSkeleton
+- **微交互工具类**：btn-lift（按钮上浮）、input-glow（输入框发光）、card-lift（卡片上浮）
 
 ### 设计系统重构
 - **统一组件库**：全面迁移到 TDesign React，消除 3 套弹窗（Radix Dialog / TDesign Dialog / 手写 `bg-black/30`）、3 套按钮（shadcn Button / TButton / 原生 `<button>`）、3 套输入框（shadcn Input / TInput / 原生 `<input>`）的混用
 - **集中调色板**：新建 `src/lib/colors.ts`，统一轨道 8 色、连线 7 色、关系图 3 色、伏笔 4 色等 68 处硬编码颜色
 - **图标统一**：14 个文件的 lucide-react 图标全部迁移到 `@icon-park/react`（`@/lib/icons.ts` 统一登记）
-- **新增共享组件**：`EmptyState`（统一空状态）、`LoadingState`（统一加载态）、`SettingsRow`（统一设置行）
+- **新增共享组件**：`EmptyState`（统一空状态）、`LoadingState`（统一加载态）、`SettingsRow`（统一设置行）、`Skeleton`（骨架屏）
 
 ### 主题与样式完善
 - **动态主题预览**：`ThemeSelector.tsx` 预览色改为从 `lib/colors.ts` 动态生成，消除与 `index.css` 的 3 处重复维护
