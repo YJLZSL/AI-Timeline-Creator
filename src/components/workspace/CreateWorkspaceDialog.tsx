@@ -5,7 +5,7 @@ import { useCreateWorkspace } from '@/services/api-hooks.js';
 import { applyTemplate } from '@/lib/apply-template.js';
 import { STORY_TEMPLATES } from '@/lib/story-templates.js';
 import { Dialog } from '@/components/ui-tdesign';
-import { TInput, TTextarea, TButton } from '@/components/ui-tdesign';
+import { TInput, TTextarea } from '@/components/ui-tdesign';
 import {
   CompassIcon,
   LayersIcon,
@@ -120,22 +120,28 @@ export function CreateWorkspaceDialog({ open, onClose, onCreated }: CreateWorksp
               const Icon = ICON_MAP[t.icon] ?? FileTextIcon;
               const active = templateId === t.id;
               return (
-                <TButton
-                  key={t.id}
-                  type="button"
-                  variant="text"
-                  onClick={() => setTemplateId(t.id)}
-                  className={cn(
-                    'flex flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-colors h-auto',
-                    active
-                      ? 'border-primary bg-primary/5 ring-1 ring-primary'
-                      : 'border-border hover:bg-accent',
-                  )}
-                >
-                  <Icon className={cn('size-4', active ? 'text-primary' : 'text-muted-foreground')} />
-                  <span className="text-sm font-medium">{t.name}</span>
-                  <span className="line-clamp-1 text-xs text-muted-foreground">{t.description}</span>
-                </TButton>
+              <div
+                key={t.id}
+                role="button"
+                tabIndex={0}
+                onClick={() => setTemplateId(t.id)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setTemplateId(t.id);
+                  }
+                }}
+                className={cn(
+                  'flex cursor-pointer flex-col items-start gap-1.5 rounded-lg border p-3 text-left transition-colors',
+                  active
+                    ? 'border-primary bg-primary/5 ring-1 ring-primary'
+                    : 'border-border hover:bg-accent',
+                )}
+              >
+                <Icon className={cn('size-4', active ? 'text-primary' : 'text-muted-foreground')} />
+                <span className="text-sm font-medium">{t.name}</span>
+                <span className="line-clamp-1 text-xs text-muted-foreground">{t.description}</span>
+              </div>
               );
             })}
           </div>
