@@ -92,12 +92,12 @@ export function ContextPanel() {
     >
       {/* 左侧拖拽 handle */}
       <div
-        className="absolute inset-y-0 left-0 w-1 cursor-col-resize transition-colors hover:bg-primary/30"
+        className="absolute inset-y-0 left-0 w-1 cursor-col-resize transition-colors hover:bg-primary/40 hover:shadow-[2px_0_6px_rgb(var(--primary)/0.15)]"
         onMouseDown={handleDragStart}
       />
 
       {/* 标题栏 */}
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 bg-muted/30">
         <h2 className="font-serif text-sm font-semibold text-foreground">{title}</h2>
         <div className="flex items-center gap-2">
           {viewMode === 'outline' && (
@@ -106,34 +106,37 @@ export function ContextPanel() {
                 variant="text"
                 shape="square"
                 size="small"
-                className="size-7"
+                className="size-7 btn-lift"
                 disabled={outlineFontSize <= 12}
                 onClick={() => setOutlineFontSize(outlineFontSize - 1)}
                 title="减小字号"
-                icon={<MinusIcon size={16} />}
-              />
+              >
+                <MinusIcon size={16} />
+              </TButton>
               <span className="w-5 text-center text-xs tabular-nums text-muted-foreground">{outlineFontSize}</span>
               <TButton
                 variant="text"
                 shape="square"
                 size="small"
-                className="size-7"
+                className="size-7 btn-lift"
                 disabled={outlineFontSize >= 24}
                 onClick={() => setOutlineFontSize(outlineFontSize + 1)}
                 title="增大字号"
-                icon={<PlusIcon size={16} />}
-              />
+              >
+                <PlusIcon size={16} />
+              </TButton>
             </div>
           )}
           <TButton
             variant="text"
             shape="square"
             size="small"
-            className="size-7"
+            className="size-7 btn-lift"
             onClick={handleClose}
-            icon={<XIcon size={16} />}
             title="关闭"
-          />
+          >
+            <XIcon size={16} />
+          </TButton>
         </div>
       </div>
 

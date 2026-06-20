@@ -105,9 +105,10 @@ export function LeftPanel() {
           size="small"
           onClick={() => setCollapsed((c) => !c)}
           aria-label={collapsed ? '展开侧边栏' : '折叠侧边栏'}
-          className="size-7 text-muted-foreground/60 hover:bg-accent/40 hover:text-accent-foreground transition-colors"
-          icon={<ToggleIcon size={16} />}
-        />
+          className="size-7 btn-lift text-muted-foreground/60 hover:bg-accent/40 hover:text-accent-foreground transition-colors"
+        >
+          <ToggleIcon size={16} />
+        </TButton>
       </div>
 
       {!collapsed && (
@@ -120,7 +121,7 @@ export function LeftPanel() {
               placeholder="搜索资源..."
               value={searchQuery}
               onChange={(v) => setSearchQuery(v as string)}
-              className="h-8 pl-8 text-xs border-border/50 focus:border-primary/50 transition-all"
+              className="h-8 pl-8 text-xs border-border/50 focus:border-primary/50 transition-all input-glow"
               clearable
             />
           </div>
@@ -132,7 +133,7 @@ export function LeftPanel() {
           <ToolSection title="工具" tools={UTILITY_TOOLS} activePanel={activePanel} onToolClick={handleToolClick} />
 
           {/* 快速统计 */}
-          <div className="mt-auto space-y-2 rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm">
+          <div className="mt-auto space-y-2 rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm card-lift">
             <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               工作区概览
             </div>
@@ -181,9 +182,10 @@ export function LeftPanel() {
                     : 'text-muted-foreground/60 hover:bg-accent/40 hover:text-accent-foreground',
                 )}
                 onClick={() => handleToolClick(item.panelId)}
-                icon={<Icon size={18} />}
                 title={item.label}
-              />
+              >
+                <Icon size={18} />
+              </TButton>
             );
           })}
         </div>
@@ -219,7 +221,7 @@ function ToolSection({
               key={item.id}
               onClick={() => onToolClick(item.panelId)}
               className={cn(
-                'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-all duration-200',
+                'flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs transition-all duration-200 weave-border',
                 isActive
                   ? 'bg-primary/8 text-primary font-medium shadow-sm'
                   : 'text-foreground/80 hover:bg-accent/40 hover:text-accent-foreground',

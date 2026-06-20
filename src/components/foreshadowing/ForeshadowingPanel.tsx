@@ -429,7 +429,7 @@ export function ForeshadowingPanel() {
                     <div
                       data-entity-id={f.id}
                       onClick={() => handleCardClick(f)}
-                      className={`foreshadowing-card group relative rounded-lg border bg-card p-3 text-card-foreground transition-all cursor-default ${
+                      className={`foreshadowing-card group relative rounded-lg border bg-card p-3 text-card-foreground transition-all cursor-default card-lift ${
                         isSelected
                           ? 'border-primary bg-primary/[0.06] shadow-sm ring-1 ring-primary/15'
                           : 'border-border hover:-translate-y-0.5 hover:shadow-md'

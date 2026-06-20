@@ -161,8 +161,9 @@ export function AIConfigPanel({ open, onClose }: AIConfigPanelProps) {
                 size="small"
                 className="p-0 w-6 h-6 min-h-0"
                 onClick={() => setShowKey((v) => !v)}
-                icon={showKey ? <EyesOffIcon size={16} /> : <EyesIcon size={16} />}
-              />
+              >
+                {showKey ? <EyesOffIcon size={16} /> : <EyesIcon size={16} />}
+              </TButton>
             }
           />
         </div>

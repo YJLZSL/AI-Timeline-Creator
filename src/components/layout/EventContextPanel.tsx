@@ -271,7 +271,7 @@ function SectionCard({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border/40 bg-background/50 transition-all duration-200 hover:border-border/70 hover:shadow-sm hover:bg-background/70">
+    <div className="card-lift rounded-xl border border-border/40 bg-background/50 transition-all duration-200 hover:border-border/70 hover:shadow-sm hover:bg-background/70">
       <div className="flex items-center gap-2 border-b border-border/30 px-3 py-2.5">
         <span className="text-muted-foreground/70">{icon}</span>
         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
@@ -305,7 +305,7 @@ function EmptyLabel({ label }: { label: string }) {
 
 function CharacterBadge({ character }: { character: Character }) {
   return (
-    <div className="flex items-center gap-2 rounded-lg border border-border/40 bg-background/80 px-2.5 py-1.5 transition-all duration-200 hover:border-border/70 hover:shadow-sm">
+    <div className="card-lift flex items-center gap-2 rounded-lg border border-border/40 bg-background/80 px-2.5 py-1.5 transition-all duration-200 hover:border-border/70 hover:shadow-sm">
       <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-[11px] font-bold text-primary ring-2 ring-primary/5">
         {character.name.charAt(0)}
       </div>
@@ -324,7 +324,7 @@ function CharacterBadge({ character }: { character: Character }) {
 function WorldSettingItem({ worldSetting }: { worldSetting: WorldSetting }) {
   const colorClass = CATEGORY_COLORS[worldSetting.category] ?? CATEGORY_COLORS['其他'];
   return (
-    <div className="flex items-center justify-between rounded-lg border border-border/40 bg-background/80 px-2.5 py-2 transition-all duration-200 hover:border-border/70">
+    <div className="card-lift flex items-center justify-between rounded-lg border border-border/40 bg-background/80 px-2.5 py-2 transition-all duration-200 hover:border-border/70">
       <div className="flex items-center gap-2">
         <span className={cn('rounded-md px-1.5 py-0.5 text-[10px] font-medium', colorClass)}>
           {worldSetting.category}
@@ -352,7 +352,7 @@ function ForeshadowingItem({
   const isResolved = foreshadowing.resolvedEventId === eventId;
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-border/40 bg-background/80 px-2.5 py-2 transition-all duration-200 hover:border-border/70">
+    <div className="card-lift flex flex-col gap-1.5 rounded-lg border border-border/40 bg-background/80 px-2.5 py-2 transition-all duration-200 hover:border-border/70">
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-medium text-foreground">{foreshadowing.title}</span>
         <span className={cn('rounded-md px-1.5 py-0.5 text-[10px] font-medium', status.color)}>
@@ -395,7 +395,7 @@ function ConnectionItem({
   const typeClass = TYPE_COLORS[connection.type] ?? 'bg-gray-50 text-gray-700';
 
   return (
-    <div className="flex flex-col gap-1.5 rounded-lg border border-border/40 bg-background/80 px-2.5 py-2 transition-all duration-200 hover:border-border/70">
+    <div className="card-lift flex flex-col gap-1.5 rounded-lg border border-border/40 bg-background/80 px-2.5 py-2 transition-all duration-200 hover:border-border/70">
       <div className="flex items-center gap-2">
         <span className={cn('rounded-md px-1.5 py-0.5 text-[10px] font-medium', typeClass)}>
           {connection.type}

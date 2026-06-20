@@ -307,8 +307,8 @@ export function WorldBuildingPanel() {
           block
           onClick={handleCreate}
           disabled={!newKey.trim() || createMutation.isPending}
-          icon={<PlusIcon size={16} />}
         >
+          <PlusIcon size={16} />
           {createMutation.isPending ? '添加中...' : '添加设定'}
         </TButton>
       </div>
@@ -330,7 +330,7 @@ export function WorldBuildingPanel() {
                         bordered
                         hoverShadow
                         size="small"
-                        className={`cursor-default transition-all ${
+                        className={`cursor-default transition-all card-lift ${
                           isSelected
                             ? 'ring-1 ring-primary/40 border-primary'
                             : ''
@@ -376,8 +376,9 @@ export function WorldBuildingPanel() {
                                 e.stopPropagation();
                                 startEditing(s);
                               }}
-                              icon={<EditIcon size={14} />}
-                            />
+                            >
+                              <EditIcon size={14} />
+                            </TButton>
                             <TButton
                               variant="text"
                               shape="square"
@@ -387,8 +388,9 @@ export function WorldBuildingPanel() {
                                 e.stopPropagation();
                                 setConfirmDeleteId(s.id);
                               }}
-                              icon={<DeleteIcon size={14} />}
-                            />
+                            >
+                              <DeleteIcon size={14} />
+                            </TButton>
                           </div>
                         </div>
                       }
@@ -412,7 +414,7 @@ export function WorldBuildingPanel() {
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-6 text-center">
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-6 text-center card-lift">
             <CompassIcon size={32} className="text-muted-foreground/40 mb-2" />
             <p className="text-sm text-muted-foreground font-sans">该分类暂无设定</p>
             <p className="text-xs text-muted-foreground/70 font-sans mt-1">在上方添加第一条「{category}」设定</p>
@@ -433,11 +435,12 @@ export function WorldBuildingPanel() {
               size="small"
               onClick={handleUpdate}
               disabled={!editKey.trim() || updateMutation.isPending}
-              icon={<CheckIcon size={14} />}
             >
+              <CheckIcon size={14} />
               保存
             </TButton>
-            <TButton variant="outline" size="small" onClick={cancelEditing} icon={<XIcon size={14} />}>
+            <TButton variant="outline" size="small" onClick={cancelEditing}>
+              <XIcon size={14} />
               取消
             </TButton>
           </div>
@@ -479,11 +482,12 @@ export function WorldBuildingPanel() {
               size="small"
               onClick={() => handleDelete(confirmDeleteId!)}
               disabled={deleteMutation.isPending}
-              icon={<DeleteIcon size={14} />}
             >
+              <DeleteIcon size={14} />
               {deleteMutation.isPending ? '删除中...' : '删除'}
             </TButton>
-            <TButton variant="outline" size="small" onClick={() => setConfirmDeleteId(null)} icon={<XIcon size={14} />}>
+            <TButton variant="outline" size="small" onClick={() => setConfirmDeleteId(null)}>
+              <XIcon size={14} />
               取消
             </TButton>
           </div>

@@ -142,7 +142,7 @@ export function TopToolbar() {
     >
       {/* 左侧：品牌 + 工作区 */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 pr-2 group">
+        <div className="flex items-center gap-1.5 pr-2 group loom-warp">
           <LayersIcon className="size-5 text-primary transition-transform duration-300 group-hover:rotate-12" />
           <span className="hidden select-none font-serif text-sm font-semibold tracking-tight sm:inline">
             Storyloom
@@ -203,10 +203,11 @@ export function TopToolbar() {
             variant="text"
             size="small"
             shape="square"
-            className="size-7 hover:bg-muted/80"
-            icon={<ZoomOutIcon className="size-4 text-muted-foreground" />}
+            className="size-7 btn-lift hover:bg-muted/80"
             onClick={() => zoomOut(0.1)}
-          />
+          >
+            <ZoomOutIcon className="size-4 text-muted-foreground" />
+          </TButton>
         </TTooltip>
 
         <div className="flex w-28 flex-col gap-0 px-1">
@@ -230,10 +231,11 @@ export function TopToolbar() {
             variant="text"
             size="small"
             shape="square"
-            className="size-7 hover:bg-muted/80"
-            icon={<ZoomInIcon className="size-4 text-muted-foreground" />}
+            className="size-7 btn-lift hover:bg-muted/80"
             onClick={() => zoomIn(0.1)}
-          />
+          >
+            <ZoomInIcon className="size-4 text-muted-foreground" />
+          </TButton>
         </TTooltip>
 
         <div className="mx-1 h-5 w-px bg-border/60" />
@@ -243,10 +245,10 @@ export function TopToolbar() {
             variant="text"
             size="small"
             theme="success"
-            className="gap-1 text-xs hover:bg-green-50/50 dark:hover:bg-green-900/20"
-            icon={<PlusIcon className="size-4" />}
+            className="gap-1 text-xs btn-lift hover:bg-green-50/50 dark:hover:bg-green-900/20"
             onClick={ctx.createEvent}
           >
+            <PlusIcon className="size-4" />
             新建
           </TButton>
         </TTooltip>
@@ -255,10 +257,10 @@ export function TopToolbar() {
           <TButton
             variant="text"
             size="small"
-            className="gap-1 text-xs hover:bg-muted/80"
-            icon={<SaveIcon className="size-4 text-muted-foreground" />}
+            className="gap-1 text-xs btn-lift hover:bg-muted/80"
             onClick={ctx.save}
           >
+            <SaveIcon className="size-4 text-muted-foreground" />
             保存
           </TButton>
         </TTooltip>
@@ -269,10 +271,10 @@ export function TopToolbar() {
           <TButton
             variant="outline"
             size="small"
-            className="gap-1 text-xs border-border/60 hover:bg-muted/50"
-            icon={<CommandIcon className="size-3.5" />}
+            className="gap-1 text-xs border-border/60 btn-lift hover:bg-muted/50"
             onClick={() => setCommandPaletteOpen(true)}
           >
+            <CommandIcon className="size-3.5" />
             <span className="hidden text-[10px] text-muted-foreground sm:inline">Ctrl+K</span>
           </TButton>
         </TTooltip>
@@ -284,11 +286,12 @@ export function TopToolbar() {
             variant="text"
             size="small"
             shape="square"
-            className="size-7 hover:bg-muted/80"
-            icon={<SettingIcon className="size-4 text-muted-foreground" />}
+            className="size-7 btn-lift hover:bg-muted/80"
             aria-label="设置"
             onClick={() => setSettingsOpen(true)}
-          />
+          >
+            <SettingIcon className="size-4 text-muted-foreground" />
+          </TButton>
         </TTooltip>
 
         <TPopup
@@ -313,10 +316,11 @@ export function TopToolbar() {
             variant="text"
             size="small"
             shape="square"
-            className="size-7 hover:bg-muted/80"
-            icon={<PaletteIcon className="size-4 text-muted-foreground" />}
+            className="size-7 btn-lift hover:bg-muted/80"
             aria-label="选择主题"
-          />
+          >
+            <PaletteIcon className="size-4 text-muted-foreground" />
+          </TButton>
         </TPopup>
       </div>
     </header>

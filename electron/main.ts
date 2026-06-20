@@ -243,7 +243,7 @@ if (!gotTheLock) {
     console.log(`app.isPackaged: ${app.isPackaged}`);
     console.log(`process.resourcesPath: ${process.resourcesPath}`);
 
-    const isDev = !app.isPackaged || process.env.NODE_ENV === 'development';
+    const isDev = process.env.NODE_ENV === 'development';
 
     // 1. 立即创建主窗口并显示 splash
     mainWindow = await createMainWindow();

@@ -514,25 +514,26 @@ export function OutlineView() {
         <TButton
           theme="success"
           size="small"
-          icon={<PlusIcon size={16} />}
           disabled={!workspaceId}
           onClick={() => ctx.createEvent()}
         >
+          <PlusIcon size={16} />
           新建章节
         </TButton>
         <TButton
           size="small"
-          icon={<HistoryIcon size={16} />}
           disabled={!workspaceId}
           onClick={() => {
             saveOutlineSnapshot('手动保存快照');
             setHistoryOpen(true);
           }}
         >
+          <HistoryIcon size={16} />
           演进历史
         </TButton>
         {outlineFilterTrackId && (
-          <TButton variant="text" size="small" icon={<XIcon size={14} />} onClick={() => setOutlineFilterTrackId(null)}>
+          <TButton variant="text" size="small" onClick={() => setOutlineFilterTrackId(null)}>
+            <XIcon size={14} />
             清除轨道过滤
           </TButton>
         )}
@@ -710,24 +711,26 @@ export function OutlineView() {
                                           variant="text"
                                           shape="square"
                                           size="small"
-                                          icon={<EditIcon size={16} />}
                                           onClick={(e: React.MouseEvent) => {
                                             e.stopPropagation();
                                             openEventEditor(event.id);
                                           }}
                                           title="编辑"
-                                        />
+                                        >
+                                          <EditIcon size={16} />
+                                        </TButton>
                                         <TButton
                                           variant="text"
                                           shape="square"
                                           size="small"
-                                          icon={<DeleteIcon size={16} />}
                                           onClick={(e: React.MouseEvent) => {
                                             e.stopPropagation();
                                             setDeletingEventId(event.id);
                                           }}
                                           title="删除"
-                                        />
+                                        >
+                                          <DeleteIcon size={16} />
+                                        </TButton>
                                       </div>
                                     </div>
                                     {isEditing ? (
@@ -888,9 +891,9 @@ export function OutlineView() {
                     <TButton
                       theme="primary"
                       size="small"
-                      icon={<UndoIcon size={14} />}
                       onClick={() => setPendingRestoreId(isPendingRestore ? null : v.id)}
                     >
+                      <UndoIcon size={14} />
                       回滚
                     </TButton>
                     <TButton
@@ -898,10 +901,11 @@ export function OutlineView() {
                       variant="text"
                       shape="square"
                       size="small"
-                      icon={<DeleteIcon size={14} />}
                       onClick={() => setPendingDeleteVersionId(isPendingDelete ? null : v.id)}
                       title="删除"
-                    />
+                    >
+                      <DeleteIcon size={14} />
+                    </TButton>
                   </div>
                   {isPendingRestore && (
                     <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/50">

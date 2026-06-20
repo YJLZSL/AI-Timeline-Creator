@@ -334,7 +334,7 @@ export function AIPanel() {
           </div>
 
           {/* 模型信息条 */}
-          <div className="shrink-0 mx-3 mt-2 px-3 py-2 rounded-lg border border-border bg-card/80 flex items-center gap-2 flex-wrap">
+          <div className="shrink-0 mx-3 mt-2 px-3 py-2 rounded-lg border border-border bg-card/80 flex items-center gap-2 flex-wrap card-lift">
             <TTag variant="light" size="small" theme="primary">
               AI 配置已就绪
             </TTag>

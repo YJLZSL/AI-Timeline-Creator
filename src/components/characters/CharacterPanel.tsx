@@ -264,8 +264,8 @@ export function CharacterPanel() {
           size="small"
           block
           disabled={!name.trim() || createCharacter.isPending}
-          icon={<PlusIcon size={16} />}
         >
+          <PlusIcon size={16} />
           {createCharacter.isPending ? '添加中...' : '添加角色'}
         </TButton>
       </form>
@@ -287,7 +287,7 @@ export function CharacterPanel() {
                         bordered
                         hoverShadow
                         size="small"
-                        className={`cursor-default transition-all ${
+                        className={`cursor-default transition-all card-lift ${
                           isSelected ? 'ring-1 ring-primary/40 border-primary' : ''
                         }`}
                         avatar={
@@ -336,8 +336,9 @@ export function CharacterPanel() {
                                 e.stopPropagation();
                                 startEditing(char);
                               }}
-                              icon={<EditIcon size={14} />}
-                            />
+                            >
+                              <EditIcon size={14} />
+                            </TButton>
                             <TButton
                               variant="text"
                               shape="square"
@@ -347,8 +348,9 @@ export function CharacterPanel() {
                                 e.stopPropagation();
                                 setDeletingId(char.id);
                               }}
-                              icon={<DeleteIcon size={14} />}
-                            />
+                            >
+                              <DeleteIcon size={14} />
+                            </TButton>
                           </div>
                         </div>
                       }
@@ -372,7 +374,7 @@ export function CharacterPanel() {
             })}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-6 text-center">
+          <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border bg-card p-6 text-center card-lift">
             <GroupIcon size={32} className="text-muted-foreground/40 mb-2" />
             <p className="text-sm text-muted-foreground font-sans">暂无角色</p>
             <p className="text-xs text-muted-foreground/70 font-sans mt-1">在上方创建第一个角色</p>
@@ -393,11 +395,12 @@ export function CharacterPanel() {
               size="small"
               onClick={() => saveEdit(editingId!)}
               disabled={!editName.trim() || updateCharacter.isPending}
-              icon={<CheckIcon size={14} />}
             >
+              <CheckIcon size={14} />
               保存
             </TButton>
-            <TButton variant="outline" size="small" onClick={cancelEditing} icon={<XIcon size={14} />}>
+            <TButton variant="outline" size="small" onClick={cancelEditing}>
+              <XIcon size={14} />
               取消
             </TButton>
           </div>
@@ -434,8 +437,9 @@ export function CharacterPanel() {
                     size="small"
                     className="ml-0.5 p-0 w-4 h-4 min-h-0"
                     onClick={() => setEditTraits((prev) => prev.filter((_, idx) => idx !== i))}
-                    icon={<XIcon size={10} />}
-                  />
+                  >
+                    <XIcon size={10} />
+                  </TButton>
                 </TTag>
               ))}
             </div>
@@ -484,11 +488,12 @@ export function CharacterPanel() {
               size="small"
               onClick={() => confirmDelete(deletingId!)}
               disabled={deleteCharacter.isPending}
-              icon={<DeleteIcon size={14} />}
             >
+              <DeleteIcon size={14} />
               {deleteCharacter.isPending ? '删除中...' : '确认删除'}
             </TButton>
-            <TButton variant="outline" size="small" onClick={() => setDeletingId(null)} icon={<XIcon size={14} />}>
+            <TButton variant="outline" size="small" onClick={() => setDeletingId(null)}>
+              <XIcon size={14} />
               取消
             </TButton>
           </div>
