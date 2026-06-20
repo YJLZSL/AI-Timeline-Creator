@@ -1,6 +1,6 @@
 import { MonitorIcon, CheckIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
-import { TButton, TTag } from '@/components/ui-tdesign';
+import { TTag } from '@/components/ui-tdesign';
 import { useThemeStore, type ThemeId } from '@/stores/useThemeStore';
 import { getThemePreviewGradient } from '@/lib/colors';
 
@@ -29,14 +29,21 @@ export function ThemeSelector() {
         {THEME_OPTIONS.map((opt) => {
           const selected = theme === opt.id;
           return (
-            <TButton
+            <div
               key={opt.id}
-              variant="outline"
+              role="button"
+              tabIndex={0}
               className={cn(
-                'group relative h-auto flex-col items-stretch gap-2 rounded-lg border p-2 text-left transition-all',
-                selected ? 'border-primary ring-2 ring-primary/30' : 'border-border'
+                'group relative flex cursor-pointer flex-col items-stretch gap-2 rounded-lg border p-2 text-left transition-all hover:bg-accent/30',
+                selected ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/30'
               )}
               onClick={() => setTheme(opt.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setTheme(opt.id);
+                }
+              }}
             >
               <div
                 className="relative h-14 w-full overflow-hidden rounded-md border border-border"
@@ -63,7 +70,7 @@ export function ThemeSelector() {
                 <span className="text-sm font-medium leading-none">{opt.name}</span>
                 <span className="text-[11px] text-muted-foreground leading-none">{opt.description}</span>
               </div>
-            </TButton>
+            </div>
           );
         })}
       </div>

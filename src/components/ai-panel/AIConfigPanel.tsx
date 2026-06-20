@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { EyesIcon, EyesOffIcon } from '@/lib/icons';
-import { TDialog, TButton, TInput, TSelect, TOption, TTag } from '@/components/ui-tdesign';
+import { TDialog, TButton, TInput, TSelect, TOption } from '@/components/ui-tdesign';
 import { type AIConfig, getAIConfig, setAIConfig } from '@/lib/ai-config.js';
 
 interface AIConfigPanelProps {
@@ -9,9 +9,9 @@ interface AIConfigPanelProps {
 }
 
 const PROVIDER_OPTIONS = [
-  { value: 'deepseek' as const, label: 'DeepSeek', badge: '免费' },
+  { value: 'deepseek' as const, label: 'DeepSeek' },
   { value: 'kimi' as const, label: 'Kimi (Moonshot)' },
-  { value: 'glm' as const, label: '智谱 GLM', badge: '免费' },
+  { value: 'glm' as const, label: '智谱 GLM' },
   { value: 'minimax' as const, label: 'MiniMax' },
   { value: 'siliconflow' as const, label: 'SiliconFlow' },
   { value: 'openai' as const, label: 'OpenAI' },
@@ -20,7 +20,7 @@ const PROVIDER_OPTIONS = [
 
 const PROVIDER_MODELS: Record<string, string[]> = {
   deepseek: [
-    'deepseek-v4-flash (免费)',
+    'deepseek-v4-flash',
     'deepseek-v4-pro',
   ],
   kimi: [
@@ -30,7 +30,7 @@ const PROVIDER_MODELS: Record<string, string[]> = {
     'moonshot-v1-8k',
   ],
   glm: [
-    'glm-4-flash (免费)',
+    'glm-4-flash',
     'glm-4-plus',
     'glm-4-long',
     'glm-4-air',
@@ -104,7 +104,6 @@ export function AIConfigPanel({ open, onClose }: AIConfigPanelProps) {
   };
 
   const models = PROVIDER_MODELS[provider];
-  const currentBadge = PROVIDER_OPTIONS.find((o) => o.value === provider)?.badge;
 
   return (
     <TDialog
@@ -141,14 +140,9 @@ export function AIConfigPanel({ open, onClose }: AIConfigPanelProps) {
               className="flex-1"
             >
               {PROVIDER_OPTIONS.map((opt) => (
-                <TOption key={opt.value} value={opt.value} label={`${opt.label}${opt.badge ? ` [${opt.badge}]` : ''}`} />
+                <TOption key={opt.value} value={opt.value} label={opt.label} />
               ))}
             </TSelect>
-            {currentBadge && (
-              <TTag variant="light" size="small" theme="success">
-                {currentBadge}
-              </TTag>
-            )}
           </div>
         </div>
 

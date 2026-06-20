@@ -116,7 +116,7 @@ export function AIPanel() {
     if (cfg) {
       setModelInfo({ provider: cfg.provider, model: cfg.model });
     } else {
-      setModelInfo({ provider: 'deepseek', model: 'deepseek-v4-flash (免费)' });
+      setModelInfo({ provider: 'deepseek', model: 'deepseek-v4-flash' });
     }
   }, []);
 
