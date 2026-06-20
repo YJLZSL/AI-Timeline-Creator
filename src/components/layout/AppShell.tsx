@@ -11,6 +11,7 @@ import { TopToolbar } from './TopToolbar';
 import { LeftPanel } from './LeftPanel';
 import { ContextPanel } from './ContextPanel';
 import { StatusBar } from './StatusBar';
+import { ZenMode } from '@/components/zen-mode/ZenMode';
 import { TimelineView } from '@/components/timeline/TimelineView';
 import { OutlineView } from '@/components/outline/OutlineView';
 import { NarrativeView } from '@/components/timeline/NarrativeView';
@@ -83,6 +84,8 @@ export function AppShell() {
   const [mobileRightOpen, setMobileRightOpen] = useState(false);
 
   const focusMode = useUIStore((s) => s.focusMode);
+  const zenMode = useUIStore((s) => s.zenMode);
+  const setZenMode = useUIStore((s) => s.setZenMode);
   const activePanel = useUIStore((s) => s.activePanel);
   const panelWidth = useUIStore((s) => s.panelWidth);
 
@@ -177,6 +180,19 @@ export function AppShell() {
           <EventDetailView />
           <Toaster position="top-right" richColors />
         </div>
+      </TooltipProvider>
+    );
+  }
+
+  if (zenMode) {
+    return (
+      <TooltipProvider delayDuration={300}>
+        <AnimatePresence>
+          <ZenMode key="zen-mode" onExit={() => setZenMode(false)} />
+        </AnimatePresence>
+        <CommandPalette />
+        <SettingsDialog />
+        <Toaster position="top-right" richColors />
       </TooltipProvider>
     );
   }

@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn, safeJsonArray } from '@/lib/utils';
 import {
   TimeIcon,
@@ -21,6 +22,7 @@ import {
   useTracks,
 } from '@/services/api-hooks';
 import { useTimelineStore } from '@/stores/useTimelineStore';
+import { useSelectionStore } from '@/stores/useSelectionStore';
 import type {
   TimelineEvent,
   Character,
@@ -32,11 +34,11 @@ import type {
 
 /* ───────── 常量 ───────── */
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  planted: { label: '已埋下', color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300' },
-  developed: { label: '发展中', color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' },
-  resolved: { label: '已回收', color: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' },
-  abandoned: { label: '已废弃', color: 'bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300' },
+const STATUS_MAP: Record<string, { labelKey: string; color: string }> = {
+  planted: { labelKey: 'foreshadowingStatus.planted', color: 'bg-amber-50 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300' },
+  developed: { labelKey: 'foreshadowingStatus.developed', color: 'bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300' },
+  resolved: { labelKey: 'foreshadowingStatus.resolved', color: 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300' },
+  abandoned: { labelKey: 'foreshadowingStatus.abandoned', color: 'bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300' },
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -47,6 +49,16 @@ const TYPE_COLORS: Record<string, string> = {
   '对比': 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300',
   '呼应': 'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-300',
   '转折': 'bg-pink-50 text-pink-700 dark:bg-pink-900/20 dark:text-pink-300',
+};
+
+const CONNECTION_TYPE_KEYS: Record<string, string> = {
+  '因果': 'connectionType.causal',
+  '闪回': 'connectionType.flashback',
+  '伏笔': 'connectionType.foreshadowing',
+  '平行': 'connectionType.parallel',
+  '对比': 'connectionType.contrast',
+  '呼应': 'connectionType.echo',
+  '转折': 'connectionType.twist',
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -60,6 +72,17 @@ const CATEGORY_COLORS: Record<string, string> = {
   '其他': 'bg-gray-50 text-gray-700 dark:bg-gray-900/20 dark:text-gray-300',
 };
 
+const WORLD_CATEGORY_KEYS: Record<string, string> = {
+  '地理': 'worldCategory.geography',
+  '历史': 'worldCategory.history',
+  '文化': 'worldCategory.culture',
+  '政治': 'worldCategory.politics',
+  '魔法': 'worldCategory.magic',
+  '科技': 'worldCategory.technology',
+  '种族': 'worldCategory.race',
+  '其他': 'worldCategory.other',
+};
+
 /* ───────── 组件 ───────── */
 
 interface EventContextPanelProps {
@@ -68,6 +91,7 @@ interface EventContextPanelProps {
 }
 
 export function EventContextPanel({ event, workspaceId }: EventContextPanelProps) {
+  const { t } = useTranslation();
   const { data: charactersData } = useCharacters(workspaceId);
   const { data: worldSettingsData } = useWorldSettings(workspaceId);
   const { data: foreshadowingsData } = useForeshadowings(workspaceId);
@@ -75,7 +99,7 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
   const { data: eventsData } = useEvents(workspaceId);
   const { data: tracksData } = useTracks(workspaceId);
   const scrollToEvent = useTimelineStore((s) => s.scrollToEvent);
-  const setSelectedEvent = useTimelineStore((s) => s.setSelectedEvent);
+  const setSelectedEvent = useSelectionStore((s) => s.selectEvent);
 
   const characters = charactersData ?? [];
   const worldSettings = worldSettingsData ?? [];
@@ -133,13 +157,13 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
   }
 
   const tags = safeJsonArray<string>(event.tagsJson, []);
-  const trackName = event.trackId ? trackMap[event.trackId]?.name ?? '未命名轨道' : '未分配';
+  const trackName = event.trackId ? trackMap[event.trackId]?.name ?? t('track.fallbackName') : t('track.unassigned');
   const trackColor = event.trackId ? trackMap[event.trackId]?.color : null;
 
   return (
     <div className="flex flex-col gap-3 overflow-auto p-3">
       {/* 事件概览 */}
-      <SectionCard icon={<TimeIcon size={14} />} title="事件概览">
+      <SectionCard icon={<TimeIcon size={14} />} titleKey="eventContext.overview">
         <div className="space-y-2">
           <div>
             <div className="text-sm font-semibold text-foreground">{event.title}</div>
@@ -172,9 +196,9 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
           {event.startTime && (
             <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
               <HistoryIcon size={12} />
-              <span>{formatDate(event.startTime)}</span>
+              <span>{formatDate(event.startTime, t)}</span>
               {event.endTime && event.endTime !== event.startTime && (
-                <span> → {formatDate(event.endTime)}</span>
+                <span> → {formatDate(event.endTime, t)}</span>
               )}
             </div>
           )}
@@ -196,7 +220,7 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
       </SectionCard>
 
       {/* 参与角色 */}
-      <SectionCard icon={<UserIcon size={14} />} title="参与角色">
+      <SectionCard icon={<UserIcon size={14} />} titleKey="eventContext.characters">
         {relatedCharacters.length > 0 ? (
           <div className="flex flex-wrap gap-1.5">
             {relatedCharacters.map((char) => (
@@ -204,12 +228,12 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
             ))}
           </div>
         ) : (
-          <EmptyLabel label="暂无关联角色" />
+          <EmptyLabel labelKey="eventContext.noCharacters" />
         )}
       </SectionCard>
 
       {/* 世界观元素 */}
-      <SectionCard icon={<GlobeIcon size={14} />} title="世界观元素">
+      <SectionCard icon={<GlobeIcon size={14} />} titleKey="eventContext.worldview">
         {relatedWorldSettings.length > 0 ? (
           <div className="flex flex-col gap-1.5">
             {relatedWorldSettings.map((ws) => (
@@ -217,12 +241,12 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
             ))}
           </div>
         ) : (
-          <EmptyLabel label="暂无关联设定" />
+          <EmptyLabel labelKey="eventContext.noWorldSettings" />
         )}
       </SectionCard>
 
       {/* 相关伏笔 */}
-      <SectionCard icon={<RemindIcon size={14} />} title="相关伏笔">
+      <SectionCard icon={<RemindIcon size={14} />} titleKey="eventContext.foreshadowing">
         {relatedForeshadowings.length > 0 ? (
           <div className="flex flex-col gap-1.5">
             {relatedForeshadowings.map((fs) => (
@@ -230,12 +254,12 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
             ))}
           </div>
         ) : (
-          <EmptyLabel label="暂无关联伏笔" />
+          <EmptyLabel labelKey="eventContext.noForeshadowings" />
         )}
       </SectionCard>
 
       {/* 关联事件 */}
-      <SectionCard icon={<LinkIcon size={14} />} title="关联事件">
+      <SectionCard icon={<LinkIcon size={14} />} titleKey="eventContext.connections">
         {relatedConnections.length > 0 ? (
           <div className="flex flex-col gap-1.5">
             {relatedConnections.map((conn) => (
@@ -252,7 +276,7 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
             ))}
           </div>
         ) : (
-          <EmptyLabel label="暂无关联事件" />
+          <EmptyLabel labelKey="eventContext.noConnections" />
         )}
       </SectionCard>
     </div>
@@ -263,19 +287,20 @@ export function EventContextPanel({ event, workspaceId }: EventContextPanelProps
 
 function SectionCard({
   icon,
-  title,
+  titleKey,
   children,
 }: {
   icon: React.ReactNode;
-  title: string;
+  titleKey: string;
   children: React.ReactNode;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="card-lift rounded-xl border border-border/40 bg-background/50 transition-all duration-200 hover:border-border/70 hover:shadow-sm hover:bg-background/70">
       <div className="flex items-center gap-2 border-b border-border/30 px-3 py-2.5">
         <span className="text-muted-foreground/70">{icon}</span>
         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-          {title}
+          {t(titleKey)}
         </span>
       </div>
       <div className="p-3">{children}</div>
@@ -284,22 +309,24 @@ function SectionCard({
 }
 
 function EmptyState() {
+  const { t } = useTranslation();
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 p-8">
       <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/60">
         <FireIcon size={24} className="text-muted-foreground/40" />
       </div>
       <div className="text-center">
-        <p className="text-sm font-medium text-muted-foreground/70">选择一个事件查看关联数据</p>
-        <p className="mt-1 text-xs text-muted-foreground/40">在时间轴中点击任意事件</p>
+        <p className="text-sm font-medium text-muted-foreground/70">{t('eventContext.emptyStateTitle')}</p>
+        <p className="mt-1 text-xs text-muted-foreground/40">{t('eventContext.emptyStateSubtitle')}</p>
       </div>
     </div>
   );
 }
 
-function EmptyLabel({ label }: { label: string }) {
+function EmptyLabel({ labelKey }: { labelKey: string }) {
+  const { t } = useTranslation();
   return (
-    <p className="py-3 text-center text-[11px] italic text-muted-foreground/40">{label}</p>
+    <p className="py-3 text-center text-[11px] italic text-muted-foreground/40">{t(labelKey)}</p>
   );
 }
 
@@ -322,12 +349,14 @@ function CharacterBadge({ character }: { character: Character }) {
 }
 
 function WorldSettingItem({ worldSetting }: { worldSetting: WorldSetting }) {
+  const { t } = useTranslation();
   const colorClass = CATEGORY_COLORS[worldSetting.category] ?? CATEGORY_COLORS['其他'];
+  const categoryKey = WORLD_CATEGORY_KEYS[worldSetting.category] ?? 'worldCategory.other';
   return (
     <div className="card-lift flex items-center justify-between rounded-lg border border-border/40 bg-background/80 px-2.5 py-2 transition-all duration-200 hover:border-border/70">
       <div className="flex items-center gap-2">
         <span className={cn('rounded-md px-1.5 py-0.5 text-[10px] font-medium', colorClass)}>
-          {worldSetting.category}
+          {t(categoryKey)}
         </span>
         <span className="text-[11px] font-medium text-foreground">{worldSetting.key}</span>
       </div>
@@ -347,6 +376,7 @@ function ForeshadowingItem({
   foreshadowing: Foreshadowing;
   eventId: string;
 }) {
+  const { t } = useTranslation();
   const status = STATUS_MAP[foreshadowing.status] ?? STATUS_MAP['planted'];
   const isPlanted = foreshadowing.plantedEventId === eventId;
   const isResolved = foreshadowing.resolvedEventId === eventId;
@@ -356,18 +386,18 @@ function ForeshadowingItem({
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-medium text-foreground">{foreshadowing.title}</span>
         <span className={cn('rounded-md px-1.5 py-0.5 text-[10px] font-medium', status.color)}>
-          {status.label}
+          {t(status.labelKey)}
         </span>
       </div>
       <div className="flex items-center gap-2">
         {isPlanted && (
           <span className="inline-flex items-center gap-1 text-[10px] text-amber-600 dark:text-amber-400">
-            <span className="h-1 w-1 rounded-full bg-amber-400" />埋下处
+            <span className="h-1 w-1 rounded-full bg-amber-400" />{t('eventContext.plantedHere')}
           </span>
         )}
         {isResolved && (
           <span className="inline-flex items-center gap-1 text-[10px] text-green-600 dark:text-green-400">
-            <span className="h-1 w-1 rounded-full bg-green-400" />回收处
+            <span className="h-1 w-1 rounded-full bg-green-400" />{t('eventContext.resolvedHere')}
           </span>
         )}
       </div>
@@ -389,16 +419,18 @@ function ConnectionItem({
   eventMap: Record<string, TimelineEvent>;
   onJump: (eventId: string) => void;
 }) {
+  const { t } = useTranslation();
   const isSource = connection.sourceEventId === currentEventId;
   const otherEventId = isSource ? connection.targetEventId : connection.sourceEventId;
   const otherEvent = eventMap[otherEventId];
   const typeClass = TYPE_COLORS[connection.type] ?? 'bg-gray-50 text-gray-700';
+  const typeKey = CONNECTION_TYPE_KEYS[connection.type] ?? 'connectionType.causal';
 
   return (
     <div className="card-lift flex flex-col gap-1.5 rounded-lg border border-border/40 bg-background/80 px-2.5 py-2 transition-all duration-200 hover:border-border/70">
       <div className="flex items-center gap-2">
         <span className={cn('rounded-md px-1.5 py-0.5 text-[10px] font-medium', typeClass)}>
-          {connection.type}
+          {t(typeKey)}
         </span>
         <span className="text-[10px] text-muted-foreground/40">
           {isSource ? '→' : '←'}
@@ -408,7 +440,7 @@ function ConnectionItem({
         onClick={() => onJump(otherEventId)}
         className="text-left text-[11px] font-medium text-primary hover:text-primary/80 transition-colors"
       >
-        {otherEvent?.title ?? '未命名事件'}
+        {otherEvent?.title ?? t('eventContext.unnamedEvent')}
       </button>
       {connection.description && (
         <p className="text-[10px] text-muted-foreground/60 line-clamp-2">{connection.description}</p>
@@ -419,8 +451,8 @@ function ConnectionItem({
 
 /* ───────── 工具函数 ───────── */
 
-function formatDate(date: Date | string | null): string {
-  if (!date) return '未知时间';
+function formatDate(date: Date | string | null, t: (key: string) => string): string {
+  if (!date) return t('eventContext.unknownTime');
   const d = typeof date === 'string' ? new Date(date) : date;
   return d.toLocaleDateString('zh-CN', {
     year: 'numeric',

@@ -18,7 +18,7 @@ import {
   useTracks,
 } from '@/services/api-hooks';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
-import { useTimelineStore } from '@/stores/useTimelineStore';
+import { useSelectionStore } from '@/stores/useSelectionStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { pushHistoryRecord } from '@/lib/history';
 import { safeJsonArray } from '@/lib/utils';
@@ -50,7 +50,7 @@ interface EventEditorDialogProps {
 
 export function EventEditorDialog({ event, onClose }: EventEditorDialogProps) {
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
-  const setSelectedEvent = useTimelineStore((s) => s.setSelectedEvent);
+  const setSelectedEvent = useSelectionStore((s) => s.selectEvent);
   const setActivePanel = useUIStore((s) => s.setActivePanel);
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');

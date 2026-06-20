@@ -18,8 +18,6 @@ export const useWorkspaceStore = create<WorkspaceState>()(
         if (prev === id) return;
         set({ currentWorkspaceId: id });
         const timeline = useTimelineStore.getState();
-        timeline.setSelectedEvent(null);
-        timeline.setSelectedCharacter(null);
         timeline.setVisibleDateRange(null);
         useSelectionStore.getState().clear();
         const tracks = useTrackStore.getState();

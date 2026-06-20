@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import {
   UserIcon,
@@ -34,19 +35,20 @@ interface ToolItem {
 /* ───────── 常量 ───────── */
 
 const CREATION_TOOLS: ToolItem[] = [
-  { id: 'characters', label: '角色', icon: UserIcon, panelId: 'characters' },
-  { id: 'worldview', label: '世界观', icon: GlobeIcon, panelId: 'worldview' },
-  { id: 'foreshadowing', label: '伏笔', icon: RemindIcon, panelId: 'foreshadowing' },
-  { id: 'ai', label: 'AI 助手', icon: RobotIcon, panelId: 'ai' },
+  { id: 'characters', label: 'Characters', icon: UserIcon, panelId: 'characters' },
+  { id: 'worldview', label: 'Worldview', icon: GlobeIcon, panelId: 'worldview' },
+  { id: 'foreshadowing', label: 'Foreshadowing', icon: RemindIcon, panelId: 'foreshadowing' },
+  { id: 'ai', label: 'AI Assistant', icon: RobotIcon, panelId: 'ai' },
 ];
 
 const UTILITY_TOOLS: ToolItem[] = [
-  { id: 'connections', label: '关联', icon: LinkIcon, panelId: 'connections' },
-  { id: 'consistency', label: '一致性', icon: SettingIcon, panelId: 'consistency' },
-  { id: 'event-editor', label: '事件编辑器', icon: EditIcon, panelId: 'event-editor' },
+  { id: 'connections', label: 'Connections', icon: LinkIcon, panelId: 'connections' },
+  { id: 'consistency', label: 'Consistency', icon: SettingIcon, panelId: 'consistency' },
+  { id: 'event-editor', label: 'Event Editor', icon: EditIcon, panelId: 'event-editor' },
 ];
 
 export function LeftPanel() {
+  const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const activePanel = useUIStore((s) => s.activePanel);
@@ -55,13 +57,13 @@ export function LeftPanel() {
   const selectedCharacterId = useSelectionStore((s) => s.selectedCharacterId);
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const isDark = useThemeStore((s) => {
-    const t = s.theme;
-    if (t === 'system') {
+    const th = s.theme;
+    if (th === 'system') {
       return typeof window !== 'undefined' && window.matchMedia
         ? window.matchMedia('(prefers-color-scheme: dark)').matches
         : false;
     }
-    return t === 'midnight' || t === 'contrast';
+    return th === 'midnight' || th === 'contrast';
   });
 
   const { data: characters } = useCharacters(workspaceId);
@@ -96,7 +98,7 @@ export function LeftPanel() {
       >
         {!collapsed && (
           <span className="select-none text-xs font-semibold tracking-wide text-muted-foreground/70">
-            资源目录
+            {t('leftPanel.resourceDirectory')}
           </span>
         )}
         <TButton
@@ -104,7 +106,7 @@ export function LeftPanel() {
           shape="circle"
           size="small"
           onClick={() => setCollapsed((c) => !c)}
-          aria-label={collapsed ? '展开侧边栏' : '折叠侧边栏'}
+          aria-label={collapsed ? t('leftPanel.expand') : t('leftPanel.collapse')}
           className="size-7 btn-lift text-muted-foreground/60 hover:bg-accent/40 hover:text-accent-foreground transition-colors"
         >
           <ToggleIcon size={16} />
@@ -118,7 +120,7 @@ export function LeftPanel() {
             <SearchIcon className="absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground/50 group-focus-within:text-primary/70 transition-colors" />
             <TInput
               size="small"
-              placeholder="搜索资源..."
+              placeholder={t('leftPanel.searchPlaceholder')}
               value={searchQuery}
               onChange={(v) => setSearchQuery(v as string)}
               className="h-8 pl-8 text-xs border-border/50 focus:border-primary/50 transition-all input-glow"
@@ -127,25 +129,25 @@ export function LeftPanel() {
           </div>
 
           {/* 创作工具 */}
-          <ToolSection title="创作" tools={CREATION_TOOLS} activePanel={activePanel} onToolClick={handleToolClick} />
+          <ToolSection title={t('leftPanel.creation')} tools={CREATION_TOOLS} activePanel={activePanel} onToolClick={handleToolClick} />
 
           {/* 工具 */}
-          <ToolSection title="工具" tools={UTILITY_TOOLS} activePanel={activePanel} onToolClick={handleToolClick} />
+          <ToolSection title={t('leftPanel.tools')} tools={UTILITY_TOOLS} activePanel={activePanel} onToolClick={handleToolClick} />
 
           {/* 快速统计 */}
           <div className="mt-auto space-y-2 rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm card-lift">
             <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-              工作区概览
+              {t('leftPanel.workspaceOverview')}
             </div>
             <div className="grid grid-cols-2 gap-2">
-              <StatBadge label="事件" value={events.length} color="blue" />
-              <StatBadge label="角色" value={characters?.length ?? 0} color="green" />
-              <StatBadge label="伏笔" value={foreshadowings?.length ?? 0} color="amber" />
-              <StatBadge label="设定" value={worldSettings?.length ?? 0} color="purple" />
+              <StatBadge label={t('leftPanel.events')} value={events.length} color="blue" />
+              <StatBadge label={t('leftPanel.characters')} value={characters?.length ?? 0} color="green" />
+              <StatBadge label={t('leftPanel.foreshadowings')} value={foreshadowings?.length ?? 0} color="amber" />
+              <StatBadge label={t('leftPanel.settings')} value={worldSettings?.length ?? 0} color="purple" />
             </div>
             {selectedEventId && (
               <div className="border-t border-border/30 pt-2">
-                <div className="text-[10px] text-muted-foreground/50">已选事件</div>
+                <div className="text-[10px] text-muted-foreground/50">{t('leftPanel.selectedEvent')}</div>
                 <div className="mt-1 truncate text-xs font-medium text-primary">
                   {events.find((e) => e.id === selectedEventId)?.title ?? selectedEventId.slice(0, 8)}
                 </div>
@@ -153,7 +155,7 @@ export function LeftPanel() {
             )}
             {selectedCharacterId && (
               <div className="border-t border-border/30 pt-2">
-                <div className="text-[10px] text-muted-foreground/50">已选角色</div>
+                <div className="text-[10px] text-muted-foreground/50">{t('leftPanel.selectedCharacter')}</div>
                 <div className="mt-1 truncate text-xs font-medium text-primary">
                   {characters?.find((c) => c.id === selectedCharacterId)?.name ?? selectedCharacterId.slice(0, 8)}
                 </div>
@@ -182,7 +184,7 @@ export function LeftPanel() {
                     : 'text-muted-foreground/60 hover:bg-accent/40 hover:text-accent-foreground',
                 )}
                 onClick={() => handleToolClick(item.panelId)}
-                title={item.label}
+                title={t(`panels.${item.id === 'event-editor' ? 'eventEditor' : item.id}` as const)}
               >
                 <Icon size={18} />
               </TButton>
@@ -207,6 +209,19 @@ function ToolSection({
   activePanel: string | null;
   onToolClick: (id: ToolItem['panelId']) => void;
 }) {
+  const { t } = useTranslation();
+  const getToolLabel = (id: string) => {
+    const keyMap: Record<string, string> = {
+      characters: 'panels.characters',
+      worldview: 'panels.worldview',
+      foreshadowing: 'panels.foreshadowing',
+      ai: 'panels.ai',
+      connections: 'panels.connections',
+      consistency: 'panels.consistency',
+      'event-editor': 'panels.eventEditor',
+    };
+    return t(keyMap[id] || id);
+  };
   return (
     <div className="space-y-1">
       <div className="px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
@@ -228,7 +243,7 @@ function ToolSection({
               )}
             >
               <Icon size={16} className={cn('transition-colors', isActive ? 'text-primary' : 'text-muted-foreground/60')} />
-              <span>{item.label}</span>
+              <span>{getToolLabel(item.id)}</span>
               {isActive && (
                 <span className="ml-auto inline-block h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
               )}

@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Dropdown } from 'tdesign-react';
 import type { DropdownOption } from 'tdesign-react';
 import { cn } from '@/lib/utils';
@@ -20,6 +21,7 @@ import {
   SettingIcon,
   PaletteIcon,
   LayersIcon,
+  FullScreenIcon,
   type IconParkIconProps,
 } from '@/lib/icons';
 import { TButton, TSlider, TTooltip, TPopup } from '@/components/ui-tdesign';
@@ -50,16 +52,17 @@ interface ViewTab {
 }
 
 const VIEW_TABS: ViewTab[] = [
-  { id: 'timeline', label: '时间轴', icon: TimeIcon },
-  { id: 'outline', label: '大纲', icon: ListIcon },
-  { id: 'narrative', label: '叙事', icon: BookOpenIcon },
-  { id: 'gantt', label: '甘特', icon: ChartHistogramIcon },
-  { id: 'tree', label: '树状', icon: TreeIcon },
-  { id: 'stats', label: '统计', icon: PieIcon },
-  { id: 'relationship', label: '关系图', icon: RelationalGraphIcon },
+  { id: 'timeline', label: 'Timeline', icon: TimeIcon },
+  { id: 'outline', label: 'Outline', icon: ListIcon },
+  { id: 'narrative', label: 'Narrative', icon: BookOpenIcon },
+  { id: 'gantt', label: 'Gantt', icon: ChartHistogramIcon },
+  { id: 'tree', label: 'Tree', icon: TreeIcon },
+  { id: 'stats', label: 'Stats', icon: PieIcon },
+  { id: 'relationship', label: 'Graph', icon: RelationalGraphIcon },
 ];
 
 export function TopToolbar() {
+  const { t } = useTranslation();
   const zoom = useTimelineStore((s) => s.zoom);
   const setZoom = useTimelineStore((s) => s.setZoom);
   const zoomIn = useTimelineStore((s) => s.zoomIn);
@@ -84,12 +87,12 @@ export function TopToolbar() {
       active: ws.id === currentWorkspaceId,
       children: [
         {
-          content: '切换到此工作区',
+          content: t('workspace.switchTo'),
           value: ws.id,
           prefixIcon: <FolderOpenIcon />,
         },
         {
-          content: '删除工作区',
+          content: t('workspace.deleteWorkspace'),
           value: `${ACTION_DELETE_PREFIX}${ws.id}`,
           theme: 'error' as const,
           prefixIcon: <DeleteIcon />,
@@ -97,7 +100,7 @@ export function TopToolbar() {
       ],
     })),
     {
-      content: '新建工作区',
+      content: t('workspace.createNewWorkspace'),
       value: ACTION_NEW,
       divider: true,
       prefixIcon: <PlusIcon />,
@@ -109,26 +112,26 @@ export function TopToolbar() {
     if (typeof value !== 'string') return;
     if (value === ACTION_NEW) {
       createWorkspaceMutation.mutate(
-        { name: `新工作区 ${new Date().toLocaleDateString()}` },
+        { name: t('workspace.defaultName', { date: new Date().toLocaleDateString() }) },
         {
           onSuccess: (workspace) => {
             setCurrentWorkspace(workspace.id);
-            toast.success('已创建工作区');
+            toast.success(t('workspace.created'));
           },
-          onError: () => toast.error('创建失败'),
+          onError: () => toast.error(t('workspace.createFailed')),
         },
       );
       return;
     }
     if (value.startsWith(ACTION_DELETE_PREFIX)) {
       const id = value.slice(ACTION_DELETE_PREFIX.length);
-      if (!confirm('确定要删除该工作区吗？此操作不可撤销。')) return;
+      if (!confirm(t('workspace.deleteConfirmShort'))) return;
       deleteWorkspaceMutation.mutate(id, {
         onSuccess: () => {
           if (id === currentWorkspaceId) setCurrentWorkspace(null);
-          toast.success('已删除');
+          toast.success(t('workspace.deleted'));
         },
-        onError: () => toast.error('删除失败'),
+        onError: () => toast.error(t('workspace.deleteFailed')),
       });
       return;
     }
@@ -161,7 +164,7 @@ export function TopToolbar() {
           <TButton variant="text" size="small" className="gap-1.5 font-medium rounded-md hover:bg-muted/80">
             <FolderOpenIcon className="size-4 text-muted-foreground" />
             <span className="max-w-[120px] truncate text-xs">
-              {currentWorkspace?.name || '选择工作区'}
+              {currentWorkspace?.name || t('workspace.selectPlaceholder')}
             </span>
             <DownIcon className="size-3 opacity-60 transition-transform duration-200" />
           </TButton>
@@ -186,7 +189,7 @@ export function TopToolbar() {
                 )}
               >
                 <Icon className={cn('size-3.5 transition-colors', isActive ? 'text-primary' : '')} />
-                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="hidden sm:inline">{t(`views.${tab.id}` as const)}</span>
                 {isActive && (
                   <span className="absolute -bottom-px left-2 right-2 h-0.5 rounded-full bg-primary" />
                 )}
@@ -198,7 +201,7 @@ export function TopToolbar() {
 
       {/* 右侧：操作按钮 */}
       <div className="flex items-center gap-1">
-        <TTooltip content="缩小 (Ctrl+-)" placement="bottom">
+        <TTooltip content={t('topbar.zoomOut')} placement="bottom">
           <TButton
             variant="text"
             size="small"
@@ -226,7 +229,7 @@ export function TopToolbar() {
           />
         </div>
 
-        <TTooltip content="放大 (Ctrl+=)" placement="bottom">
+        <TTooltip content={t('topbar.zoomIn')} placement="bottom">
           <TButton
             variant="text"
             size="small"
@@ -240,7 +243,19 @@ export function TopToolbar() {
 
         <div className="mx-1 h-5 w-px bg-border/60" />
 
-        <TTooltip content="新建事件" placement="bottom">
+        <TTooltip content={t('topbar.zenMode')} placement="bottom">
+          <TButton
+            variant="text"
+            size="small"
+            shape="square"
+            className="size-7 btn-lift hover:bg-muted/80"
+            onClick={() => useUIStore.getState().toggleZenMode()}
+          >
+            <FullScreenIcon className="size-4 text-muted-foreground" />
+          </TButton>
+        </TTooltip>
+
+        <TTooltip content={t('topbar.newEvent')} placement="bottom">
           <TButton
             variant="text"
             size="small"
@@ -249,11 +264,11 @@ export function TopToolbar() {
             onClick={ctx.createEvent}
           >
             <PlusIcon className="size-4" />
-            新建
+            {t('topbar.new')}
           </TButton>
         </TTooltip>
 
-        <TTooltip content="保存 (Ctrl+S)" placement="bottom">
+        <TTooltip content={t('topbar.saveShortcut')} placement="bottom">
           <TButton
             variant="text"
             size="small"
@@ -261,13 +276,13 @@ export function TopToolbar() {
             onClick={ctx.save}
           >
             <SaveIcon className="size-4 text-muted-foreground" />
-            保存
+            {t('common.save')}
           </TButton>
         </TTooltip>
 
         <div className="mx-1 h-5 w-px bg-border/60" />
 
-        <TTooltip content="命令面板 (Ctrl+K)" placement="bottom">
+        <TTooltip content={t('topbar.commandPaletteShortcut')} placement="bottom">
           <TButton
             variant="outline"
             size="small"
@@ -281,13 +296,13 @@ export function TopToolbar() {
 
         <LanguageSelector />
 
-        <TTooltip content="设置" placement="bottom">
+        <TTooltip content={t('topbar.settings')} placement="bottom">
           <TButton
             variant="text"
             size="small"
             shape="square"
             className="size-7 btn-lift hover:bg-muted/80"
-            aria-label="设置"
+            aria-label={t('topbar.settings')}
             onClick={() => setSettingsOpen(true)}
           >
             <SettingIcon className="size-4 text-muted-foreground" />
@@ -307,7 +322,7 @@ export function TopToolbar() {
                 boxShadow: 'var(--shadow-lg)',
               }}
             >
-              <div className="text-sm font-medium">主题</div>
+              <div className="text-sm font-medium">{t('topbar.selectTheme')}</div>
               <ThemeSelector />
             </div>
           }
@@ -317,7 +332,7 @@ export function TopToolbar() {
             size="small"
             shape="square"
             className="size-7 btn-lift hover:bg-muted/80"
-            aria-label="选择主题"
+            aria-label={t('topbar.selectTheme')}
           >
             <PaletteIcon className="size-4 text-muted-foreground" />
           </TButton>

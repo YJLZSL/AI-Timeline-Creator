@@ -17,13 +17,21 @@
   },
   "topbar": {
     "newEvent": "New Event",
+    "new": "New",
     "save": "Save",
     "saving": "Saving…",
     "saved": "Saved",
     "themeSelector": "Theme",
     "languageSelector": "Language",
     "commandPalette": "Command Palette",
-    "shortcutSettings": "Shortcut Settings"
+    "shortcutSettings": "Shortcut Settings",
+    "zoomOut": "Zoom Out (Ctrl+-)",
+    "zoomIn": "Zoom In (Ctrl+=)",
+    "saveShortcut": "Save (Ctrl+S)",
+    "commandPaletteShortcut": "Command Palette (Ctrl+K)",
+    "settings": "Settings",
+    "selectTheme": "Select Theme",
+    "zenMode": "Zen Mode"
   },
   "views": {
     "timeline": "Timeline",
@@ -38,7 +46,10 @@
     "characters": "Characters",
     "worldview": "Worldview",
     "foreshadowing": "Foreshadowing",
-    "ai": "AI Assistant"
+    "ai": "AI Assistant",
+    "connections": "Connections",
+    "consistency": "Consistency",
+    "eventEditor": "Event Editor"
   },
   "workspace": {
     "createTitle": "New Workspace",
@@ -46,12 +57,24 @@
     "descriptionPlaceholder": "Description (optional)",
     "fallbackName": "Untitled Workspace",
     "fallbackDescription": "No description",
-    "deleteConfirm": "Delete workspace \"{{name}}\"? This cannot be undone."
+    "deleteConfirm": "Delete workspace \"{{name}}\"? This cannot be undone.",
+    "switchTo": "Switch to this workspace",
+    "deleteWorkspace": "Delete workspace",
+    "createNewWorkspace": "New workspace",
+    "defaultName": "New workspace {{date}}",
+    "created": "Workspace created",
+    "createFailed": "Failed to create",
+    "deleted": "Deleted",
+    "deleteFailed": "Failed to delete",
+    "selectPlaceholder": "Select workspace",
+    "deleteConfirmShort": "Delete this workspace? This cannot be undone."
   },
   "track": {
     "createTitle": "New Track",
     "namePlaceholder": "Track title",
-    "noTrack": "No events on this track"
+    "noTrack": "No events on this track",
+    "fallbackName": "Unnamed Track",
+    "unassigned": "Unassigned"
   },
   "event": {
     "createTitle": "New Event",
@@ -59,6 +82,81 @@
     "titlePlaceholder": "Event title",
     "summaryPlaceholder": "Summary",
     "noEventHint": "Click the timeline to add an event"
+  },
+  "leftPanel": {
+    "resourceDirectory": "Resources",
+    "searchPlaceholder": "Search resources...",
+    "creation": "Creation",
+    "tools": "Tools",
+    "workspaceOverview": "Overview",
+    "events": "Events",
+    "characters": "Characters",
+    "foreshadowings": "Foreshadowings",
+    "settings": "Settings",
+    "selectedEvent": "Selected Event",
+    "selectedCharacter": "Selected Character",
+    "expand": "Expand Sidebar",
+    "collapse": "Collapse Sidebar"
+  },
+  "contextPanel": {
+    "properties": "Properties",
+    "aiPanel": "AI Panel",
+    "characterManagement": "Character Management",
+    "consistencyCheck": "Consistency Check",
+    "shortcuts": "Shortcuts",
+    "relatedData": "Related Data",
+    "characterDetails": "Character Details",
+    "contextPanel": "Context Panel",
+    "loading": "Loading event…",
+    "viewInCharacterPanel": "Please view and edit character details in the character panel",
+    "selectEventOrCharacter": "Select an event or character to view details",
+    "shortcutSettingsDesc": "Click the button below to open shortcut settings",
+    "openShortcutSettings": "Open Shortcut Settings",
+    "decreaseFontSize": "Decrease Font Size",
+    "increaseFontSize": "Increase Font Size",
+    "close": "Close"
+  },
+  "eventContext": {
+    "overview": "Event Overview",
+    "characters": "Characters",
+    "worldview": "Worldview Elements",
+    "foreshadowing": "Foreshadowing",
+    "connections": "Connections",
+    "emptyStateTitle": "Select an event to view related data",
+    "emptyStateSubtitle": "Click any event on the timeline",
+    "noCharacters": "No related characters",
+    "noWorldSettings": "No related settings",
+    "noForeshadowings": "No related foreshadowings",
+    "noConnections": "No related events",
+    "plantedHere": "Planted here",
+    "resolvedHere": "Resolved here",
+    "unnamedEvent": "Unnamed event",
+    "unknownTime": "Unknown time"
+  },
+  "foreshadowingStatus": {
+    "planted": "Planted",
+    "developed": "Developing",
+    "resolved": "Resolved",
+    "abandoned": "Abandoned"
+  },
+  "connectionType": {
+    "causal": "Causal",
+    "flashback": "Flashback",
+    "foreshadowing": "Foreshadowing",
+    "parallel": "Parallel",
+    "contrast": "Contrast",
+    "echo": "Echo",
+    "twist": "Twist"
+  },
+  "worldCategory": {
+    "geography": "Geography",
+    "history": "History",
+    "culture": "Culture",
+    "politics": "Politics",
+    "magic": "Magic",
+    "technology": "Technology",
+    "race": "Race",
+    "other": "Other"
   },
   "theme": {
     "luosheng": "Luosheng",

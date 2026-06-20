@@ -16,8 +16,6 @@ interface TimelineState {
   viewMode: ViewMode;
   /** Continuous zoom level, range [0.5, 3.0], default 1.0 */
   zoom: number;
-  selectedEventId: string | null;
-  selectedCharacterId: string | null;
   scrollToEventId: string | null;
   showConnectionLines: boolean;
   outlineFilterTrackId: string | null;
@@ -27,8 +25,6 @@ interface TimelineState {
   zoomIn: (step?: number) => void;
   zoomOut: (step?: number) => void;
   resetZoom: () => void;
-  setSelectedEvent: (id: string | null) => void;
-  setSelectedCharacter: (id: string | null) => void;
   scrollToEvent: (id: string | null) => void;
   toggleConnectionLines: () => void;
   setOutlineFilterTrackId: (id: string | null) => void;
@@ -40,8 +36,6 @@ export const useTimelineStore = create<TimelineState>()(
     (set) => ({
       viewMode: 'timeline',
       zoom: DEFAULT_ZOOM,
-      selectedEventId: null,
-      selectedCharacterId: null,
       scrollToEventId: null,
       showConnectionLines: true,
       outlineFilterTrackId: null,
@@ -51,8 +45,6 @@ export const useTimelineStore = create<TimelineState>()(
       zoomIn: (step = 0.1) => set((s) => ({ zoom: Math.min(MAX_ZOOM, s.zoom + step) })),
       zoomOut: (step = 0.1) => set((s) => ({ zoom: Math.max(MIN_ZOOM, s.zoom - step) })),
       resetZoom: () => set({ zoom: DEFAULT_ZOOM }),
-      setSelectedEvent: (id) => set({ selectedEventId: id }),
-      setSelectedCharacter: (id) => set({ selectedCharacterId: id }),
       scrollToEvent: (id) => set({ scrollToEventId: id }),
       toggleConnectionLines: () => set((s) => ({ showConnectionLines: !s.showConnectionLines })),
       setOutlineFilterTrackId: (id) => set({ outlineFilterTrackId: id }),

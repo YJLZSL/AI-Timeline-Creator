@@ -12,7 +12,7 @@ export function SettingsDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-hidden flex flex-col p-0 gap-0 dialog-enter">
         <DialogTitle className="sr-only">设置</DialogTitle>
         <SettingsTabs />
       </DialogContent>

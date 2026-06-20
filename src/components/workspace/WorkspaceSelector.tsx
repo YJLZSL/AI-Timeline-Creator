@@ -85,14 +85,24 @@ export function WorkspaceSelector() {
         </motion.div>
 
         {isLoading ? (
-          <div
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
             className="grid gap-4"
             style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
           >
             {[1, 2, 3].map((i) => (
-              <WorkspaceCardSkeleton key={i} />
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1, duration: 0.3, ease: [0.16, 1, 0.3, 1] as const }}
+              >
+                <WorkspaceCardSkeleton />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         ) : workspaces && workspaces.length > 0 ? (
           <motion.div
             variants={containerVariant}

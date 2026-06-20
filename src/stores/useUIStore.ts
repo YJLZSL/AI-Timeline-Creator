@@ -7,6 +7,7 @@ interface UIState {
   activePanel: PanelType;
   panelWidth: number;  // 280-480
   focusMode: boolean;
+  zenMode: boolean;
   commandPaletteOpen: boolean;
   settingsOpen: boolean;
   detailEventId: string | null;
@@ -14,6 +15,8 @@ interface UIState {
   togglePanel: (panel: PanelType) => void;
   setPanelWidth: (width: number) => void;
   toggleFocusMode: () => void;
+  setZenMode: (enabled: boolean) => void;
+  toggleZenMode: () => void;
   setCommandPaletteOpen: (open: boolean) => void;
   setSettingsOpen: (open: boolean) => void;
   setDetailEvent: (id: string | null) => void;
@@ -25,6 +28,7 @@ export const useUIStore = create<UIState>()(
       activePanel: null,
       panelWidth: 360,
       focusMode: false,
+      zenMode: false,
       commandPaletteOpen: false,
       settingsOpen: false,
       detailEventId: null,
@@ -32,6 +36,8 @@ export const useUIStore = create<UIState>()(
       togglePanel: (panel) => set((s) => ({ activePanel: s.activePanel === panel ? null : panel })),
       setPanelWidth: (width) => set({ panelWidth: Math.max(280, Math.min(480, width)) }),
       toggleFocusMode: () => set((s) => ({ focusMode: !s.focusMode })),
+      setZenMode: (enabled) => set({ zenMode: enabled }),
+      toggleZenMode: () => set((s) => ({ zenMode: !s.zenMode })),
       setCommandPaletteOpen: (open) => set({ commandPaletteOpen: open }),
       setSettingsOpen: (open) => set({ settingsOpen: open }),
       setDetailEvent: (id) => set({ detailEventId: id }),

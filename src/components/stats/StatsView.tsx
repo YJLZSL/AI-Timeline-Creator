@@ -264,8 +264,8 @@ export function StatsView() {
 
 function StatCard({ title, value, icon }: { title: string; value: string | number; icon?: React.ReactNode }) {
   return (
-    <div className="stat-card border border-border rounded-xl p-4 bg-gradient-to-br from-card to-muted/40 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-1.5 font-sans">
+    <div className="stat-card">
+      <div className="flex items-center gap-1.5 text-xs text-muted-foreground mb-2 font-sans">
         {icon}
         {title}
       </div>
@@ -277,14 +277,16 @@ function StatCard({ title, value, icon }: { title: string; value: string | numbe
 function ForeshadowingStat({ label, count, color, onClick }: { label: string; count: number; color: string; onClick: () => void }) {
   return (
     <div
-      className="flex items-center gap-3 p-3 rounded-lg bg-muted/30 cursor-pointer hover:bg-muted/50 transition-colors"
+      className="stat-card cursor-pointer hover:border-primary/20 group"
       onClick={onClick}
       title={`点击查看「${label}」的伏笔`}
     >
-      <div className={`w-3 h-3 rounded-full ${color} shrink-0`} />
-      <div>
-        <div className="text-xs text-muted-foreground font-sans">{label}</div>
-        <div className="text-lg font-serif font-bold">{count}</div>
+      <div className="flex items-center gap-3">
+        <div className={`w-3 h-3 rounded-full ${color} shrink-0 group-hover:scale-110 transition-transform`} />
+        <div>
+          <div className="text-xs text-muted-foreground font-sans">{label}</div>
+          <div className="text-lg font-serif font-bold group-hover:text-primary transition-colors">{count}</div>
+        </div>
       </div>
     </div>
   );
@@ -292,12 +294,17 @@ function ForeshadowingStat({ label, count, color, onClick }: { label: string; co
 
 function EmptyState({ message, hint }: { message: string; hint: string }) {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="w-12 h-12 rounded-full bg-muted/60 flex items-center justify-center mb-3">
-        <ChartHistogramIcon size={20} className="text-muted-foreground/70" />
+    <div className="flex flex-col items-center justify-center py-12 text-center panel-enter">
+      <div className="empty-illustration mb-3">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground/60">
+          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+            <path d="M7 9h4M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+          </svg>
+        </div>
       </div>
       <div className="text-sm text-muted-foreground font-medium mb-1">{message}</div>
-      <div className="text-xs text-muted-foreground/70 max-w-[240px]">{hint}</div>
+      <div className="text-xs text-muted-foreground/70 max-w-[240px] leading-relaxed">{hint}</div>
     </div>
   );
 }

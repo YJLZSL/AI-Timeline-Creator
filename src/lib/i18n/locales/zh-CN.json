@@ -17,13 +17,21 @@
   },
   "topbar": {
     "newEvent": "新建事件",
+    "new": "新建",
     "save": "保存",
     "saving": "保存中…",
     "saved": "已保存",
     "themeSelector": "选择主题",
     "languageSelector": "切换语言",
     "commandPalette": "命令面板",
-    "shortcutSettings": "快捷键设置"
+    "shortcutSettings": "快捷键设置",
+    "zoomOut": "缩小 (Ctrl+-)",
+    "zoomIn": "放大 (Ctrl+=)",
+    "saveShortcut": "保存 (Ctrl+S)",
+    "commandPaletteShortcut": "命令面板 (Ctrl+K)",
+    "settings": "设置",
+    "selectTheme": "选择主题",
+    "zenMode": "专注模式"
   },
   "views": {
     "timeline": "时间轴",
@@ -38,7 +46,10 @@
     "characters": "角色",
     "worldview": "世界观",
     "foreshadowing": "伏笔",
-    "ai": "AI 助手"
+    "ai": "AI 助手",
+    "connections": "关联",
+    "consistency": "一致性",
+    "eventEditor": "事件编辑器"
   },
   "workspace": {
     "createTitle": "新建工作区",
@@ -46,12 +57,24 @@
     "descriptionPlaceholder": "描述（可选）",
     "fallbackName": "未命名工作区",
     "fallbackDescription": "暂无描述",
-    "deleteConfirm": "确定要删除工作区「{{name}}」吗？此操作不可撤销。"
+    "deleteConfirm": "确定要删除工作区「{{name}}」吗？此操作不可撤销。",
+    "switchTo": "切换到此工作区",
+    "deleteWorkspace": "删除工作区",
+    "createNewWorkspace": "新建工作区",
+    "defaultName": "新工作区 {{date}}",
+    "created": "已创建工作区",
+    "createFailed": "创建失败",
+    "deleted": "已删除",
+    "deleteFailed": "删除失败",
+    "selectPlaceholder": "选择工作区",
+    "deleteConfirmShort": "确定要删除该工作区吗？此操作不可撤销。"
   },
   "track": {
     "createTitle": "新建轨道",
     "namePlaceholder": "请输入轨道标题",
-    "noTrack": "该轨道下暂无事件"
+    "noTrack": "该轨道下暂无事件",
+    "fallbackName": "未命名轨道",
+    "unassigned": "未分配"
   },
   "event": {
     "createTitle": "新建事件",
@@ -59,6 +82,81 @@
     "titlePlaceholder": "事件标题",
     "summaryPlaceholder": "简介",
     "noEventHint": "点击时间轴添加新事件"
+  },
+  "leftPanel": {
+    "resourceDirectory": "资源目录",
+    "searchPlaceholder": "搜索资源...",
+    "creation": "创作",
+    "tools": "工具",
+    "workspaceOverview": "工作区概览",
+    "events": "事件",
+    "characters": "角色",
+    "foreshadowings": "伏笔",
+    "settings": "设定",
+    "selectedEvent": "已选事件",
+    "selectedCharacter": "已选角色",
+    "expand": "展开侧边栏",
+    "collapse": "折叠侧边栏"
+  },
+  "contextPanel": {
+    "properties": "属性",
+    "aiPanel": "AI 面板",
+    "characterManagement": "角色管理",
+    "consistencyCheck": "一致性检查",
+    "shortcuts": "快捷键设置",
+    "relatedData": "关联数据",
+    "characterDetails": "角色详情",
+    "contextPanel": "上下文面板",
+    "loading": "加载事件…",
+    "viewInCharacterPanel": "请在角色面板中查看和编辑角色详情",
+    "selectEventOrCharacter": "选择一个事件或角色查看详情",
+    "shortcutSettingsDesc": "点击下方按钮打开快捷键设置对话框",
+    "openShortcutSettings": "打开快捷键设置",
+    "decreaseFontSize": "减小字号",
+    "increaseFontSize": "增大字号",
+    "close": "关闭"
+  },
+  "eventContext": {
+    "overview": "事件概览",
+    "characters": "参与角色",
+    "worldview": "世界观元素",
+    "foreshadowing": "相关伏笔",
+    "connections": "关联事件",
+    "emptyStateTitle": "选择一个事件查看关联数据",
+    "emptyStateSubtitle": "在时间轴中点击任意事件",
+    "noCharacters": "暂无关联角色",
+    "noWorldSettings": "暂无关联设定",
+    "noForeshadowings": "暂无关联伏笔",
+    "noConnections": "暂无关联事件",
+    "plantedHere": "埋下处",
+    "resolvedHere": "回收处",
+    "unnamedEvent": "未命名事件",
+    "unknownTime": "未知时间"
+  },
+  "foreshadowingStatus": {
+    "planted": "已埋下",
+    "developed": "发展中",
+    "resolved": "已回收",
+    "abandoned": "已废弃"
+  },
+  "connectionType": {
+    "causal": "因果",
+    "flashback": "闪回",
+    "foreshadowing": "伏笔",
+    "parallel": "平行",
+    "contrast": "对比",
+    "echo": "呼应",
+    "twist": "转折"
+  },
+  "worldCategory": {
+    "geography": "地理",
+    "history": "历史",
+    "culture": "文化",
+    "politics": "政治",
+    "magic": "魔法",
+    "technology": "科技",
+    "race": "种族",
+    "other": "其他"
   },
   "theme": {
     "luosheng": "洛圣",

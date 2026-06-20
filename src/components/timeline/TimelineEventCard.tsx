@@ -2,7 +2,6 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TTag } from '@/components/ui-tdesign';
 import { TimeIcon, LocalTwoIcon, TagIcon, EditIcon, LinkIcon, FileTextIcon } from '@/lib/icons';
-import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useUIStore } from '@/stores/useUIStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
 import { safeJsonArray } from '@/lib/utils';
@@ -61,7 +60,7 @@ export function TimelineEventCard({
 }: TimelineEventCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
   const selectedEventId = useSelectionStore((s) => s.selectedEventId);
-  const selectedCharacterId = useTimelineStore((s) => s.selectedCharacterId);
+  const selectedCharacterId = useSelectionStore((s) => s.selectedCharacterId);
   const selectEvent = useSelectionStore((s) => s.selectEvent);
   const setActivePanel = useUIStore((s) => s.setActivePanel);
   const setDetailEvent = useUIStore((s) => s.setDetailEvent);
@@ -255,7 +254,7 @@ export function TimelineEventCard({
       data-event-id={event.id}
       ref={cardRef}
       data-instant={isInstant ? 'true' : 'false'}
-      className={`absolute rounded-xl border select-none overflow-hidden bg-card/80 backdrop-blur-sm transition-all duration-200 ease-out ${getBorderClass()} ${
+      className={`absolute rounded-xl border select-none overflow-hidden backdrop-blur-sm transition-all duration-200 ease-out ${getBorderClass()} ${
         isDragging ? 'cursor-grabbing' : 'cursor-grab'
       }`}
       style={{
@@ -266,25 +265,38 @@ export function TimelineEventCard({
         zIndex: isDragging ? 20 : isSelected ? 5 : isHovered ? 3 : 1,
         opacity: isDragging ? 0.88 : isDimmed ? 0.3 : 1,
         boxShadow: getShadowStyle(),
-        transform: isSelected ? 'scale(1.01)' : isDragging ? 'rotate(1deg)' : undefined,
+        backgroundColor: 'rgb(var(--card) / 0.9)',
+        transform: isSelected ? 'scale(1.01) translateY(-1px)' : isDragging ? 'rotate(1deg)' : undefined,
       }}
       initial={{ opacity: 0, scale: 0.96, y: 4 }}
-      animate={{ opacity: isDimmed ? 0.3 : 1, scale: isSelected ? 1.01 : 1, y: 0 }}
+      animate={{ opacity: isDimmed ? 0.3 : 1, scale: isSelected ? 1.01 : 1, y: isSelected ? -1 : 0 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+      whileHover={!isDragging && !isSelected ? { scale: 1.005, y: -1, transition: { duration: 0.15 } } : undefined}
       onClick={handleClick}
       onDoubleClick={handleDoubleClick}
       onPointerDown={handleCardPointerDown}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Left accent bar — 统一 4px */}
+      {/* Left accent bar — 渐变 + 动态光晕 */}
       <div
-        className="absolute left-0 top-0 bottom-0 rounded-l-xl w-1 transition-shadow duration-300"
+        className="absolute left-0 top-0 bottom-0 rounded-l-xl transition-all duration-300"
         style={{
-          backgroundColor: eventColor,
-          boxShadow: isHovered ? `3px 0 8px -1px ${eventColor}40` : 'none',
+          width: isSelected ? 4 : 3,
+          background: `linear-gradient(to bottom, ${eventColor}, ${eventColor}66)`,
+          boxShadow: isHovered || isSelected ? `2px 0 8px -1px ${eventColor}40` : 'none',
         }}
       />
+
+      {/* 选中状态顶部光条 */}
+      {isSelected && (
+        <div
+          className="absolute top-0 left-0 right-0 h-[2px] rounded-t-xl transition-opacity duration-300"
+          style={{
+            background: `linear-gradient(to right, ${eventColor}, ${eventColor}80, transparent)`,
+          }}
+        />
+      )}
 
       {/* 织线边框效果（伪元素模拟） */}
       <div
@@ -292,6 +304,15 @@ export function TimelineEventCard({
         style={{
           background: `repeating-linear-gradient(to bottom, ${eventColor}20 0px, ${eventColor}20 4px, transparent 4px, transparent 8px)`,
           opacity: isHovered ? 0.6 : 0,
+        }}
+      />
+
+      {/* Hover 背景扫光效果 */}
+      <div
+        className="absolute inset-0 pointer-events-none transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(circle at 50% 0%, ${eventColor}08 0%, transparent 60%)`,
+          opacity: isHovered ? 1 : 0,
         }}
       />
 
@@ -369,30 +390,23 @@ export function TimelineEventCard({
           data-quick-action="true"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onClick={handleEdit}
-            className="w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-150 opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
-            style={{ animationDelay: '0ms' }}
-            title="编辑"
-          >
-            <EditIcon size={12} />
-          </button>
-          <button
-            onClick={handleLink}
-            className="w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-150 opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
-            style={{ animationDelay: '40ms' }}
-            title="关联"
-          >
-            <LinkIcon size={12} />
-          </button>
-          <button
-            onClick={handleOutline}
-            className="w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all duration-150 opacity-0 animate-[fadeIn_0.15s_ease-out_forwards]"
-            style={{ animationDelay: '80ms' }}
-            title="大纲"
-          >
-            <FileTextIcon size={12} />
-          </button>
+          {[
+            { icon: <EditIcon size={12} />, onClick: handleEdit, title: '编辑' },
+            { icon: <LinkIcon size={12} />, onClick: handleLink, title: '关联' },
+            { icon: <FileTextIcon size={12} />, onClick: handleOutline, title: '大纲' },
+          ].map((btn, i) => (
+            <motion.button
+              key={i}
+              initial={{ opacity: 0, scale: 0.8, y: -4 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: i * 0.05, duration: 0.15, ease: [0.16, 1, 0.3, 1] as const }}
+              onClick={btn.onClick}
+              className="w-6 h-6 rounded-full bg-background/90 border border-border/50 flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 hover:border-primary/30 transition-all duration-150 shadow-sm hover:shadow-md"
+              title={btn.title}
+            >
+              {btn.icon}
+            </motion.button>
+          ))}
         </div>
       )}
 

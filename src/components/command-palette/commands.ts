@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useUIStore } from '@/stores/useUIStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
+import { useSelectionStore } from '@/stores/useSelectionStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useThemeStore } from '@/stores/useThemeStore';
 import { useHistoryStore } from '@/stores/historyStore';
@@ -32,8 +33,8 @@ export type {
  */
 export function useCommandContext(): CommandContext {
   const setViewMode = useTimelineStore((s) => s.setViewMode);
-  const setSelectedEvent = useTimelineStore((s) => s.setSelectedEvent);
-  const setSelectedCharacter = useTimelineStore((s) => s.setSelectedCharacter);
+  const setSelectedEvent = useSelectionStore((s) => s.selectEvent);
+  const setSelectedCharacter = useSelectionStore((s) => s.selectCharacter);
   const scrollToEvent = useTimelineStore((s) => s.scrollToEvent);
 
   const setActivePanel = useUIStore((s) => s.setActivePanel);
@@ -267,6 +268,10 @@ export function useCommandContext(): CommandContext {
     setActivePanel(activePanel === null ? 'properties' : null);
   };
 
+  const handleToggleZenMode = () => {
+    useUIStore.getState().toggleZenMode();
+  };
+
   const handleOpenSettings = () => {
     setSettingsOpen(true);
   };
@@ -288,6 +293,7 @@ export function useCommandContext(): CommandContext {
     exportWorkspace: handleExport,
     importWorkspace: handleImport,
     toggleFocusMode,
+    toggleZenMode: handleToggleZenMode,
     toggleSidebar: handleToggleSidebar,
     openSettings: handleOpenSettings,
     openCommandPalette: handleOpenCommandPalette,

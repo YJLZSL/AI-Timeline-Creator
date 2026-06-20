@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { useTimelineStore } from './useTimelineStore';
 
 export type SelectionEntity =
   | 'event'
@@ -42,15 +41,9 @@ const NULL_SELECTION = {
 export const useSelectionStore = create<SelectionState>((set) => ({
   ...NULL_SELECTION,
 
-  selectEvent: (id) => {
-    set({ ...NULL_SELECTION, selectedEventId: id });
-    useTimelineStore.getState().setSelectedEvent(id);
-  },
+  selectEvent: (id) => set({ ...NULL_SELECTION, selectedEventId: id }),
 
-  selectCharacter: (id) => {
-    set({ ...NULL_SELECTION, selectedCharacterId: id });
-    useTimelineStore.getState().setSelectedCharacter(id);
-  },
+  selectCharacter: (id) => set({ ...NULL_SELECTION, selectedCharacterId: id }),
 
   selectForeshadowing: (id) => set({ ...NULL_SELECTION, selectedForeshadowingId: id }),
 
@@ -62,9 +55,5 @@ export const useSelectionStore = create<SelectionState>((set) => ({
 
   selectChoice: (id) => set({ ...NULL_SELECTION, selectedChoiceId: id }),
 
-  clear: () => {
-    set(NULL_SELECTION);
-    useTimelineStore.getState().setSelectedEvent(null);
-    useTimelineStore.getState().setSelectedCharacter(null);
-  },
+  clear: () => set(NULL_SELECTION),
 }));

@@ -1,52 +1,31 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from './api.js';
+import { createTopLevelHooks, createNestedHooks } from './api-hooks-factory.js';
 import type {
   Workspace, TimelineEvent, Track, Character, Connection,
-  Foreshadowing, WorldSetting, CreateWorkspaceRequest, UpdateWorkspaceRequest,
-  CreateEventRequest, UpdateEventRequest, CreateTrackRequest, UpdateTrackRequest,
+  Foreshadowing, WorldSetting, OutlineVersion,
+  CreateWorkspaceRequest, UpdateWorkspaceRequest,
+  CreateEventRequest, UpdateEventRequest,
+  CreateTrackRequest, UpdateTrackRequest,
   CreateCharacterRequest, UpdateCharacterRequest,
   CreateConnectionRequest, UpdateConnectionRequest,
   CreateForeshadowingRequest, UpdateForeshadowingRequest,
   CreateWorldSettingRequest, UpdateWorldSettingRequest,
-  ExportData, OutlineVersion, CreateOutlineVersionRequest,
+  CreateOutlineVersionRequest,
+  ExportData,
 } from '../../shared/types.js';
 
-// Workspace hooks
-export function useWorkspaces() {
-  return useQuery({
-    queryKey: ['workspaces'],
-    queryFn: () => api.get<Workspace[]>('/api/workspaces'),
-  });
-}
+// ─── Workspace（顶层资源）───
+const workspaceHooks = createTopLevelHooks<Workspace, CreateWorkspaceRequest, UpdateWorkspaceRequest>(
+  'workspaces',
+  'workspaces',
+);
 
-export function useWorkspace(id: string | null) {
-  return useQuery({
-    queryKey: ['workspaces', id],
-    queryFn: () => api.get<Workspace>(`/api/workspaces/${id}`),
-    enabled: !!id,
-  });
-}
-
-export function useCreateWorkspace() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (data: CreateWorkspaceRequest) =>
-      api.post<Workspace>('/api/workspaces', data),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['workspaces'] }),
-  });
-}
-
-export function useUpdateWorkspace() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateWorkspaceRequest }) =>
-      api.patch<Workspace>(`/api/workspaces/${id}`, data),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['workspaces'] });
-      qc.invalidateQueries({ queryKey: ['workspaces', vars.id] });
-    },
-  });
-}
+export const useWorkspaces = workspaceHooks.useList;
+export const useWorkspace = workspaceHooks.useOne;
+export const useCreateWorkspace = workspaceHooks.useCreate;
+export const useUpdateWorkspace = workspaceHooks.useUpdate;
+export const useDeleteWorkspace = workspaceHooks.useDelete;
 
 // 更新工作区日历配置（复用 useUpdateWorkspace 的便捷封装）
 export function useUpdateWorkspaceCalendar() {
@@ -60,224 +39,87 @@ export function useUpdateWorkspaceCalendar() {
   };
 }
 
-export function useDeleteWorkspace() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (id: string) => api.delete<{ id: string }>(`/api/workspaces/${id}`),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['workspaces'] }),
-  });
-}
+// ─── Event（嵌套资源，带乐观更新）───
+const eventHooks = createNestedHooks<
+  TimelineEvent,
+  CreateEventRequest,
+  UpdateEventRequest,
+  'eventId',
+  { items: TimelineEvent[]; total: number }
+>('events', 'events', {
+  listUrl: (wsId) => `/api/workspaces/${wsId}/events?pageSize=200`,
+  optimisticUpdate: {
+    listDataPath: 'items',
+    fields: ['title', 'summary', 'description', 'location', 'tagsJson'],
+  },
+  idFieldName: 'eventId',
+});
 
-// Event hooks
-export function useEvents(workspaceId: string | null) {
-  return useQuery({
-    queryKey: ['events', workspaceId],
-    queryFn: () => api.get<{ items: TimelineEvent[]; total: number }>(`/api/workspaces/${workspaceId}/events?pageSize=200`),
-    enabled: !!workspaceId,
-  });
-}
+export const useEvents = eventHooks.useList;
+export const useEvent = eventHooks.useOne;
+export const useCreateEvent = eventHooks.useCreate;
+export const useUpdateEvent = eventHooks.useUpdate;
+export const useDeleteEvent = eventHooks.useDelete;
 
-export function useEvent(workspaceId: string | null, eventId: string | null) {
-  return useQuery({
-    queryKey: ['events', workspaceId, eventId],
-    queryFn: () => api.get<TimelineEvent>(`/api/workspaces/${workspaceId}/events/${eventId}`),
-    enabled: !!workspaceId && !!eventId,
-  });
-}
+// ─── Track ───
+const trackHooks = createNestedHooks<Track, CreateTrackRequest, UpdateTrackRequest, 'trackId'>(
+  'tracks',
+  'tracks',
+  { idFieldName: 'trackId' },
+);
 
-export function useCreateEvent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, data }: { workspaceId: string; data: CreateEventRequest }) =>
-      api.post<TimelineEvent>(`/api/workspaces/${workspaceId}/events`, data),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['events', vars.workspaceId] });
-    },
-  });
-}
+export const useTracks = trackHooks.useList;
+export const useCreateTrack = trackHooks.useCreate;
+export const useUpdateTrack = trackHooks.useUpdate;
+export const useDeleteTrack = trackHooks.useDelete;
 
-export function useUpdateEvent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, eventId, data }: { workspaceId: string; eventId: string; data: UpdateEventRequest }) =>
-      api.patch<TimelineEvent>(`/api/workspaces/${workspaceId}/events/${eventId}`, data),
-    onMutate: async ({ workspaceId, eventId, data }) => {
-      await qc.cancelQueries({ queryKey: ['events', workspaceId] });
-      await qc.cancelQueries({ queryKey: ['events', workspaceId, eventId] });
-      const previousEvents = qc.getQueryData<{ items: TimelineEvent[]; total: number }>(['events', workspaceId]);
-      const previousEvent = qc.getQueryData<TimelineEvent>(['events', workspaceId, eventId]);
-      const optimisticPatch: Partial<TimelineEvent> & { updatedAt: Date } = {
-        updatedAt: new Date(),
-      };
-      if (data.title !== undefined) optimisticPatch.title = data.title;
-      if (data.summary !== undefined) optimisticPatch.summary = data.summary;
-      if (data.description !== undefined) optimisticPatch.description = data.description;
-      if (data.location !== undefined) optimisticPatch.location = data.location;
-      if (data.tagsJson !== undefined) optimisticPatch.tagsJson = data.tagsJson;
-      qc.setQueryData<{ items: TimelineEvent[]; total: number } | undefined>(['events', workspaceId], (old) => {
-        if (!old) return old;
-        return {
-          ...old,
-          items: old.items.map((e) => (e.id === eventId ? ({ ...e, ...optimisticPatch } as TimelineEvent) : e)),
-        };
-      });
-      if (previousEvent) {
-        qc.setQueryData<TimelineEvent>(['events', workspaceId, eventId], { ...previousEvent, ...optimisticPatch } as TimelineEvent);
-      }
-      return { previousEvents, previousEvent };
-    },
-    onError: (_err, { workspaceId, eventId }, context) => {
-      if (context?.previousEvents) {
-        qc.setQueryData(['events', workspaceId], context.previousEvents);
-      }
-      if (context?.previousEvent) {
-        qc.setQueryData(['events', workspaceId, eventId], context.previousEvent);
-      }
-    },
-    onSettled: (_, __, { workspaceId, eventId }) => {
-      qc.invalidateQueries({ queryKey: ['events', workspaceId] });
-      qc.invalidateQueries({ queryKey: ['events', workspaceId, eventId] });
-    },
-  });
-}
+// ─── Character ───
+const characterHooks = createNestedHooks<Character, CreateCharacterRequest, UpdateCharacterRequest, 'characterId'>(
+  'characters',
+  'characters',
+  { idFieldName: 'characterId' },
+);
 
-export function useDeleteEvent() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, eventId }: { workspaceId: string; eventId: string }) =>
-      api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/events/${eventId}`),
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['events', vars.workspaceId] });
-    },
-  });
-}
+export const useCharacters = characterHooks.useList;
+export const useCreateCharacter = characterHooks.useCreate;
+export const useUpdateCharacter = characterHooks.useUpdate;
+export const useDeleteCharacter = characterHooks.useDelete;
 
-// Track hooks
-export function useTracks(workspaceId: string | null) {
-  return useQuery({
-    queryKey: ['tracks', workspaceId],
-    queryFn: () => api.get<Track[]>(`/api/workspaces/${workspaceId}/tracks`),
-    enabled: !!workspaceId,
-  });
-}
+// ─── Connection（列表响应需要转换）───
+const connectionHooks = createNestedHooks<
+  Connection,
+  CreateConnectionRequest,
+  UpdateConnectionRequest,
+  'connectionId',
+  Connection[]
+>('connections', 'connections', {
+  idFieldName: 'connectionId',
+  listResponseTransformer: (result) => (Array.isArray(result) ? result : (result?.items ?? [])),
+});
 
-export function useCreateTrack() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, data }: { workspaceId: string; data: CreateTrackRequest }) =>
-      api.post<Track>(`/api/workspaces/${workspaceId}/tracks`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['tracks', vars.workspaceId] }),
-  });
-}
+export const useConnections = connectionHooks.useList;
+export const useCreateConnection = connectionHooks.useCreate;
+export const useUpdateConnection = connectionHooks.useUpdate;
+export const useDeleteConnection = connectionHooks.useDelete;
 
-export function useUpdateTrack() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, trackId, data }: { workspaceId: string; trackId: string; data: UpdateTrackRequest }) =>
-      api.patch<Track>(`/api/workspaces/${workspaceId}/tracks/${trackId}`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['tracks', vars.workspaceId] }),
-  });
-}
-
-export function useDeleteTrack() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, trackId }: { workspaceId: string; trackId: string }) =>
-      api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/tracks/${trackId}`),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['tracks', vars.workspaceId] }),
-  });
-}
-
-// Character hooks
-export function useCharacters(workspaceId: string | null) {
-  return useQuery({
-    queryKey: ['characters', workspaceId],
-    queryFn: () => api.get<Character[]>(`/api/workspaces/${workspaceId}/characters`),
-    enabled: !!workspaceId,
-  });
-}
-
-export function useCreateCharacter() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, data }: { workspaceId: string; data: CreateCharacterRequest }) =>
-      api.post<Character>(`/api/workspaces/${workspaceId}/characters`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['characters', vars.workspaceId] }),
-  });
-}
-
-export function useUpdateCharacter() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, characterId, data }: { workspaceId: string; characterId: string; data: UpdateCharacterRequest }) =>
-      api.patch<Character>(`/api/workspaces/${workspaceId}/characters/${characterId}`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['characters', vars.workspaceId] }),
-  });
-}
-
-export function useDeleteCharacter() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, characterId }: { workspaceId: string; characterId: string }) =>
-      api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/characters/${characterId}`),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['characters', vars.workspaceId] }),
-  });
-}
-
-// Connection hooks
-export function useConnections(workspaceId: string | null) {
-  return useQuery({
-    queryKey: ['connections', workspaceId],
-    queryFn: async () => {
-      const result = await api.get<{ items: Connection[] } | Connection[]>(
-        `/api/workspaces/${workspaceId}/connections`,
-      );
-      if (Array.isArray(result)) return result;
-      return result?.items ?? [];
-    },
-    enabled: !!workspaceId,
-  });
-}
-
-export function useCreateConnection() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, data }: { workspaceId: string; data: CreateConnectionRequest }) =>
-      api.post<Connection>(`/api/workspaces/${workspaceId}/connections`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['connections', vars.workspaceId] }),
-  });
-}
-
-export function useUpdateConnection() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, connectionId, data }: { workspaceId: string; connectionId: string; data: UpdateConnectionRequest }) =>
-      api.patch<Connection>(`/api/workspaces/${workspaceId}/connections/${connectionId}`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['connections', vars.workspaceId] }),
-  });
-}
-
-export function useDeleteConnection() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, connectionId }: { workspaceId: string; connectionId: string }) =>
-      api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/connections/${connectionId}`),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['connections', vars.workspaceId] }),
-  });
-}
-
-// Auto-save hooks
+// ─── Auto-save ───
 export function useCreateAutoSave() {
   return useMutation({
     mutationFn: ({ workspaceId, dataJson }: { workspaceId: string; dataJson: string }) =>
-      api.post<{ id: string; workspaceId: string; dataJson: string; createdAt: Date }>(`/api/workspaces/${workspaceId}/auto-saves`, { dataJson }),
+      api.post<{ id: string; workspaceId: string; dataJson: string; createdAt: Date }>(
+        `/api/workspaces/${workspaceId}/auto-saves`,
+        { dataJson },
+      ),
   });
 }
 
 export function useLatestAutoSave(workspaceId: string | null) {
   return useQuery({
     queryKey: ['autoSaves', workspaceId, 'latest'],
-    queryFn: () => api.get<{ id: string; workspaceId: string; dataJson: string; createdAt: Date }>(`/api/workspaces/${workspaceId}/auto-saves/latest`),
+    queryFn: () =>
+      api.get<{ id: string; workspaceId: string; dataJson: string; createdAt: Date }>(
+        `/api/workspaces/${workspaceId}/auto-saves/latest`,
+      ),
     enabled: !!workspaceId,
   });
 }
@@ -300,79 +142,33 @@ export function useRecoverAutoSave() {
   });
 }
 
-// Foreshadowing hooks
-export function useForeshadowings(workspaceId: string | null) {
-  return useQuery({
-    queryKey: ['foreshadowings', workspaceId],
-    queryFn: () => api.get<Foreshadowing[]>(`/api/workspaces/${workspaceId}/foreshadowings`),
-    enabled: !!workspaceId,
-  });
-}
+// ─── Foreshadowing ───
+const foreshadowingHooks = createNestedHooks<
+  Foreshadowing,
+  CreateForeshadowingRequest,
+  UpdateForeshadowingRequest,
+  'foreshadowingId'
+>('foreshadowings', 'foreshadowings', { idFieldName: 'foreshadowingId' });
 
-export function useCreateForeshadowing() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, data }: { workspaceId: string; data: CreateForeshadowingRequest }) =>
-      api.post<Foreshadowing>(`/api/workspaces/${workspaceId}/foreshadowings`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['foreshadowings', vars.workspaceId] }),
-  });
-}
+export const useForeshadowings = foreshadowingHooks.useList;
+export const useCreateForeshadowing = foreshadowingHooks.useCreate;
+export const useUpdateForeshadowing = foreshadowingHooks.useUpdate;
+export const useDeleteForeshadowing = foreshadowingHooks.useDelete;
 
-export function useUpdateForeshadowing() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, foreshadowingId, data }: { workspaceId: string; foreshadowingId: string; data: UpdateForeshadowingRequest }) =>
-      api.patch<Foreshadowing>(`/api/workspaces/${workspaceId}/foreshadowings/${foreshadowingId}`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['foreshadowings', vars.workspaceId] }),
-  });
-}
+// ─── WorldSetting ───
+const worldSettingHooks = createNestedHooks<
+  WorldSetting,
+  CreateWorldSettingRequest,
+  UpdateWorldSettingRequest,
+  'settingId'
+>('worldSettings', 'world-settings', { idFieldName: 'settingId' });
 
-export function useDeleteForeshadowing() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, foreshadowingId }: { workspaceId: string; foreshadowingId: string }) =>
-      api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/foreshadowings/${foreshadowingId}`),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['foreshadowings', vars.workspaceId] }),
-  });
-}
+export const useWorldSettings = worldSettingHooks.useList;
+export const useCreateWorldSetting = worldSettingHooks.useCreate;
+export const useUpdateWorldSetting = worldSettingHooks.useUpdate;
+export const useDeleteWorldSetting = worldSettingHooks.useDelete;
 
-// WorldSetting hooks
-export function useWorldSettings(workspaceId: string | null) {
-  return useQuery({
-    queryKey: ['worldSettings', workspaceId],
-    queryFn: () => api.get<WorldSetting[]>(`/api/workspaces/${workspaceId}/world-settings`),
-    enabled: !!workspaceId,
-  });
-}
-
-export function useCreateWorldSetting() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, data }: { workspaceId: string; data: CreateWorldSettingRequest }) =>
-      api.post<WorldSetting>(`/api/workspaces/${workspaceId}/world-settings`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['worldSettings', vars.workspaceId] }),
-  });
-}
-
-export function useUpdateWorldSetting() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, settingId, data }: { workspaceId: string; settingId: string; data: UpdateWorldSettingRequest }) =>
-      api.patch<WorldSetting>(`/api/workspaces/${workspaceId}/world-settings/${settingId}`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['worldSettings', vars.workspaceId] }),
-  });
-}
-
-export function useDeleteWorldSetting() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, settingId }: { workspaceId: string; settingId: string }) =>
-      api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/world-settings/${settingId}`),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['worldSettings', vars.workspaceId] }),
-  });
-}
-
-// Export/Import
+// ─── Export/Import ───
 export function useExportWorkspace(workspaceId: string | null, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: ['export', workspaceId],
@@ -381,40 +177,18 @@ export function useExportWorkspace(workspaceId: string | null, options?: { enabl
   });
 }
 
-// OutlineVersion hooks
-export function useOutlineVersions(workspaceId: string | null) {
-  return useQuery({
-    queryKey: ['outlineVersions', workspaceId],
-    queryFn: () => api.get<OutlineVersion[]>(`/api/workspaces/${workspaceId}/outline-versions`),
-    enabled: !!workspaceId,
-  });
-}
+// ─── OutlineVersion ───
+const outlineVersionHooks = createNestedHooks<
+  OutlineVersion,
+  CreateOutlineVersionRequest,
+  never,
+  'versionId'
+>('outlineVersions', 'outline-versions', { idFieldName: 'versionId' });
 
-export function useOutlineVersion(workspaceId: string | null, versionId: string | null) {
-  return useQuery({
-    queryKey: ['outlineVersions', workspaceId, versionId],
-    queryFn: () => api.get<OutlineVersion>(`/api/workspaces/${workspaceId}/outline-versions/${versionId}`),
-    enabled: !!workspaceId && !!versionId,
-  });
-}
-
-export function useCreateOutlineVersion() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, data }: { workspaceId: string; data: CreateOutlineVersionRequest }) =>
-      api.post<OutlineVersion>(`/api/workspaces/${workspaceId}/outline-versions`, data),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['outlineVersions', vars.workspaceId] }),
-  });
-}
-
-export function useDeleteOutlineVersion() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: ({ workspaceId, versionId }: { workspaceId: string; versionId: string }) =>
-      api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/outline-versions/${versionId}`),
-    onSuccess: (_, vars) => qc.invalidateQueries({ queryKey: ['outlineVersions', vars.workspaceId] }),
-  });
-}
+export const useOutlineVersions = outlineVersionHooks.useList;
+export const useOutlineVersion = outlineVersionHooks.useOne;
+export const useCreateOutlineVersion = outlineVersionHooks.useCreate;
+export const useDeleteOutlineVersion = outlineVersionHooks.useDelete;
 
 export function useRestoreOutlineVersion() {
   return useMutation({
@@ -430,14 +204,19 @@ export function useRestoreOutlineVersion() {
 export function useImportWorkspace() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ workspaceId, data, strategy }: {
+    mutationFn: ({
+      workspaceId,
+      data,
+      strategy,
+    }: {
       workspaceId: string;
       data: ExportData;
       strategy?: 'overwrite' | 'merge' | 'skip';
-    }) => api.post<{ imported: boolean }>(
-      `/api/workspaces/${workspaceId}/import?strategy=${strategy ?? 'skip'}`,
-      data
-    ),
+    }) =>
+      api.post<{ imported: boolean }>(
+        `/api/workspaces/${workspaceId}/import?strategy=${strategy ?? 'skip'}`,
+        data,
+      ),
     onSuccess: (_, vars) => {
       // 导入成功后使所有相关查询失效，触发重新获取
       qc.invalidateQueries({ queryKey: ['workspaces', vars.workspaceId] });

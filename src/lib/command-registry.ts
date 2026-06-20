@@ -61,6 +61,7 @@ export interface CommandContext {
   exportWorkspace: () => void;
   importWorkspace: () => void;
   toggleFocusMode: () => void;
+  toggleZenMode: () => void;
   toggleSidebar: () => void;
   openSettings: () => void;
   openCommandPalette: () => void;
@@ -114,6 +115,7 @@ export const defaultCommands: Command[] = [
   // 系统
   { id: 'system-command-palette', title: '打开命令面板', icon: CommandIcon, category: 'system', shortcut: 'Mod+K', handler: (ctx) => { ctx.openCommandPalette(); } },
   { id: 'system-focus-mode', title: '切换专注模式', icon: FullScreenIcon, category: 'system', shortcut: 'F11', handler: (ctx) => { ctx.toggleFocusMode(); ctx.close(); } },
+  { id: 'system-zen-mode', title: '切换 Zen 模式（全屏写作）', icon: FullScreenIcon, category: 'system', shortcut: 'Mod+Shift+Z', handler: (ctx) => { ctx.toggleZenMode(); ctx.close(); } },
   { id: 'system-toggle-sidebar', title: '切换侧边栏', icon: PanelLeftIcon, category: 'system', shortcut: 'Mod+B', handler: (ctx) => { ctx.toggleSidebar(); ctx.close(); } },
   { id: 'system-settings', title: '打开设置', icon: SettingIcon, category: 'system', shortcut: 'Mod+,', handler: (ctx) => { ctx.openSettings(); ctx.close(); } },
 

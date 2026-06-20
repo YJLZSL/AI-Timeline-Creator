@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Dialog } from '@/components/ui-tdesign';
 import { useUIStore } from '@/stores/useUIStore';
-import { useTimelineStore } from '@/stores/useTimelineStore';
+import { useSelectionStore } from '@/stores/useSelectionStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useEvents, useCharacters } from '@/services/api-hooks';
 import { TimeIcon, LocalTwoIcon, UserIcon } from '@/lib/icons';
@@ -21,7 +21,7 @@ export function EventDetailView() {
   const detailEventId = useUIStore((s) => s.detailEventId);
   const setDetailEvent = useUIStore((s) => s.setDetailEvent);
   const setActivePanel = useUIStore((s) => s.setActivePanel);
-  const setSelectedEvent = useTimelineStore((s) => s.setSelectedEvent);
+  const setSelectedEvent = useSelectionStore((s) => s.selectEvent);
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
 
   const { data: eventsData } = useEvents(workspaceId);

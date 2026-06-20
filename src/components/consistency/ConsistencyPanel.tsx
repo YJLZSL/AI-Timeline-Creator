@@ -3,6 +3,7 @@ import { LoadingIcon, CautionIcon, ErrorIcon, RightIcon, CheckIcon } from '@/lib
 import { useEvents, useCharacters, useWorldSettings, useForeshadowings } from '@/services/api-hooks';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
+import { useSelectionStore } from '@/stores/useSelectionStore';
 import { useUIStore } from '@/stores/useUIStore';
 import {
   runAllChecks,
@@ -15,7 +16,7 @@ import {
 export function ConsistencyPanel() {
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const scrollToEvent = useTimelineStore((s) => s.scrollToEvent);
-  const setSelectedEvent = useTimelineStore((s) => s.setSelectedEvent);
+  const setSelectedEvent = useSelectionStore((s) => s.selectEvent);
   const setActivePanel = useUIStore((s) => s.setActivePanel);
   const { data: eventsData } = useEvents(workspaceId);
   const { data: characters } = useCharacters(workspaceId);

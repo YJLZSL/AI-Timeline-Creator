@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { streamAIChat } from '@/services/ai-stream.js';
 import type { AIChatMessage as StreamChatMessage } from '@/services/ai-stream.js';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore.js';
-import { useTimelineStore } from '@/stores/useTimelineStore.js';
+import { useSelectionStore } from '@/stores/useSelectionStore.js';
 import { useEvent } from '@/services/api-hooks.js';
 import { getAIConfig } from '@/lib/ai-config.js';
 import {
@@ -84,7 +84,7 @@ const PROVIDER_LABELS: Record<string, string> = {
 
 export function AIPanel() {
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
-  const selectedEventId = useTimelineStore((s) => s.selectedEventId);
+  const selectedEventId = useSelectionStore((s) => s.selectedEventId);
 
   // 获取选中事件详情（上下文感知）
   const { data: selectedEvent } = useEvent(workspaceId, selectedEventId);

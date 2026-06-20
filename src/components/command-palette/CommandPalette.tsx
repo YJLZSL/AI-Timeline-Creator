@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   Dialog,
@@ -105,6 +105,7 @@ const COMMAND_ICON_MAP: Record<string, React.ReactNode> = {
   'edit-redo': <RedoIcon size={16} />,
   'system-command-palette': <CommandIcon size={16} />,
   'system-focus-mode': <FullScreenIcon size={16} />,
+  'system-zen-mode': <FullScreenIcon size={16} />,
   'system-toggle-sidebar': <PanelLeftIcon size={16} />,
   'system-settings': <SettingIcon size={16} />,
   'theme-luosheng': <SunIcon size={16} />,
@@ -139,14 +140,42 @@ export function CommandPalette() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const inputRef = useRef<InputRef>(null);
 
+  // 搜索历史
+  const [searchHistory, setSearchHistory] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem('command-palette-search-history');
+      return stored ? JSON.parse(stored) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const addToHistory = useCallback((term: string) => {
+    if (!term.trim() || term.trim().startsWith('>')) return;
+    setSearchHistory((prev) => {
+      const normalized = term.trim().toLowerCase();
+      const filtered = prev.filter((h) => h.toLowerCase() !== normalized);
+      const updated = [normalized, ...filtered].slice(0, 8);
+      try {
+        localStorage.setItem('command-palette-search-history', JSON.stringify(updated));
+      } catch {
+        // ignore
+      }
+      return updated;
+    });
+  }, []);
+
   useEffect(() => {
     if (!open) {
+      if (search.trim() && !search.trim().startsWith('>')) {
+        addToHistory(search);
+      }
       setSearch('');
       setActiveId(null);
     } else {
       setTimeout(() => inputRef.current?.focus(), 0);
     }
-  }, [open]);
+  }, [open, search, addToHistory]);
 
   const isCommandMode = search.startsWith('>');
   const query = isCommandMode ? search.slice(1).trim().toLowerCase() : search.trim().toLowerCase();
@@ -412,7 +441,7 @@ export function CommandPalette() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent className="bg-[rgb(var(--popover))] text-[rgb(var(--popover-foreground))] border border-[rgb(var(--border))] shadow-2xl p-0 top-[15%] translate-y-0 max-w-2xl overflow-hidden backdrop-blur-xl">
+      <DialogContent className="bg-[rgb(var(--popover))] text-[rgb(var(--popover-foreground))] border border-[rgb(var(--border))] shadow-2xl p-0 top-[15%] translate-y-0 max-w-2xl overflow-hidden backdrop-blur-xl dialog-enter">
         <DialogTitle className="sr-only">命令面板</DialogTitle>
         <div className="flex items-center gap-2 px-4 py-3 border-b border-[rgb(var(--border))]/50">
           <span className="text-muted-foreground shrink-0">
@@ -428,6 +457,40 @@ export function CommandPalette() {
           />
         </div>
         <div className="max-h-[320px] overflow-y-auto overflow-x-hidden bg-[rgb(var(--popover))] p-1.5">
+          {!isCommandMode && !query && searchHistory.length > 0 && (
+            <div className="mb-1">
+              <div className="px-2.5 py-1.5 flex items-center justify-between">
+                <TTag theme="default" variant="light" size="small" className="text-[10px] uppercase tracking-wider">
+                  搜索历史
+                </TTag>
+                <button
+                  onClick={() => {
+                    setSearchHistory([]);
+                    try { localStorage.removeItem('command-palette-search-history'); } catch { /* ignore */ }
+                  }}
+                  className="text-[10px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                >
+                  清除
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-1.5 px-2.5 pb-2">
+                {searchHistory.map((term, i) => (
+                  <button
+                    key={`${term}-${i}`}
+                    onClick={() => {
+                      setSearch(term);
+                      inputRef.current?.focus();
+                    }}
+                    className="search-history-tag inline-flex items-center gap-1 rounded-md bg-muted/60 px-2 py-1 text-xs text-muted-foreground transition-colors"
+                  >
+                    <SearchIcon size={12} />
+                    {term}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {showEmpty && (
             <div className="py-8 text-center">
               <div className="text-sm text-muted-foreground mb-1">无匹配结果</div>

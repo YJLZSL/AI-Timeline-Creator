@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { XIcon, MinusIcon, PlusIcon } from '@/lib/icons';
 import { TButton } from '@/components/ui-tdesign';
 import { useUIStore } from '@/stores/useUIStore';
@@ -18,18 +19,19 @@ import { EventContextPanel } from './EventContextPanel';
 import type { TimelineEvent } from '../../../shared/types';
 
 const PANEL_TITLES: Record<string, string> = {
-  properties: '属性',
-  'event-editor': '事件编辑器',
-  ai: 'AI 面板',
-  characters: '角色管理',
-  worldview: '世界观',
-  foreshadowing: '伏笔',
-  connections: '关联',
-  consistency: '一致性检查',
-  shortcuts: '快捷键设置',
+  properties: 'contextPanel.properties',
+  'event-editor': 'contextPanel.eventEditor',
+  ai: 'contextPanel.aiPanel',
+  characters: 'contextPanel.characterManagement',
+  worldview: 'contextPanel.worldview',
+  foreshadowing: 'contextPanel.foreshadowing',
+  connections: 'contextPanel.connections',
+  consistency: 'contextPanel.consistencyCheck',
+  shortcuts: 'contextPanel.shortcuts',
 };
 
 export function ContextPanel() {
+  const { t } = useTranslation();
   const activePanel = useUIStore((s) => s.activePanel);
   const panelWidth = useUIStore((s) => s.panelWidth);
   const setPanelWidth = useUIStore((s) => s.setPanelWidth);
@@ -83,11 +85,12 @@ export function ContextPanel() {
     workspaceId,
     handleClose,
     () => setSettingsOpen(true),
+    t,
   );
 
   return (
     <aside
-      className="relative flex flex-col border-l border-border bg-card"
+      className="relative flex flex-col border-l border-border bg-card panel-enter"
       style={{ width: `var(--panel-width)` }}
     >
       {/* 左侧拖拽 handle */}
@@ -97,11 +100,11 @@ export function ContextPanel() {
       />
 
       {/* 标题栏 */}
-      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 bg-muted/30">
+      <div className="flex h-12 shrink-0 items-center justify-between border-b border-border px-4 bg-muted/30 backdrop-blur-sm">
         <h2 className="font-serif text-sm font-semibold text-foreground">{title}</h2>
         <div className="flex items-center gap-2">
           {viewMode === 'outline' && (
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 rounded-lg bg-muted/50 px-1 py-0.5">
               <TButton
                 variant="text"
                 shape="square"
@@ -109,7 +112,7 @@ export function ContextPanel() {
                 className="size-7 btn-lift"
                 disabled={outlineFontSize <= 12}
                 onClick={() => setOutlineFontSize(outlineFontSize - 1)}
-                title="减小字号"
+                title={t('contextPanel.decreaseFontSize')}
               >
                 <MinusIcon size={16} />
               </TButton>
@@ -121,7 +124,7 @@ export function ContextPanel() {
                 className="size-7 btn-lift"
                 disabled={outlineFontSize >= 24}
                 onClick={() => setOutlineFontSize(outlineFontSize + 1)}
-                title="增大字号"
+                title={t('contextPanel.increaseFontSize')}
               >
                 <PlusIcon size={16} />
               </TButton>
@@ -131,9 +134,9 @@ export function ContextPanel() {
             variant="text"
             shape="square"
             size="small"
-            className="size-7 btn-lift"
+            className="size-7 btn-lift hover:bg-muted/80 rounded-lg"
             onClick={handleClose}
-            title="关闭"
+            title={t('contextPanel.close')}
           >
             <XIcon size={16} />
           </TButton>
@@ -150,30 +153,51 @@ export function ContextPanel() {
 
 function Placeholder({ label }: { label: string }) {
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex h-full items-center justify-center panel-enter">
       <p className="text-center text-sm text-muted-foreground">{label}</p>
     </div>
   );
 }
 
 function EmptyState() {
+  const { t } = useTranslation();
   return (
-    <div className="flex h-full items-center justify-center">
-      <p className="text-center text-sm text-muted-foreground">
-        选择一个事件或角色查看详情
-      </p>
+    <div className="flex h-full items-center justify-center panel-enter">
+      <div className="flex flex-col items-center text-center gap-3 px-6">
+        <div className="empty-illustration">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground/60">
+            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+              <path d="M12 7v6l4 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            </svg>
+          </div>
+        </div>
+        <p className="text-sm font-medium text-foreground">{t('contextPanel.selectEventOrCharacter')}</p>
+        <p className="text-xs text-muted-foreground/70 max-w-[180px]">
+          {t('contextPanel.emptyStateSubtitle')}
+        </p>
+      </div>
     </div>
   );
 }
 
 function ShortcutSettingsPanel({ onOpen }: { onOpen: () => void }) {
+  const { t } = useTranslation();
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-3">
+    <div className="flex h-full flex-col items-center justify-center gap-3 panel-enter">
+      <div className="empty-illustration">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground/60">
+          <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
+            <path d="M7 9h4M7 13h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" opacity="0.6" />
+          </svg>
+        </div>
+      </div>
       <p className="text-center text-sm text-muted-foreground">
-        点击下方按钮打开快捷键设置对话框
+        {t('contextPanel.shortcutSettingsDesc')}
       </p>
-      <TButton variant="outline" size="small" onClick={onOpen}>
-        打开快捷键设置
+      <TButton variant="outline" size="small" onClick={onOpen} className="btn-lift">
+        {t('contextPanel.openShortcutSettings')}
       </TButton>
     </div>
   );
@@ -187,61 +211,62 @@ function getPanelContent(
   workspaceId: string | null,
   onClose: () => void,
   onOpenSettings: () => void,
+  t: (key: string) => string,
 ): { title: string; content: React.ReactNode } {
   if (!activePanel) {
     if (selectedEventId && selectedEvent) {
-      return { title: '关联数据', content: <EventContextPanel event={selectedEvent} workspaceId={workspaceId} /> };
+      return { title: t('contextPanel.relatedData'), content: <EventContextPanel event={selectedEvent} workspaceId={workspaceId} /> };
     }
     if (selectedCharacterId) {
-      return { title: '角色详情', content: <Placeholder label="请在角色面板中查看和编辑角色详情" /> };
+      return { title: t('contextPanel.characterDetails'), content: <Placeholder label={t('contextPanel.viewInCharacterPanel')} /> };
     }
-    return { title: '上下文面板', content: <EmptyState /> };
+    return { title: t('contextPanel.contextPanel'), content: <EmptyState /> };
   }
 
   switch (activePanel) {
     case 'properties':
       if (selectedEventId) {
         if (!selectedEvent) {
-          return { title: '事件编辑器', content: <Placeholder label="加载事件…" /> };
+          return { title: t('contextPanel.eventEditor'), content: <Placeholder label={t('contextPanel.loading')} /> };
         }
-        return { title: '事件编辑器', content: <EventEditorDialog event={selectedEvent} onClose={onClose} /> };
+        return { title: t('contextPanel.eventEditor'), content: <EventEditorDialog event={selectedEvent} onClose={onClose} /> };
       }
       if (selectedCharacterId) {
-        return { title: '角色详情', content: <Placeholder label="请在角色面板中查看和编辑角色详情" /> };
+        return { title: t('contextPanel.characterDetails'), content: <Placeholder label={t('contextPanel.viewInCharacterPanel')} /> };
       }
-      return { title: '属性', content: <EmptyState /> };
+      return { title: t('contextPanel.properties'), content: <EmptyState /> };
 
     case 'event-editor':
       if (selectedEventId && !selectedEvent) {
-        return { title: PANEL_TITLES['event-editor'], content: <Placeholder label="加载事件…" /> };
+        return { title: t(PANEL_TITLES['event-editor']), content: <Placeholder label={t('contextPanel.loading')} /> };
       }
       return {
-        title: PANEL_TITLES['event-editor'],
+        title: t(PANEL_TITLES['event-editor']),
         content: <EventEditorDialog event={selectedEvent} onClose={onClose} />,
       };
 
     case 'ai':
-      return { title: PANEL_TITLES.ai, content: <AIPanel /> };
+      return { title: t(PANEL_TITLES.ai), content: <AIPanel /> };
 
     case 'characters':
-      return { title: PANEL_TITLES.characters, content: <CharacterPanel /> };
+      return { title: t(PANEL_TITLES.characters), content: <CharacterPanel /> };
 
     case 'worldview':
-      return { title: PANEL_TITLES.worldview, content: <WorldBuildingPanel /> };
+      return { title: t(PANEL_TITLES.worldview), content: <WorldBuildingPanel /> };
 
     case 'foreshadowing':
-      return { title: PANEL_TITLES.foreshadowing, content: <ForeshadowingPanel /> };
+      return { title: t(PANEL_TITLES.foreshadowing), content: <ForeshadowingPanel /> };
 
     case 'connections':
-      return { title: PANEL_TITLES.connections, content: <ConnectionPanel /> };
+      return { title: t(PANEL_TITLES.connections), content: <ConnectionPanel /> };
 
     case 'consistency':
-      return { title: PANEL_TITLES.consistency, content: <ConsistencyPanel /> };
+      return { title: t(PANEL_TITLES.consistency), content: <ConsistencyPanel /> };
 
     case 'shortcuts':
-      return { title: PANEL_TITLES.shortcuts, content: <ShortcutSettingsPanel onOpen={onOpenSettings} /> };
+      return { title: t(PANEL_TITLES.shortcuts), content: <ShortcutSettingsPanel onOpen={onOpenSettings} /> };
 
     default:
-      return { title: '上下文面板', content: <EmptyState /> };
+      return { title: t('contextPanel.contextPanel'), content: <EmptyState /> };
   }
 }

@@ -4,6 +4,7 @@ import type { DateRangeValue } from 'tdesign-react';
 import { TButton, TPopup, TSwitch } from '@/components/ui-tdesign';
 import { PlusIcon, SettingConfigIcon, LinkIcon, XIcon } from '@/lib/icons';
 import { useEvents, useTracks, useConnections, useUpdateEvent } from '@/services/api-hooks';
+import { Skeleton } from '@/components/_shared/Skeleton';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useUIStore } from '@/stores/useUIStore';
@@ -37,8 +38,8 @@ export function TimelineCanvas() {
   const visibleDateRange = useTimelineStore((s) => s.visibleDateRange);
   const setVisibleDateRange = useTimelineStore((s) => s.setVisibleDateRange);
 
-  const { data: eventsData } = useEvents(workspaceId);
-  const { data: tracks } = useTracks(workspaceId);
+  const { data: eventsData, isLoading: isLoadingEvents } = useEvents(workspaceId);
+  const { data: tracks, isLoading: isLoadingTracks } = useTracks(workspaceId);
   const { data: connections } = useConnections(workspaceId);
   const updateEventMutation = useUpdateEvent();
 
@@ -330,23 +331,47 @@ export function TimelineCanvas() {
         </div>
       </div>
 
-      {/* Canvas */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-auto bg-background relative"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgb(var(--border) / 0.04) 1px, transparent 1px),
-            linear-gradient(to bottom, rgb(var(--border) / 0.04) 1px, transparent 1px),
-            linear-gradient(to right, rgb(var(--border) / 0.08) 1px, transparent 1px),
-            linear-gradient(to bottom, rgb(var(--border) / 0.08) 1px, transparent 1px)
-          `,
-          backgroundSize: '20px 20px, 20px 20px, 40px 40px, 40px 40px',
-        }}
-        onClick={() => {
-          useSelectionStore.getState().clear();
-        }}
-      >
+      {/* Loading skeleton */}
+      {(isLoadingEvents || isLoadingTracks) && (
+        <div className="flex-1 p-4">
+          <div className="flex gap-2 mb-4">
+            <Skeleton variant="text" className="w-32 h-6" />
+            <Skeleton variant="text" className="w-20 h-6" />
+            <div className="ml-auto flex gap-2">
+              <Skeleton variant="circle" className="h-8 w-8" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <Skeleton variant="text" className="w-[160px] h-10" />
+                <div className="flex-1 flex gap-2">
+                  <Skeleton variant="card" className="h-16 flex-1" />
+                  <Skeleton variant="card" className="h-16 flex-1" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {!isLoadingEvents && !isLoadingTracks && (
+        <div
+          ref={scrollRef}
+          className="flex-1 overflow-auto bg-background relative"
+          style={{
+            backgroundImage: `
+              linear-gradient(to right, rgb(var(--border) / 0.04) 1px, transparent 1px),
+              linear-gradient(to bottom, rgb(var(--border) / 0.04) 1px, transparent 1px),
+              linear-gradient(to right, rgb(var(--border) / 0.08) 1px, transparent 1px),
+              linear-gradient(to bottom, rgb(var(--border) / 0.08) 1px, transparent 1px)
+            `,
+            backgroundSize: '20px 20px, 20px 20px, 40px 40px, 40px 40px',
+          }}
+          onClick={() => {
+            useSelectionStore.getState().clear();
+          }}
+        >
         {/* Theme texture overlay */}
         <div
           className="pointer-events-none absolute inset-0 opacity-50"
@@ -448,6 +473,7 @@ export function TimelineCanvas() {
           setVisibleDateRange={setVisibleDateRange}
         />
       </div>
+      )}
 
       {workspaceId && (
         <CreateTrackDialog
