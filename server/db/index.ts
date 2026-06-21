@@ -103,15 +103,20 @@ export function runMigrations(): void {
     dbLog.warn({ migrationsPath }, '[migration] folder not found, will use fallback');
   }
 
-  // ── Step 3: 检查迁移是否成功 ──
-  if (tableExists('workspaces')) {
-    dbLog.info('[migration] workspaces table exists — migration OK');
+  // ── Step 3: 检查核心表是否全部存在 ──
+  const coreTables = ['workspaces', 'tracks', 'events', 'characters', 'connections', 'foreshadowings', 'world_settings', 'bookmarks', 'maps'];
+  const missingTables = coreTables.filter(t => !tableExists(t));
+  
+  if (missingTables.length === 0) {
+    dbLog.info('[migration] all core tables exist — migration OK');
     ensureSchemaCompatibility();
     return;
   }
+  
+  dbLog.warn({ missingTables }, '[migration] some core tables missing — need fallback');
 
   // ── Step 4: 手动读取并执行迁移 SQL（绕过 drizzle migrate 在 asar 内的静默失败） ──
-  dbLog.warn('[migration] workspaces table missing — trying manual SQL execution');
+  dbLog.warn({ missingTables }, '[migration] trying manual SQL execution for missing tables');
   if (fs.existsSync(migrationsPath)) {
     try {
       const journalPath = path.join(migrationsPath, 'meta', '_journal.json');

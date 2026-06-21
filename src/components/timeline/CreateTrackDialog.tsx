@@ -31,6 +31,10 @@ export function CreateTrackDialog({ open, workspaceId, onClose }: CreateTrackDia
   };
 
   const handleSubmit = async () => {
+    if (!workspaceId) {
+      MessagePlugin.error('未选择工作区，无法创建轨道');
+      return;
+    }
     if (!name.trim() || createTrack.isPending || isSubmitting) return;
     setIsSubmitting(true);
     try {
@@ -46,8 +50,8 @@ export function CreateTrackDialog({ open, workspaceId, onClose }: CreateTrackDia
             resetForm();
             onClose();
           },
-          onError: () => {
-            MessagePlugin.error('创建轨道失败');
+          onError: (err) => {
+            MessagePlugin.error(`创建轨道失败: ${err.message}`);
           },
         },
       );
