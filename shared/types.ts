@@ -690,6 +690,70 @@ export interface UpdateBookmarkRequest {
   eventId?: string;
 }
 
+// ============================================
+// 资料库（笔记本）类型 (v1.5)
+// ============================================
+
+/** 笔记 */
+export interface Note {
+  id: string;
+  workspaceId: string;
+  folderId: string | null;
+  title: string;
+  content: string | null;
+  tagsJson: string | null;  // JSON array of tag strings
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/** 文件夹 */
+export interface NoteFolder {
+  id: string;
+  workspaceId: string;
+  parentId: string | null;
+  name: string;
+  createdAt: Date;
+}
+
+/** 标签 */
+export interface NoteTag {
+  id: string;
+  workspaceId: string;
+  name: string;
+  color: string | null;
+}
+
+/** 创建笔记请求 */
+export interface CreateNoteRequest {
+  id?: string;
+  folderId?: string | null;
+  title: string;
+  content?: string;
+  tagsJson?: string;
+}
+
+/** 更新笔记请求 */
+export interface UpdateNoteRequest {
+  folderId?: string | null;
+  title?: string;
+  content?: string;
+  tagsJson?: string;
+}
+
+/** 创建文件夹请求 */
+export interface CreateNoteFolderRequest {
+  id?: string;
+  parentId?: string | null;
+  name: string;
+}
+
+/** 创建标签请求 */
+export interface CreateNoteTagRequest {
+  id?: string;
+  name: string;
+  color?: string;
+}
+
 /** 导出数据结构 */
 export interface ExportData {
   version: '4.0';

@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, uniqueIndex, type AnySQLiteColumn } from 'drizzle-orm/sqlite-core';
 
 // 工作区
 export const workspaces = sqliteTable('workspaces', {
@@ -324,6 +324,47 @@ export const aiConversations = sqliteTable('ai_conversations', {
   createdIdx: index('ai_conversations_created_idx').on(table.createdAt),
 }));
 
+// ============================================
+// 资料库（笔记本）数据模型 (v1.5)
+// ============================================
+
+// 资料库笔记表
+export const notes = sqliteTable('notes', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  folderId: text('folder_id').references(() => noteFolders.id, { onDelete: 'set null' }),
+  title: text('title').notNull(),
+  content: text('content').default(''),
+  tagsJson: text('tags_json').default('[]'), // JSON array of tag strings
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
+}, (table) => ({
+  workspaceIdx: index('notes_workspace_idx').on(table.workspaceId),
+  folderIdx: index('notes_folder_idx').on(table.folderId),
+}));
+
+// 资料库文件夹表
+export const noteFolders = sqliteTable('note_folders', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  parentId: text('parent_id').references((): AnySQLiteColumn => noteFolders.id, { onDelete: 'set null' }),
+  name: text('name').notNull(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
+}, (table) => ({
+  workspaceIdx: index('note_folders_workspace_idx').on(table.workspaceId),
+  parentIdx: index('note_folders_parent_idx').on(table.parentId),
+}));
+
+// 笔记标签表（全局标签定义）
+export const noteTags = sqliteTable('note_tags', {
+  id: text('id').primaryKey(),
+  workspaceId: text('workspace_id').notNull().references(() => workspaces.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  color: text('color').default('#3b82f6'),
+}, (table) => ({
+  workspaceIdx: index('note_tags_workspace_idx').on(table.workspaceId),
+  nameUnique: uniqueIndex('note_tags_name_unique').on(table.workspaceId, table.name),
+}));
 // ============================================
 // AI 语义缓存表 (v3.5) — 缓存相似查询的响应，减少 API 调用
 // ============================================

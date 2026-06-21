@@ -1,7 +1,8 @@
 import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-interface EmptyStateProps {
+/** 空状态组件 Props */
+export interface EmptyStateProps {
   icon?: ReactNode;
   title: string;
   description?: string;
@@ -12,8 +13,8 @@ interface EmptyStateProps {
   showIllustration?: boolean;
   /** 副标题下方的提示文字 */
   hint?: string;
-  /** 尺寸：sm 适合卡片内，lg 适合全屏视图 */
-  size?: 'sm' | 'lg';
+  /** 尺寸：sm 适合卡片内，md 适合常规内容区，lg 适合全屏视图 */
+  size?: 'sm' | 'md' | 'lg';
 }
 
 /**
@@ -30,7 +31,7 @@ export function EmptyState({
   variant = 'default',
   showIllustration = true,
   hint,
-  size = 'sm',
+  size = 'md',
 }: EmptyStateProps) {
   const variantStyles = {
     default: 'flex flex-col items-center justify-center text-center p-8 rounded-2xl border border-border bg-card/95 shadow-lg panel-enter',
@@ -40,9 +41,14 @@ export function EmptyState({
 
   const sizeStyles = {
     sm: {
-      icon: 'h-16 w-16',
+      icon: 'h-12 w-12',
       title: 'text-sm',
       desc: 'text-xs',
+    },
+    md: {
+      icon: 'h-12 w-12',
+      title: 'text-lg font-medium',
+      desc: 'text-sm mt-2',
     },
     lg: {
       icon: 'h-20 w-20',

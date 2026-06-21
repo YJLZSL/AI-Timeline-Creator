@@ -20,10 +20,10 @@ import {
 import { TButton, TInput } from '@/components/ui-tdesign';
 import { useUIStore } from '@/stores/useUIStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
-import { useSelectionStore } from '@/stores/useSelectionStore';
 import { useCharacters, useEvents, useForeshadowings, useWorldSettings } from '@/services/api-hooks';
-import { PomodoroTimer } from '@/components/_shared/PomodoroTimer';
-import { DailyGoalWidget } from '@/stores/useDailyGoalStore';
+// 阶段1重构：移除专注工具和每日目标（功能移至设置页面）
+// import { PomodoroTimer } from '@/components/_shared/PomodoroTimer';
+// import { DailyGoalWidget } from '@/stores/useDailyGoalStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { toast } from 'sonner';
 
@@ -61,8 +61,6 @@ export function LeftPanel() {
   const [searchQuery, setSearchQuery] = useState('');
   const activePanel = useUIStore((s) => s.activePanel);
   const setActivePanel = useUIStore((s) => s.setActivePanel);
-  const selectedEventId = useSelectionStore((s) => s.selectedEventId);
-  const selectedCharacterId = useSelectionStore((s) => s.selectedCharacterId);
   const workspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
 
   const { data: characters } = useCharacters(workspaceId);
@@ -173,21 +171,10 @@ export function LeftPanel() {
           {/* 工具 */}
           <ToolSection title={t('leftPanel.tools')} tools={UTILITY_TOOLS} activePanel={activePanel} onToolClick={handleToolClick} />
 
-          {/* 专注工具 */}
-          <div className="space-y-2">
-            <div className="px-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
-              专注工具
-            </div>
-            <div className="rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm space-y-3">
-              <PomodoroTimer />
-            </div>
-          </div>
+          {/* 阶段1重构：专注工具和每日目标已移除（功能移至设置页面） */}
 
-          {/* 每日目标 */}
-          <DailyGoalWidget />
-
-          {/* 快速统计 */}
-          <div className="mt-auto space-y-2 rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm card-hover-shadow">
+          {/* 简化后的工作区概览 */}
+          <div className="mt-auto space-y-2 rounded-xl border border-border/40 bg-background/60 p-3 backdrop-blur-sm">
             <div className="px-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
               {t('leftPanel.workspaceOverview')}
             </div>
@@ -197,22 +184,6 @@ export function LeftPanel() {
               <StatBadge label={t('leftPanel.foreshadowings')} value={foreshadowings?.length ?? 0} color="amber" />
               <StatBadge label={t('leftPanel.settings')} value={worldSettings?.length ?? 0} color="purple" />
             </div>
-            {selectedEventId && (
-              <div className="border-t border-border/30 pt-2">
-                <div className="text-[10px] text-muted-foreground/50">{t('leftPanel.selectedEvent')}</div>
-                <div className="mt-1 truncate text-xs font-medium text-primary">
-                  {events.find((e) => e.id === selectedEventId)?.title ?? selectedEventId.slice(0, 8)}
-                </div>
-              </div>
-            )}
-            {selectedCharacterId && (
-              <div className="border-t border-border/30 pt-2">
-                <div className="text-[10px] text-muted-foreground/50">{t('leftPanel.selectedCharacter')}</div>
-                <div className="mt-1 truncate text-xs font-medium text-primary">
-                  {characters?.find((c) => c.id === selectedCharacterId)?.name ?? selectedCharacterId.slice(0, 8)}
-                </div>
-              </div>
-            )}
           </div>
         </div>
       )}

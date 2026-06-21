@@ -4,6 +4,7 @@ import { createTopLevelHooks, createNestedHooks } from './api-hooks-factory.js';
 import type {
   Workspace, TimelineEvent, Track, Character, Connection,
   Foreshadowing, WorldSetting, OutlineVersion, Map, Bookmark,
+  Note, NoteFolder, NoteTag,
   CreateWorkspaceRequest, UpdateWorkspaceRequest,
   CreateEventRequest, UpdateEventRequest,
   CreateTrackRequest, UpdateTrackRequest,
@@ -14,6 +15,7 @@ import type {
   CreateOutlineVersionRequest,
   CreateMapRequest, UpdateMapRequest,
   CreateBookmarkRequest, UpdateBookmarkRequest,
+  CreateNoteRequest, UpdateNoteRequest, CreateNoteFolderRequest, CreateNoteTagRequest,
   ExportData,
 } from '../../shared/types.js';
 
@@ -256,6 +258,171 @@ export function useImportWorkspace() {
       qc.invalidateQueries({ queryKey: ['connections', vars.workspaceId] });
       qc.invalidateQueries({ queryKey: ['foreshadowings', vars.workspaceId] });
       qc.invalidateQueries({ queryKey: ['worldSettings', vars.workspaceId] });
+      qc.invalidateQueries({ queryKey: ['notes', vars.workspaceId] });
+      qc.invalidateQueries({ queryKey: ['noteFolders', vars.workspaceId] });
+      qc.invalidateQueries({ queryKey: ['noteTags', vars.workspaceId] });
+    },
+  });
+}
+
+// ============================================
+// 资料库（笔记本）API Hooks (v1.5)
+// ============================================
+
+/** 笔记列表查询（支持按文件夹筛选） */
+export function useNotes(workspaceId: string | null, folderId?: string | null) {
+  return useQuery({
+    queryKey: ['notes', workspaceId, folderId ?? 'all'],
+    queryFn: async () => {
+      if (!workspaceId) return { items: [] as Note[], total: 0 };
+      const params = folderId !== undefined && folderId !== null ? `?folderId=${folderId}` : '';
+      const res = await api.get<{ items: Note[]; total: number }>(`/api/workspaces/${workspaceId}/notes${params}`);
+      return res;
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+/** 单篇笔记详情查询 */
+export function useNote(workspaceId: string | null, noteId: string | null) {
+  return useQuery({
+    queryKey: ['notes', workspaceId, noteId],
+    queryFn: async () => {
+      if (!workspaceId || !noteId) return null as unknown as Note;
+      const res = await api.get<Note>(`/api/workspaces/${workspaceId}/notes/${noteId}`);
+      return res;
+    },
+    enabled: !!workspaceId && !!noteId,
+  });
+}
+
+/** 创建笔记 */
+export function useCreateNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ workspaceId, data }: { workspaceId: string; data: CreateNoteRequest }) => {
+      const res = await api.post<Note>(`/api/workspaces/${workspaceId}/notes`, data);
+      return res;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['notes', vars.workspaceId] });
+    },
+  });
+}
+
+/** 更新笔记 */
+export function useUpdateNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ workspaceId, noteId, data }: { workspaceId: string; noteId: string; data: UpdateNoteRequest }) => {
+      const res = await api.patch<Note>(`/api/workspaces/${workspaceId}/notes/${noteId}`, data);
+      return res;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['notes', vars.workspaceId] });
+      qc.invalidateQueries({ queryKey: ['notes', vars.workspaceId, vars.noteId] });
+    },
+  });
+}
+
+/** 删除笔记 */
+export function useDeleteNote() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ workspaceId, noteId }: { workspaceId: string; noteId: string }) => {
+      const res = await api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/notes/${noteId}`);
+      return res;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['notes', vars.workspaceId] });
+    },
+  });
+}
+
+// ─── 资料库文件夹 ───
+
+/** 文件夹列表查询 */
+export function useNoteFolders(workspaceId: string | null) {
+  return useQuery({
+    queryKey: ['noteFolders', workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [] as NoteFolder[];
+      const res = await api.get<NoteFolder[]>(`/api/workspaces/${workspaceId}/note-folders`);
+      return res;
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+/** 创建文件夹 */
+export function useCreateNoteFolder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ workspaceId, data }: { workspaceId: string; data: CreateNoteFolderRequest }) => {
+      const res = await api.post<NoteFolder>(`/api/workspaces/${workspaceId}/note-folders`, data);
+      return res;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['noteFolders', vars.workspaceId] });
+    },
+  });
+}
+
+/** 删除文件夹 */
+export function useDeleteNoteFolder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ workspaceId, folderId }: { workspaceId: string; folderId: string }) => {
+      const res = await api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/note-folders/${folderId}`);
+      return res;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['noteFolders', vars.workspaceId] });
+      qc.invalidateQueries({ queryKey: ['notes', vars.workspaceId] });
+    },
+  });
+}
+
+// ─── 资料库标签 ───
+
+/** 标签列表查询 */
+export function useNoteTags(workspaceId: string | null) {
+  return useQuery({
+    queryKey: ['noteTags', workspaceId],
+    queryFn: async () => {
+      if (!workspaceId) return [] as NoteTag[];
+      const res = await api.get<NoteTag[]>(`/api/workspaces/${workspaceId}/note-tags`);
+      return res;
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+/** 创建标签 */
+export function useCreateNoteTag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ workspaceId, data }: { workspaceId: string; data: CreateNoteTagRequest }) => {
+      const res = await api.post<NoteTag>(`/api/workspaces/${workspaceId}/note-tags`, data);
+      return res;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['noteTags', vars.workspaceId] });
+    },
+  });
+}
+
+/** 删除标签 */
+export function useDeleteNoteTag() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ workspaceId, tagId }: { workspaceId: string; tagId: string }) => {
+      const res = await api.delete<{ id: string }>(`/api/workspaces/${workspaceId}/note-tags/${tagId}`);
+      return res;
+    },
+    onSuccess: (_, vars) => {
+      qc.invalidateQueries({ queryKey: ['noteTags', vars.workspaceId] });
+      qc.invalidateQueries({ queryKey: ['notes', vars.workspaceId] });
     },
   });
 }

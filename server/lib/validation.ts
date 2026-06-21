@@ -610,8 +610,77 @@ export const updateBookmarkBody = {
 } as const;
 
 // ============================================
-// 公共校验函数 (v1.3)
+// 资料库（笔记本）校验 Schema (v1.5)
 // ============================================
+
+export const noteIdParam = {
+  type: 'object',
+  required: ['workspaceId', 'noteId'],
+  properties: {
+    workspaceId: { type: 'string', pattern: UUID_PATTERN },
+    noteId: { type: 'string', pattern: UUID_PATTERN },
+  },
+} as const;
+
+export const noteFolderIdParam = {
+  type: 'object',
+  required: ['workspaceId', 'folderId'],
+  properties: {
+    workspaceId: { type: 'string', pattern: UUID_PATTERN },
+    folderId: { type: 'string', pattern: UUID_PATTERN },
+  },
+} as const;
+
+export const noteTagIdParam = {
+  type: 'object',
+  required: ['workspaceId', 'tagId'],
+  properties: {
+    workspaceId: { type: 'string', pattern: UUID_PATTERN },
+    tagId: { type: 'string', pattern: UUID_PATTERN },
+  },
+} as const;
+
+export const createNoteBody = {
+  type: 'object',
+  required: ['title'],
+  properties: {
+    id: { type: 'string', pattern: UUID_PATTERN },
+    folderId: { anyOf: [{ type: 'string', pattern: UUID_PATTERN }, { type: 'null' }] },
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    content: { type: 'string', maxLength: 50000 },
+    tagsJson: { type: 'string' },
+  },
+} as const;
+
+export const updateNoteBody = {
+  type: 'object',
+  properties: {
+    folderId: { anyOf: [{ type: 'string', pattern: UUID_PATTERN }, { type: 'null' }] },
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    content: { type: 'string', maxLength: 50000 },
+    tagsJson: { type: 'string' },
+  },
+} as const;
+
+export const createNoteFolderBody = {
+  type: 'object',
+  required: ['name'],
+  properties: {
+    id: { type: 'string', pattern: UUID_PATTERN },
+    parentId: { anyOf: [{ type: 'string', pattern: UUID_PATTERN }, { type: 'null' }] },
+    name: { type: 'string', minLength: 1, maxLength: 200 },
+  },
+} as const;
+
+export const createNoteTagBody = {
+  type: 'object',
+  required: ['name'],
+  properties: {
+    id: { type: 'string', pattern: UUID_PATTERN },
+    name: { type: 'string', minLength: 1, maxLength: 100 },
+    color: { type: 'string', maxLength: 20 },
+  },
+} as const;
 
 export async function validateWorkspaceExists(
   app: FastifyInstance,

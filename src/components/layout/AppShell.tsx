@@ -24,6 +24,9 @@ import { CommandPalette } from '@/components/command-palette/CommandPalette';
 import { useCommandContext } from '@/components/command-palette/commands';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { EventDetailView } from '@/components/events/EventDetailView';
+import { NotebookView } from '@/components/notebook/NotebookView';
+import { AIAssistantView } from '@/components/ai/AIAssistantView';
+import { WritingView } from '@/components/writing/WritingView';
 import { tryHandleShortcut, getCurrentContext } from '@/lib/shortcut-registry';
 import { setApiBase } from '@/services/api';
 import { getServerPort, isTauri } from '@/lib/tauri-api';
@@ -38,6 +41,10 @@ import {
   ContextMenuItem,
   ContextMenuSeparator,
 } from '@/components/ui/ContextMenu';
+import type { PageId } from '@/stores/useUIStore';
+
+// 时间轴视图体系页面：这些页面显示左侧边栏
+const TIMELINE_PAGES: PageId[] = ['timeline', 'outline', 'narrative', 'gantt', 'tree', 'stats', 'relationship'];
 
 const viewVariants = {
   initial: { opacity: 0, y: 8, scale: 0.98 },
@@ -47,8 +54,31 @@ const viewVariants = {
 
 function MainCanvas() {
   const viewMode = useTimelineStore((s) => s.viewMode);
+  const currentPage = useUIStore((s) => s.currentPage);
 
   const renderView = () => {
+    // 非时间轴页面：使用 currentPage 直接渲染对应视图
+    if (!TIMELINE_PAGES.includes(currentPage)) {
+      switch (currentPage) {
+        case 'notebook':
+          return <NotebookView />;
+        case 'ai':
+          return <AIAssistantView />;
+        case 'writing':
+          return <WritingView />;
+        default:
+          return (
+            <div className="flex h-full items-center justify-center text-muted-foreground">
+              <div className="text-center">
+                <h2 className="text-lg font-medium mb-2">{currentPage}</h2>
+                <p className="text-sm">此页面正在开发中</p>
+              </div>
+            </div>
+          );
+      }
+    }
+
+    // 时间轴视图体系：沿用现有渲染逻辑
     switch (viewMode) {
       case 'timeline':
         return <TimelineView />;
@@ -72,7 +102,7 @@ function MainCanvas() {
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        key={viewMode}
+        key={currentPage + viewMode}
         className="h-full w-full"
         variants={viewVariants}
         initial="initial"
@@ -96,6 +126,12 @@ export function AppShell() {
   const setZenMode = useUIStore((s) => s.setZenMode);
   const activePanel = useUIStore((s) => s.activePanel);
   const panelWidth = useUIStore((s) => s.panelWidth);
+  const currentPage = useUIStore((s) => s.currentPage);
+  const showLeftPanel = useUIStore((s) => s.showLeftPanel);
+
+  // 判断当前是否显示左侧边栏
+  const isTimelinePage = TIMELINE_PAGES.includes(currentPage);
+  const shouldShowLeftPanel = isTimelinePage && showLeftPanel;
 
   // 命令上下文（供快捷键系统调用命令 handler）
   const ctx = useCommandContext();
@@ -234,9 +270,9 @@ export function AppShell() {
         <TopToolbar />
 
         <div className="flex flex-1 overflow-hidden">
-          {/* 左栏 — 移动端抽屉 */}
-          {isMobile ? (
-            <>
+          {/* 左栏 — 仅在时间轴页面且非折叠时显示 */}
+          {shouldShowLeftPanel && (
+            isMobile ? (
               <MobileDrawer
                 open={mobileLeftOpen}
                 onClose={() => setMobileLeftOpen(false)}
@@ -244,14 +280,14 @@ export function AppShell() {
               >
                 <LeftPanel />
               </MobileDrawer>
-            </>
-          ) : (
-            <LeftPanel />
+            ) : (
+              <LeftPanel />
+            )
           )}
 
           <ContextMenu>
             <ContextMenuTrigger asChild>
-              <main className="min-w-0 flex-1 overflow-auto">
+              <main className={cn('min-w-0 flex-1 overflow-auto', !shouldShowLeftPanel && 'w-full')}>
                 <MainCanvas />
               </main>
             </ContextMenuTrigger>
@@ -301,6 +337,7 @@ export function AppShell() {
               setMobileLeftOpen(false);
             }}
             rightEnabled={!!activePanel}
+            leftEnabled={shouldShowLeftPanel}
           />
         )}
 
@@ -370,27 +407,31 @@ function MobileFloatButtons({
   rightOpen,
   onToggleRight,
   rightEnabled,
+  leftEnabled,
 }: {
   leftOpen: boolean;
   onToggleLeft: () => void;
   rightOpen: boolean;
   onToggleRight: () => void;
   rightEnabled: boolean;
+  leftEnabled: boolean;
 }) {
   return (
     <div className="fixed bottom-4 left-4 right-4 z-[var(--z-overlay)] flex justify-between pointer-events-none">
-      <TButton
-        variant={leftOpen ? 'base' : 'outline'}
-        shape="circle"
-        size="small"
-        className={cn(
-          'pointer-events-auto h-12 w-12 shadow-lg transition-all duration-300',
-          leftOpen ? 'btn-brown scale-105' : 'bg-background/90 backdrop-blur hover:scale-105',
-        )}
-        onClick={onToggleLeft}
-        icon={<PanelLeftIcon size={22} />}
-        aria-label="打开目录"
-      />
+      {leftEnabled && (
+        <TButton
+          variant={leftOpen ? 'base' : 'outline'}
+          shape="circle"
+          size="small"
+          className={cn(
+            'pointer-events-auto h-12 w-12 shadow-lg transition-all duration-300',
+            leftOpen ? 'btn-brown scale-105' : 'bg-background/90 backdrop-blur hover:scale-105',
+          )}
+          onClick={onToggleLeft}
+          icon={<PanelLeftIcon size={22} />}
+          aria-label="打开目录"
+        />
+      )}
       {rightEnabled && (
         <TButton
           variant={rightOpen ? 'base' : 'outline'}

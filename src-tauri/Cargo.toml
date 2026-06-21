@@ -1,6 +1,6 @@
 [package]
 name = "storyloom"
-version = "1.3.0"
+version = "1.5.0"
 description = "Storyloom · 絮织 — Weave timelines into living stories"
 authors = ["Storyloom Team"]
 license = ""

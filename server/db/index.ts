@@ -118,7 +118,7 @@ export function runMigrations(): void {
   }
 
   // ── Step 3: 检查核心表是否全部存在 ──
-  const coreTables = ['workspaces', 'tracks', 'events', 'characters', 'connections', 'foreshadowings', 'world_settings', 'bookmarks', 'maps'];
+  const coreTables = ['workspaces', 'tracks', 'events', 'characters', 'connections', 'foreshadowings', 'world_settings', 'bookmarks', 'maps', 'notes', 'note_folders', 'note_tags'];
   const missingTables = coreTables.filter(t => !tableExists(t));
   
   if (missingTables.length === 0) {
@@ -439,6 +439,29 @@ export function runMigrations(): void {
         created_at integer NOT NULL,
         updated_at integer NOT NULL
       );
+      CREATE TABLE IF NOT EXISTS notes (
+        id text PRIMARY KEY NOT NULL,
+        workspace_id text NOT NULL,
+        folder_id text,
+        title text NOT NULL,
+        content text DEFAULT '',
+        tags_json text DEFAULT '[]',
+        created_at integer NOT NULL,
+        updated_at integer NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS note_folders (
+        id text PRIMARY KEY NOT NULL,
+        workspace_id text NOT NULL,
+        parent_id text,
+        name text NOT NULL,
+        created_at integer NOT NULL
+      );
+      CREATE TABLE IF NOT EXISTS note_tags (
+        id text PRIMARY KEY NOT NULL,
+        workspace_id text NOT NULL,
+        name text NOT NULL,
+        color text DEFAULT '#3b82f6'
+      );
     `);
 
     // 索引（IF NOT EXISTS 保证幂等）
@@ -496,6 +519,12 @@ export function runMigrations(): void {
       CREATE INDEX IF NOT EXISTS ai_cache_workspace_idx ON ai_cache (workspace_id);
       CREATE UNIQUE INDEX IF NOT EXISTS ai_cache_hash_idx ON ai_cache (workspace_id, query_hash);
       CREATE INDEX IF NOT EXISTS ai_cache_hit_idx ON ai_cache (hit_count);
+      CREATE INDEX IF NOT EXISTS notes_workspace_idx ON notes (workspace_id);
+      CREATE INDEX IF NOT EXISTS notes_folder_idx ON notes (folder_id);
+      CREATE INDEX IF NOT EXISTS note_folders_workspace_idx ON note_folders (workspace_id);
+      CREATE INDEX IF NOT EXISTS note_folders_parent_idx ON note_folders (parent_id);
+      CREATE INDEX IF NOT EXISTS note_tags_workspace_idx ON note_tags (workspace_id);
+      CREATE UNIQUE INDEX IF NOT EXISTS note_tags_name_unique ON note_tags (workspace_id, name);
     `);
 
     sqlite.pragma('foreign_keys = ON');
@@ -680,6 +709,64 @@ export function ensureSchemaCompatibility(): void {
       dbLog.info('[compat] created missing maps table');
     } catch (err) {
       dbLog.warn({ err }, '[compat] failed to create maps table (ignored)');
+    }
+  }
+
+  // ── v1.5 资料库新表补建 ──
+  if (!tableExists('notes')) {
+    try {
+      sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS notes (
+          id text PRIMARY KEY NOT NULL,
+          workspace_id text NOT NULL,
+          folder_id text,
+          title text NOT NULL,
+          content text DEFAULT '',
+          tags_json text DEFAULT '[]',
+          created_at integer NOT NULL,
+          updated_at integer NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS notes_workspace_idx ON notes (workspace_id);
+        CREATE INDEX IF NOT EXISTS notes_folder_idx ON notes (folder_id);
+      `);
+      dbLog.info('[compat] created missing notes table');
+    } catch (err) {
+      dbLog.warn({ err }, '[compat] failed to create notes table (ignored)');
+    }
+  }
+  if (!tableExists('note_folders')) {
+    try {
+      sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS note_folders (
+          id text PRIMARY KEY NOT NULL,
+          workspace_id text NOT NULL,
+          parent_id text,
+          name text NOT NULL,
+          created_at integer NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS note_folders_workspace_idx ON note_folders (workspace_id);
+        CREATE INDEX IF NOT EXISTS note_folders_parent_idx ON note_folders (parent_id);
+      `);
+      dbLog.info('[compat] created missing note_folders table');
+    } catch (err) {
+      dbLog.warn({ err }, '[compat] failed to create note_folders table (ignored)');
+    }
+  }
+  if (!tableExists('note_tags')) {
+    try {
+      sqlite.exec(`
+        CREATE TABLE IF NOT EXISTS note_tags (
+          id text PRIMARY KEY NOT NULL,
+          workspace_id text NOT NULL,
+          name text NOT NULL,
+          color text DEFAULT '#3b82f6'
+        );
+        CREATE INDEX IF NOT EXISTS note_tags_workspace_idx ON note_tags (workspace_id);
+        CREATE UNIQUE INDEX IF NOT EXISTS note_tags_name_unique ON note_tags (workspace_id, name);
+      `);
+      dbLog.info('[compat] created missing note_tags table');
+    } catch (err) {
+      dbLog.warn({ err }, '[compat] failed to create note_tags table (ignored)');
     }
   }
 }
