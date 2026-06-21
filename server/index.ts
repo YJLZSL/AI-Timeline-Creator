@@ -99,7 +99,11 @@ export async function createApp(options?: { logger?: boolean }) {
   await app.register(searchRoutes, { prefix: '/api/workspaces/:workspaceId' });
   await app.register(aiRoutes, { prefix: '/api/ai' });
 
-  // 健康检查
+  // 数据库健康检查（详细表级检查）
+  const { healthRoutes } = await import('./routes/health.js');
+  await app.register(healthRoutes);
+
+  // 基础健康检查
   app.get('/api/health', async () => {
     const integrity = checkDatabaseIntegrity();
     // 同步通过 app.sqlite（fastify decorate 注入）读取 PRAGMA，避免动态 import
