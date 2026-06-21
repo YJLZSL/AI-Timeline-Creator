@@ -39,6 +39,7 @@ import {
   TButton,
 } from '@/components/ui-tdesign';
 import { TRACK_COLORS } from '@/lib/colors';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { TimelineEvent, ConnectionType, Foreshadowing, UpdateEventRequest } from '../../../shared/types';
 
 const CONNECTION_TYPES: ConnectionType[] = ['因果', '闪回', '伏笔', '平行', '对比', '呼应', '转折'];
@@ -267,18 +268,22 @@ export function EventEditorDialog({ event, onClose }: EventEditorDialogProps) {
 
   const handleDelete = async () => {
     if (!event || !workspaceId) return;
-    if (confirm('确定要删除这个事件吗？')) {
-      pushHistoryRecord({
-        workspaceId,
-        entityType: 'event',
-        action: 'delete',
-        entityId: event.id,
-        data: event as unknown as Record<string, unknown>,
-      });
-      await deleteEvent.mutateAsync({ workspaceId, eventId: event.id });
-      setSelectedEvent(null);
-      setActivePanel(null);
-    }
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: '确定要删除这个事件吗？此操作不可撤销。',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
+    pushHistoryRecord({
+      workspaceId,
+      entityType: 'event',
+      action: 'delete',
+      entityId: event.id,
+      data: event as unknown as Record<string, unknown>,
+    });
+    await deleteEvent.mutateAsync({ workspaceId, eventId: event.id });
+    setSelectedEvent(null);
+    setActivePanel(null);
   };
 
   const toggleForeshadowingRole = async (f: Foreshadowing, role: 'planted' | 'resolved') => {
@@ -305,9 +310,13 @@ export function EventEditorDialog({ event, onClose }: EventEditorDialogProps) {
 
   const handleDeleteConnection = async (connectionId: string) => {
     if (!workspaceId) return;
-    if (confirm('确定删除此关联？')) {
-      await deleteConnection.mutateAsync({ workspaceId, connectionId });
-    }
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: '确定删除此关联？此操作不可撤销。',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
+    await deleteConnection.mutateAsync({ workspaceId, connectionId });
   };
 
   if (!workspaceId) return null;

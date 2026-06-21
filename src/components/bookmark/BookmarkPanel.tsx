@@ -15,6 +15,7 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { useEvents } from '@/services/api-hooks';
 import { toast } from 'sonner';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import { TRACK_COLORS } from '@/lib/colors';
 import type { Bookmark } from '../../../shared/types';
 
@@ -53,8 +54,13 @@ export function BookmarkPanel() {
     );
   };
 
-  const handleDelete = (bookmark: Bookmark) => {
-    if (!confirm(`确定删除书签「${bookmark.name}」吗？`)) return;
+  const handleDelete = async (bookmark: Bookmark) => {
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: `确定删除书签「${bookmark.name}」吗？此操作不可撤销。`,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteBookmark.mutate(
       { workspaceId: workspaceId!, bookmarkId: bookmark.id },
       {

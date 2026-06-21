@@ -66,11 +66,11 @@ export function StatusBar() {
 
       <span className="h-3.5 w-px bg-border/60" />
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 min-w-0">
         <StatItem label="轨道" value={trackCount} />
         <StatItem label="事件" value={eventCount} />
-        <StatItem label="角色" value={characterCount} />
-        <StatItem label="字数" value={totalWords.toLocaleString()} />
+        <StatItem label="角色" value={characterCount} className="hidden sm:flex" />
+        <StatItem label="字数" value={totalWords.toLocaleString()} className="hidden sm:flex" />
       </div>
 
       <div className="flex-1" />
@@ -111,9 +111,9 @@ function StatusDot({ active }: { active: boolean }) {
   );
 }
 
-function StatItem({ label, value }: { label: string; value: number | string }) {
+function StatItem({ label, value, className }: { label: string; value: number | string; className?: string }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className={cn('flex items-center gap-1 shrink-0 min-w-0', className)}>
       <span className="text-[10px] text-muted-foreground/70">{label}</span>
       <span className="text-[11px] font-semibold tabular-nums text-foreground">{value}</span>
     </div>

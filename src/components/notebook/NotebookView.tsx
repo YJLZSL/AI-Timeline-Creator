@@ -30,6 +30,7 @@ import { FolderTree } from './FolderTree';
 import { NoteEditor } from './NoteEditor';
 import type { Note } from '../../../shared/types';
 import { toast } from 'sonner';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 
 /** 视图模式：网格 / 列表 */
 type ViewMode = 'grid' | 'list';
@@ -180,9 +181,14 @@ export function NotebookView() {
   };
 
   /** 删除笔记 */
-  const handleDeleteNote = (note: Note) => {
+  const handleDeleteNote = async (note: Note) => {
     if (!workspaceId) return;
-    if (!confirm(`确定删除笔记「${note.title}」吗？`)) return;
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: `确定删除笔记「${note.title}」吗？此操作不可撤销。`,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteNote.mutate(
       { workspaceId, noteId: note.id },
       {

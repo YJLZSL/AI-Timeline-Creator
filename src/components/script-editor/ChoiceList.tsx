@@ -19,6 +19,7 @@ import {
 } from '@/services/api-hooks';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { toast } from 'sonner';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { Choice } from '../../../shared/types';
 import { ChoiceEditor } from './ChoiceEditor';
 
@@ -77,8 +78,13 @@ export function ChoiceList({ beatId, sceneId: _sceneId, editingChoice, onEditCho
     );
   };
 
-  const handleDelete = (choice: Choice) => {
-    if (!confirm(`确定删除选项「${choice.label}」吗？`)) return;
+  const handleDelete = async (choice: Choice) => {
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: `确定删除选项「${choice.label}」吗？此操作不可撤销。`,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteChoice.mutate(choice.id, {
       onSuccess: () => {
         toast.success('选项已删除');

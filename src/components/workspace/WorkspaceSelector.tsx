@@ -11,6 +11,7 @@ import { ExportDialog } from './ExportDialog.js';
 import { ImportDialog } from './ImportDialog.js';
 import { WorkspaceCardSkeleton } from '@/components/_shared/Skeleton.js';
 import { toast } from 'sonner';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { Workspace } from '../../../shared/types.js';
 
 const containerVariant = {
@@ -44,23 +45,27 @@ export function WorkspaceSelector() {
     setCurrentWorkspace(id);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     // 先检查工作区是否存在于列表中，避免删除已不存在的工作区
     const ws = workspaces?.find((w) => w.id === id);
     if (!ws) {
       toast.error('工作区不存在或已被删除');
       return;
     }
-    if (confirm('确定要删除这个工作区吗？所有数据将被永久删除。')) {
-      deleteWorkspace.mutate(id, {
-        onSuccess: () => {
-          toast.success('工作区已删除');
-        },
-        onError: (err: Error) => {
-          toast.error(`删除失败: ${err.message}`);
-        },
-      });
-    }
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: '确定要删除这个工作区吗？所有数据将被永久删除。',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
+    deleteWorkspace.mutate(id, {
+      onSuccess: () => {
+        toast.success('工作区已删除');
+      },
+      onError: (err: Error) => {
+        toast.error(`删除失败: ${err.message}`);
+      },
+    });
   };
 
   const handleRename = (id: string, newName: string) => {
@@ -118,8 +123,7 @@ export function WorkspaceSelector() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="grid gap-4"
-            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           >
             {[1, 2, 3].map((i) => (
               <motion.div
@@ -137,8 +141,7 @@ export function WorkspaceSelector() {
             variants={containerVariant}
             initial="hidden"
             animate="show"
-            className="grid gap-4"
-            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))' }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
           >
             {workspaces.map((ws) => (
               <motion.div key={ws.id} variants={itemVariant} className="flex flex-col gap-2">

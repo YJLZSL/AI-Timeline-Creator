@@ -11,6 +11,7 @@ import {
 import { TRACK_COLORS } from '@/lib/colors';
 import { useUpdateTrack, useDeleteTrack } from '@/services/api-hooks';
 import { MessagePlugin } from 'tdesign-react';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { Track } from '../../../shared/types';
 
 export interface TrackManagerDialogProps {
@@ -85,8 +86,13 @@ export function TrackManagerDialog({
     });
   };
 
-  const handleDelete = (track: Track) => {
-    if (!confirm(`确定删除轨道「${track.name}」吗？该轨道下的事件将变为未分类。`)) return;
+  const handleDelete = async (track: Track) => {
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: `确定删除轨道「${track.name}」吗？该轨道下的事件将变为未分类。`,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteTrack.mutate(
       { workspaceId, trackId: track.id },
       {

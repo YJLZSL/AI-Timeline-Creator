@@ -187,7 +187,7 @@ export function TopToolbar() {
         >
           <TButton variant="text" size="small" className="gap-1.5 font-medium rounded-md hover:bg-muted/80">
             <FolderOpenIcon className="size-4 text-muted-foreground" />
-            <span className="max-w-[80px] truncate text-xs">
+            <span className="max-w-[60px] sm:max-w-[80px] truncate text-xs">
               {currentWorkspace?.name || t('workspace.selectPlaceholder')}
             </span>
             <DownIcon className="size-3 opacity-60 transition-transform duration-200" />
@@ -197,7 +197,7 @@ export function TopToolbar() {
         <div className="h-5 w-px bg-border/50" />
 
         {/* 缩放控制组 */}
-        <div className="flex items-center gap-0.5 rounded-xl bg-muted/50 px-1.5 py-1">
+        <div className="hidden sm:flex items-center gap-0.5 rounded-xl bg-muted/50 px-1.5 py-1">
           <TTooltip content={t('topbar.zoomOut')} placement="bottom">
             <button
               className="flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-all hover:bg-muted/80 hover:text-foreground active:scale-90"

@@ -2,7 +2,7 @@ import { MonitorIcon, CheckIcon } from '@/lib/icons';
 import { cn } from '@/lib/utils';
 import { TTag } from '@/components/ui-tdesign';
 import { useThemeStore, type ThemeId } from '@/stores/useThemeStore';
-import { getThemePreviewGradient } from '@/lib/colors';
+import { getThemePreviewGradient, THEME_PREVIEW_TOKENS } from '@/lib/colors';
 
 interface ThemeOption {
   id: ThemeId;
@@ -37,7 +37,7 @@ export function ThemeSelector() {
               role="button"
               tabIndex={0}
               className={cn(
-                'group relative flex cursor-pointer flex-col items-stretch gap-2 rounded-lg border p-2 text-left transition-all hover:bg-accent/30',
+                'group relative flex cursor-pointer flex-col items-stretch gap-2 rounded-lg border p-2 text-left transition-all duration-300 hover:bg-accent/30',
                 selected ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/30'
               )}
               onClick={() => setTheme(opt.id)}
@@ -49,7 +49,7 @@ export function ThemeSelector() {
               }}
             >
               <div
-                className="relative h-14 w-full overflow-hidden rounded-md border border-border"
+                className="relative h-14 w-full overflow-hidden rounded-md border border-border transition-all duration-300 group-hover:scale-[1.02]"
                 style={{ background: getThemePreviewGradient(opt.id) }}
               >
                 {opt.id === 'system' && (
@@ -69,8 +69,15 @@ export function ThemeSelector() {
                   </TTag>
                 )}
               </div>
-              <div className="flex flex-col gap-0.5 px-0.5">
-                <span className="text-sm font-medium leading-none">{opt.name}</span>
+              <div className="flex flex-col gap-1 px-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm font-medium leading-none">{opt.name}</span>
+                  <div
+                    className="h-2.5 w-2.5 rounded-full border border-border/40 shrink-0 transition-transform duration-300 group-hover:scale-125"
+                    style={{ backgroundColor: THEME_PREVIEW_TOKENS[opt.id]?.primary ?? '#999' }}
+                    title={opt.description}
+                  />
+                </div>
                 <span className="text-[11px] text-muted-foreground leading-none">{opt.description}</span>
               </div>
             </div>

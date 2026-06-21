@@ -26,6 +26,7 @@ import {
   useReorderBeats,
 } from '@/services/api-hooks';
 import { toast } from 'sonner';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { Beat, BeatKind } from '../../../shared/types';
 
 interface BeatListProps {
@@ -147,8 +148,13 @@ export function BeatList({
     );
   };
 
-  const handleDelete = (beat: Beat) => {
-    if (!confirm(`确定删除此${BEAT_KIND_OPTIONS.find((o) => o.value === beat.kind)?.label ?? '节拍'}吗？`)) return;
+  const handleDelete = async (beat: Beat) => {
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: `确定删除此${BEAT_KIND_OPTIONS.find((o) => o.value === beat.kind)?.label ?? '节拍'}吗？此操作不可撤销。`,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteBeat.mutate(beat.id, {
       onSuccess: () => {
         toast.success('节拍已删除');

@@ -4,12 +4,13 @@ import { HistoryIcon, DeleteIcon, FileTextIcon, EditIcon } from '@/lib/icons';
 import { useEvents } from '@/services/api-hooks.js';
 import { TButton, TTag } from '@/components/ui-tdesign';
 import { safeWorkspaceName, safeDescription } from '@/lib/safe-text';
+import { TRACK_COLORS } from '@/lib/colors';
 import type { Workspace } from '../../../shared/types.js';
 
 interface WorkspaceCardProps {
   workspace: Workspace;
   onSelect: () => void;
-  onDelete: () => void;
+  onDelete: () => void | Promise<void>;
   onRename?: (newName: string) => void;
 }
 
@@ -28,6 +29,15 @@ function formatRelativeTime(date: Date | string): string {
   if (hours > 0) return `${hours} 小时前`;
   if (minutes > 0) return `${minutes} 分钟前`;
   return '刚刚';
+}
+
+/** 根据工作区 ID 生成稳定的主题色 */
+function getWorkspaceColor(workspaceId: string): string {
+  let hash = 0;
+  for (let i = 0; i < workspaceId.length; i++) {
+    hash = (hash * 31 + workspaceId.charCodeAt(i)) >>> 0;
+  }
+  return TRACK_COLORS[hash % TRACK_COLORS.length];
 }
 
 export function WorkspaceCard({ workspace, onSelect, onDelete, onRename }: WorkspaceCardProps) {
@@ -55,17 +65,19 @@ export function WorkspaceCard({ workspace, onSelect, onDelete, onRename }: Works
     }
   };
 
+  const wsColor = getWorkspaceColor(workspace.id);
+
   return (
     <motion.div
       whileHover={{ y: -6 }}
       transition={{ type: 'spring', stiffness: 400, damping: 25 }}
       onClick={onSelect}
-      className="group relative cursor-pointer rounded-xl border border-border/60 bg-card p-5 shadow-sm transition-shadow hover:shadow-[var(--shadow-card-hover)] overflow-hidden shimmer-effect"
+      className="group relative cursor-pointer rounded-xl border border-border/60 bg-card p-5 shadow-sm transition-all duration-300 hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-1 overflow-hidden shimmer-effect card-hover-shadow"
     >
       {/* 左侧色条 */}
       <div
-        className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full transition-all duration-300 group-hover:shadow-[2px_0_8px_-1px_rgb(var(--primary)_0.3)]"
-        style={{ backgroundColor: 'rgb(var(--primary))' }}
+        className="absolute left-0 top-3 bottom-3 w-[3px] rounded-full transition-all duration-300 group-hover:shadow-[2px_0_8px_-1px]"
+        style={{ backgroundColor: wsColor, boxShadow: `2px 0 8px -1px ${wsColor}4d` }}
       />
 
       <div className="mb-3 flex items-start justify-between gap-3 pl-2">

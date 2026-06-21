@@ -220,7 +220,7 @@ export function AppShell() {
           className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground"
           style={shellStyle}
         >
-          <div className="flex flex-1 overflow-hidden">
+          <div className="flex flex-1 min-h-0 overflow-hidden">
             <ContextMenu>
               <ContextMenuTrigger asChild>
                 <main className="min-w-0 flex-1 overflow-auto">
@@ -272,7 +272,7 @@ export function AppShell() {
       >
         <TopToolbar />
 
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           {/* 左栏 — 仅在时间轴页面且非折叠时显示 */}
           {shouldShowLeftPanel && (
             isMobile ? (

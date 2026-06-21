@@ -34,9 +34,9 @@ export function EmptyState({
   size = 'md',
 }: EmptyStateProps) {
   const variantStyles = {
-    default: 'flex flex-col items-center justify-center text-center p-8 rounded-2xl border border-border bg-card/95 shadow-lg panel-enter',
-    dashed: 'flex flex-col items-center justify-center text-center p-8 rounded-2xl border-2 border-dashed border-border/60 bg-card/30 panel-enter',
-    minimal: 'flex flex-col items-center justify-center text-center p-4',
+    default: 'flex flex-col items-center justify-center text-center p-8 rounded-2xl border border-border bg-card/95 shadow-lg panel-enter empty-state-refined',
+    dashed: 'flex flex-col items-center justify-center text-center p-8 rounded-2xl border-2 border-dashed border-border/60 bg-card/30 panel-enter empty-state-refined',
+    minimal: 'flex flex-col items-center justify-center text-center p-4 empty-state-refined',
   };
 
   const sizeStyles = {
@@ -94,7 +94,7 @@ export function EmptyState({
       {hint && (
         <p className="mt-2 text-[11px] text-muted-foreground/60 max-w-[240px] leading-relaxed italic">{hint}</p>
       )}
-      {action && <div className="mt-4">{action}</div>}
+      {action && <div className="mt-4 animate-in fade-in slide-in-from-bottom-2 duration-300">{action}</div>}
     </div>
   );
 }

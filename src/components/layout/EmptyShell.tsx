@@ -149,7 +149,7 @@ export function EmptyShell() {
           </aside>
 
           {/* 中栏：工作区 */}
-          <section className="flex-1 overflow-y-auto min-w-0">
+          <section className="flex-1 overflow-y-auto min-w-0 bg-muted/20">
             <WorkspaceSelector />
           </section>
 

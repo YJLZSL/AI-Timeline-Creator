@@ -192,7 +192,7 @@ export function LeftPanel() {
 
       {/* 折叠状态只显示图标 */}
       {collapsed && (
-        <div className="flex flex-1 flex-col items-center gap-1 py-2">
+        <div className="flex flex-1 flex-col items-center gap-1 py-2 overflow-y-auto">
           {[...CREATION_TOOLS, ...UTILITY_TOOLS].map((item) => {
             const Icon = item.icon;
             const isActive = activePanel === item.panelId;

@@ -10,6 +10,7 @@ import {
 } from '@/lib/icons';
 import { TButton, TInput, TTextarea, TTag } from '@/components/ui-tdesign';
 import { Dialog } from '@/components/ui-tdesign';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { Note, NoteFolder, NoteTag } from '../../../shared/types';
 
 /**
@@ -32,7 +33,7 @@ interface NoteEditorProps {
     tagsJson: string;
   }) => void;
   /** 删除回调 */
-  onDelete?: () => void;
+  onDelete?: () => void | Promise<void>;
   /** 关闭回调 */
   onClose: () => void;
   /** 是否显示（弹窗模式） */
@@ -121,10 +122,14 @@ export function NoteEditor({
   };
 
   // 删除确认
-  const handleDelete = () => {
-    if (confirm('确定删除这篇笔记吗？此操作不可撤销。')) {
-      onDelete?.();
-    }
+  const handleDelete = async () => {
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: '确定删除这篇笔记吗？此操作不可撤销。',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
+    onDelete?.();
   };
 
   // 编辑器内容区（复用于弹窗和内联）

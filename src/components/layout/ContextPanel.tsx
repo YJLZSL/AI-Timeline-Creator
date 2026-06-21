@@ -8,6 +8,7 @@ import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useSelectionStore } from '@/stores/useSelectionStore';
 import { useEvent } from '@/services/api-hooks';
+import { EmptyState } from '@/components/_shared/EmptyState';
 import { AIPanel } from '@/components/ai-panel/AIPanel';
 import { EventEditorDialog } from '@/components/events/EventEditorDialog';
 import { CharacterPanel } from '@/components/characters/CharacterPanel';
@@ -96,7 +97,7 @@ export function ContextPanel() {
 
   return (
     <aside
-      className="relative flex flex-col border-l border-border/40 glass panel-enter card-hover-shadow"
+      className="relative flex flex-col border-l border-border/40 glass panel-enter card-hover-shadow min-w-0"
       style={{ width: `var(--panel-width)` }}
     >
       {/* 左侧拖拽 handle */}
@@ -175,28 +176,6 @@ function Placeholder({ label }: { label: string }) {
   );
 }
 
-function EmptyState() {
-  const { t } = useTranslation();
-  return (
-    <div className="flex h-full items-center justify-center panel-enter empty-state-refined">
-      <div className="flex flex-col items-center text-center gap-3 px-6">
-        <div className="empty-illustration">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/50 text-muted-foreground/60 empty-icon">
-            <svg viewBox="0 0 24 24" fill="none" className="h-6 w-6" aria-hidden="true">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="1.5" opacity="0.4" />
-              <path d="M12 7v6l4 2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-            </svg>
-          </div>
-        </div>
-        <p className="text-sm font-medium text-foreground">{t('contextPanel.selectEventOrCharacter')}</p>
-        <p className="text-xs text-muted-foreground/70 max-w-[180px]">
-          {t('contextPanel.emptyStateSubtitle')}
-        </p>
-      </div>
-    </div>
-  );
-}
-
 function ShortcutSettingsPanel({ onOpen }: { onOpen: () => void }) {
   const { t } = useTranslation();
   return (
@@ -236,7 +215,7 @@ function getPanelContent(
     if (selectedCharacterId) {
       return { title: t('contextPanel.characterDetails'), content: <Placeholder label={t('contextPanel.viewInCharacterPanel')} /> };
     }
-    return { title: t('contextPanel.contextPanel'), content: <EmptyState /> };
+    return { title: t('contextPanel.contextPanel'), content: <EmptyState title={t('contextPanel.selectEventOrCharacter')} description={t('contextPanel.emptyStateSubtitle')} /> };
   }
 
   switch (activePanel) {
@@ -250,7 +229,7 @@ function getPanelContent(
       if (selectedCharacterId) {
         return { title: t('contextPanel.characterDetails'), content: <Placeholder label={t('contextPanel.viewInCharacterPanel')} /> };
       }
-      return { title: t('contextPanel.properties'), content: <EmptyState /> };
+      return { title: t('contextPanel.properties'), content: <EmptyState title={t('contextPanel.selectEventOrCharacter')} description={t('contextPanel.emptyStateSubtitle')} /> };
 
     case 'event-editor':
       if (selectedEventId && !selectedEvent) {
@@ -292,6 +271,6 @@ function getPanelContent(
       return { title: PANEL_TITLES['script-editor'], content: <ScriptEditorView /> };
 
     default:
-      return { title: t('contextPanel.contextPanel'), content: <EmptyState /> };
+      return { title: t('contextPanel.contextPanel'), content: <EmptyState title={t('contextPanel.selectEventOrCharacter')} description={t('contextPanel.emptyStateSubtitle')} /> };
   }
 }

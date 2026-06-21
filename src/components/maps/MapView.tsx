@@ -16,6 +16,7 @@ import {
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { toast } from 'sonner';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { Map as MapType, MapMarker } from '../../../shared/types';
 
 export function MapView() {
@@ -54,8 +55,13 @@ export function MapView() {
     );
   };
 
-  const handleDeleteMap = (map: MapType) => {
-    if (!confirm(`确定删除地图「${map.name}」吗？`)) return;
+  const handleDeleteMap = async (map: MapType) => {
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: `确定删除地图「${map.name}」吗？此操作不可撤销。`,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteMap.mutate(
       { workspaceId: workspaceId!, mapId: map.id },
       {

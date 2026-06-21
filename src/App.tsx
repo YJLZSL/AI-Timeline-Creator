@@ -9,6 +9,7 @@ import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useAnimationCleanup } from '@/animation/AnimationEngine';
 import { isTauri, getServerPort, onServerPort } from '@/lib/tauri-api';
 import { setApiBase } from '@/services/api';
+import { ConfirmDialogProvider } from '@/components/_shared/ConfirmDialog';
 
 function App() {
   const fontFamily = useSettingsStore((s) => s.fontFamily);
@@ -62,7 +63,7 @@ function App() {
       <RenderLayer />
 
       {!booting && (
-        <>
+        <ConfirmDialogProvider>
           <WorkspaceInitializer />
 
           {/* 页面过渡包装：为 AppShell 提供统一的进入 / 退出动画 */}
@@ -71,7 +72,7 @@ function App() {
           </PageTransition>
 
           <UpdateNotifier />
-        </>
+        </ConfirmDialogProvider>
       )}
     </>
   );

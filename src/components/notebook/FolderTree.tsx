@@ -10,6 +10,7 @@ import {
 } from '@/lib/icons';
 import { TButton, TInput } from '@/components/ui-tdesign';
 import { Dialog } from '@/components/ui-tdesign';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { NoteFolder } from '../../../shared/types';
 
 /**
@@ -96,10 +97,14 @@ export function FolderTree({
   };
 
   // 确认删除文件夹
-  const handleDelete = (folderId: string) => {
-    if (confirm('确定删除此文件夹吗？文件夹内的笔记将移至根目录。')) {
-      onDeleteFolder(folderId);
-    }
+  const handleDelete = async (folderId: string) => {
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: '确定删除此文件夹吗？文件夹内的笔记将移至根目录。',
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
+    onDeleteFolder(folderId);
     setContextMenuFolderId(null);
   };
 

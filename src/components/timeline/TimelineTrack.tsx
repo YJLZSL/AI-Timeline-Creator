@@ -14,6 +14,7 @@ import { useTrackStore } from '@/stores/useTrackStore';
 import { useTimelineStore } from '@/stores/useTimelineStore';
 import { MessagePlugin } from 'tdesign-react';
 import { TRACK_COLORS } from '@/lib/colors';
+import { confirmDialog } from '@/components/_shared/ConfirmDialog';
 import type { Track as TrackType, TimelineEvent } from '../../../shared/types';
 
 const TRACK_HEIGHT = 80;
@@ -124,9 +125,14 @@ export const TimelineTrack = memo(function TimelineTrack({
     setShowColorPicker(false);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!workspaceId || isReadOnly) return;
-    if (!confirm(`确定删除轨道「${track.name}」吗？该轨道下的事件将变为未分类。`)) return;
+    const confirmed = await confirmDialog({
+      title: '确认删除',
+      description: `确定删除轨道「${track.name}」吗？该轨道下的事件将变为未分类。`,
+      variant: 'destructive',
+    });
+    if (!confirmed) return;
     deleteTrack.mutate(
       { workspaceId, trackId: track.id },
       {
