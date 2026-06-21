@@ -27,6 +27,7 @@ import { mapsRoutes } from './routes/maps.js';
 import { bookmarksRoutes } from './routes/bookmarks.js';
 import { assetsRoutes } from './routes/assets.js';
 import { revisionsRoutes } from './routes/revisions.js';
+import { aiConversationsRoutes } from './routes/ai-conversations.js';
 import { aiRoutes } from './routes/ai.js';
 import { searchRoutes } from './routes/search.js';
 import type { HealthCheckResponse } from '../shared/types.js';
@@ -98,6 +99,7 @@ export async function createApp(options?: { logger?: boolean }) {
   await app.register(revisionsRoutes, { prefix: '/api/workspaces/:workspaceId/revisions' });
   await app.register(searchRoutes, { prefix: '/api/workspaces/:workspaceId' });
   await app.register(aiRoutes, { prefix: '/api/ai' });
+  await app.register(aiConversationsRoutes, { prefix: '/api/ai/conversations' });
 
   // 数据库健康检查（详细表级检查）
   const { healthRoutes } = await import('./routes/health.js');

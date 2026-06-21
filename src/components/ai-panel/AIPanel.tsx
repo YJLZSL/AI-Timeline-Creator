@@ -22,6 +22,17 @@ import { AIMessage } from './AIMessage.js';
 import { AIConversationList } from './AIConversationList.js';
 import { AIInput } from './AIInput.js';
 import { useAIConversations } from './useAIConversations.js';
+import {
+  buildAIContextMessages,
+  buildWorkspaceContextText,
+  loadContextConfig,
+  type ContextConfig,
+} from '@/lib/ai-context.js';
+
+const API_BASE =
+  typeof window !== 'undefined' && (window as unknown as { electronAPI?: unknown }).electronAPI
+    ? 'http://localhost:3001'
+    : '';
 
 interface FeatureItem {
   key: string;
@@ -62,13 +73,40 @@ const FEATURES: FeatureItem[] = [
     secondaryText: '自定义',
   },
   {
-    key: 'split',
-    title: '结构拆分',
-    description: '拆分章节与情节结构',
-    icon: AnalysisIcon,
-    fn: '拆分结构，针对',
-    primaryText: '打开工作区',
-    secondaryText: '选择场景',
+    key: 'continue',
+    title: '事件续写',
+    description: '基于事件上下文续写描述',
+    icon: RobotIcon,
+    fn: '续写以下事件的描述：\n\n',
+    primaryText: '一键续写',
+    secondaryText: '自定义',
+  },
+  {
+    key: 'dialogue',
+    title: '角色对话',
+    description: '生成两个角色之间的对话',
+    icon: RobotIcon,
+    fn: '请生成以下角色之间的对话：\n\n',
+    primaryText: '一键生成',
+    secondaryText: '自定义',
+  },
+  {
+    key: 'foreshadow',
+    title: '伏笔回收',
+    description: '检测未回收伏笔并建议回收方式',
+    icon: RobotIcon,
+    fn: '请帮我检查并建议以下伏笔的回收方式：\n\n',
+    primaryText: '一键检查',
+    secondaryText: '自定义',
+  },
+  {
+    key: 'consistency',
+    title: '一致性检查',
+    description: '检测时间矛盾、角色行为不一致',
+    icon: RobotIcon,
+    fn: '请帮我检查以下故事内容的一致性：\n\n',
+    primaryText: '一键检查',
+    secondaryText: '自定义',
   },
 ];
 
@@ -99,6 +137,7 @@ export function AIPanel() {
     addMessage,
     updateMessage,
     removeLastMessage,
+    renameConversation,
   } = useAIConversations(workspaceId);
 
   const [input, setInput] = useState('');
@@ -106,6 +145,8 @@ export function AIPanel() {
   const [configOpen, setConfigOpen] = useState(false);
   const [showList, setShowList] = useState(false);
   const [modelInfo, setModelInfo] = useState<{ provider: string; model: string } | null>(null);
+  const [workspaceContext, setWorkspaceContext] = useState<string | null>(null);
+  const [contextConfig] = useState<ContextConfig>(() => loadContextConfig());
 
   const abortRef = useRef<AbortController | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -127,6 +168,31 @@ export function AIPanel() {
   useEffect(() => {
     if (!configOpen) refreshModelInfo();
   }, [configOpen, refreshModelInfo]);
+
+  // 自动获取工作区上下文
+  useEffect(() => {
+    if (!workspaceId) {
+      setWorkspaceContext(null);
+      return;
+    }
+    let cancelled = false;
+    fetch(`${API_BASE}/api/ai/workspace-context`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ workspaceId }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data.success && data.data) {
+          setWorkspaceContext(buildWorkspaceContextText(data.data));
+        }
+      })
+      .catch(() => {
+        // 静默失败，不影响使用
+      });
+    return () => { cancelled = true; };
+  }, [workspaceId]);
 
   // 自动滚动到底部
   const scrollToBottom = useCallback(() => {
@@ -153,19 +219,12 @@ export function AIPanel() {
     return `当前选中事件：${title}（${start}~${end}），描述：${desc}`;
   }, [selectedEvent]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const userText = input.trim();
     if (!userText || isStreaming || !workspaceId) return;
 
-    // 确保存在当前对话
-    let convId = currentConversationId;
-    if (!convId) {
-      convId = createConversation();
-      if (!convId) return;
-    }
-
     setInput('');
-    sendMessage(userText, convId);
+    await sendMessage(userText, currentConversationId || '');
   };
 
   // 上下文压缩：历史消息过长时自动摘要
@@ -192,32 +251,29 @@ export function AIPanel() {
     ];
   }
 
-  const sendMessage = (userText: string, convId: string) => {
-    // 构建上下文系统消息
-    const contextParts: string[] = [];
-    const eventCtx = buildEventContext();
-    if (eventCtx) {
-      contextParts.push(eventCtx);
+  const sendMessage = async (userText: string, convId: string) => {
+    // 确保存在当前对话
+    let finalConvId = convId;
+    if (!finalConvId) {
+      const newId = await createConversation();
+      if (!newId) return;
+      finalConvId = newId;
     }
 
-    // 当前对话历史
-    const history = currentConversation?.messages ?? [];
-
-    // 添加用户消息
-    addMessage(convId, { role: 'user', content: userText });
+    // 添加用户消息到本地状态
+    addMessage(finalConvId, { role: 'user', content: userText });
     // 添加 assistant 占位消息
-    const placeholderId = addMessage(convId, { role: 'assistant', content: '' });
+    const placeholderId = await addMessage(finalConvId, { role: 'assistant', content: '' });
 
-    // 添加上下文压缩后的消息
-    let messagesForAPI: StreamChatMessage[] = compressHistory(history);
-
-    // 添加上下文系统消息（如果有）
-    if (contextParts.length > 0) {
-      messagesForAPI = [{ role: 'system', content: contextParts.join('\n\n') }, ...messagesForAPI];
-    }
-
-    // 添加当前用户消息
-    messagesForAPI.push({ role: 'user', content: userText });
+    // 构建三段式消息结构
+    const eventCtx = buildEventContext();
+    const history = currentConversation?.messages ?? [];
+    const messagesForAPI = buildAIContextMessages(
+      userText,
+      history,
+      contextConfig.includeCharacters && contextConfig.includeEvents ? workspaceContext : null,
+      eventCtx,
+    );
 
     setIsStreaming(true);
     let assistantContent = '';
@@ -227,7 +283,7 @@ export function AIPanel() {
       messages: messagesForAPI,
       onChunk: (chunk) => {
         assistantContent += chunk;
-        updateMessage(convId, placeholderId, { content: assistantContent });
+        updateMessage(finalConvId, placeholderId, { content: assistantContent });
       },
       onDegraded: (err) => {
         degradedError = err;
@@ -235,7 +291,7 @@ export function AIPanel() {
       },
       onDone: () => {
         if (degradedError) {
-          updateMessage(convId, placeholderId, {
+          updateMessage(finalConvId, placeholderId, {
             content: assistantContent,
             degraded: true,
             error: degradedError,
@@ -246,7 +302,7 @@ export function AIPanel() {
       },
       onError: (err) => {
         const errMsg = `错误: ${err.message}`;
-        updateMessage(convId, placeholderId, { content: errMsg });
+        updateMessage(finalConvId, placeholderId, { content: errMsg });
         setIsStreaming(false);
         abortRef.current = null;
       },
@@ -271,15 +327,15 @@ export function AIPanel() {
     }
   };
 
-  const handleNewConversation = () => {
+  const handleNewConversation = async () => {
     if (isStreaming) handleStop();
-    createConversation();
+    await createConversation();
     setInput('');
   };
 
-  const handleDeleteConversation = (id: string) => {
+  const handleDeleteConversation = async (id: string) => {
     if (isStreaming) handleStop();
-    deleteConversation(id);
+    await deleteConversation(id);
   };
 
   const handleSwitchConversation = (id: string) => {
@@ -287,12 +343,38 @@ export function AIPanel() {
     switchConversation(id);
   };
 
-  const handleFunction = (fn: string, custom = false) => {
+  const handleFunction = async (fn: string, custom = false, featureKey?: string) => {
     if (custom) {
       setInput(`请帮我${fn}：\n`);
-    } else {
-      setInput(`请帮我${fn}以下内容：\n`);
+      return;
     }
+
+    // 对于 AI 辅助功能，自动附加工作区数据上下文
+    if (featureKey && ['continue', 'dialogue', 'foreshadow', 'consistency'].includes(featureKey)) {
+      if (!workspaceId) {
+        toast.warning('请先选择一个工作区');
+        return;
+      }
+      let contextText = fn;
+      try {
+        const res = await fetch(`${API_BASE}/api/ai/workspace-context`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ workspaceId }),
+        });
+        const data = await res.json();
+        if (data.success && data.data) {
+          const { buildWorkspaceContextText } = await import('@/lib/ai-context.js');
+          contextText += buildWorkspaceContextText(data.data);
+        }
+      } catch {
+        // 静默失败，继续发送基础 prompt
+      }
+      setInput(contextText);
+      return;
+    }
+
+    setInput(`请帮我${fn}以下内容：\n`);
   };
 
   const messages = currentConversation?.messages ?? [];
@@ -339,6 +421,7 @@ export function AIPanel() {
               onCreate={handleNewConversation}
               onSwitch={handleSwitchConversation}
               onDelete={handleDeleteConversation}
+              onRename={renameConversation}
             />
           </div>
         )}
@@ -382,7 +465,7 @@ export function AIPanel() {
 
           {/* 顶部功能卡片 */}
           <div className="px-3 pt-3 pb-2 shrink-0">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-2 max-h-[240px] overflow-auto">
               {FEATURES.map((feature) => {
                 const Icon = feature.icon;
                 return (
@@ -405,7 +488,7 @@ export function AIPanel() {
                           theme="primary"
                           size="small"
                           disabled={isStreaming}
-                          onClick={() => handleFunction(feature.fn)}
+                          onClick={() => handleFunction(feature.fn, false, feature.key)}
                         >
                           {feature.primaryText}
                         </TButton>
@@ -413,7 +496,7 @@ export function AIPanel() {
                           variant="outline"
                           size="small"
                           disabled={isStreaming}
-                          onClick={() => handleFunction(feature.fn, true)}
+                          onClick={() => handleFunction(feature.fn, true, feature.key)}
                         >
                           {feature.secondaryText}
                         </TButton>
