@@ -1,3 +1,5 @@
-[target.x86_64-pc-windows-msvc]
-linker = "rust-lld.exe"
-rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+# 临时禁用 rust-lld，使用 MSVC 默认 link.exe
+# 原因：rust-lld 在 Windows 上无法正确解析 OLDNAMES.lib（大小写问题）
+# [target.x86_64-pc-windows-msvc]
+# linker = "rust-lld.exe"
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]

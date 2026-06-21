@@ -1,6 +1,6 @@
 {
   "name": "storyloom",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Storyloom · 絮织 — Weave timelines into living stories. Desktop authoring workbench for visual novels and narrative-driven stories.",
   "type": "module",
   "scripts": {
@@ -24,6 +24,7 @@
     "@fastify/cors": "^11.0.0",
     "@fastify/multipart": "^10.0.0",
     "@fastify/static": "^8.0.0",
+    "@gsap/react": "^2.1.2",
     "@icon-park/react": "^1.4.2",
     "@radix-ui/react-context-menu": "^2.3.1",
     "@radix-ui/react-dialog": "^1.1.17",
@@ -49,9 +50,11 @@
     "fastify": "^5.0.0",
     "fastify-plugin": "^6.0.0",
     "framer-motion": "^11.18.2",
+    "gsap": "^3.15.0",
     "i18next": "^26.3.1",
     "i18next-browser-languagedetector": "^8.2.1",
     "lucide-react": "^1.18.0",
+    "pixi.js": "^8.19.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "react-i18next": "^17.0.8",

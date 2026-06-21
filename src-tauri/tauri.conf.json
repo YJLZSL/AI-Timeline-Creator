@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Storyloom",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "identifier": "com.storyloom.app",
   "build": {
     "frontendDist": "../dist",
@@ -32,7 +32,7 @@
       "endpoints": [
         "https://github.com/YJLZSL/Storyloom/releases/latest/download/latest.json"
       ],
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEQ0NEE5RkNBRDU1OUMyNDUKUldSRndsblZ5cDlLMUJabEE4ZkEyUStGSWNhT0ZkNEVvRG1sZFQ1ejhlaWErSGZlSlQzQUFmQTUK",
+      "pubkey": "RWR6wkYowoZ2UgfDJjSR6I1tQL1T8KWZqaoIhSc41JbeKBGJ+WoZMo08",
       "dialog": false,
       "windows": {
         "installMode": "passive"

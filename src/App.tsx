@@ -2,14 +2,20 @@ import { useState, useEffect } from 'react';
 import { AppShell } from '@/components/layout/AppShell';
 import { WorkspaceInitializer } from '@/components/workspace/WorkspaceInitializer';
 import { UpdateNotifier } from '@/components/system/UpdateNotifier';
-import { ParticleCanvas } from '@/components/_shared/ParticleCanvas';
+import { RenderLayer } from '@/components/_shared/RenderLayer';
+import { LoomSplash } from '@/components/splash/LoomSplash';
+import { PageTransition } from '@/components/transition/PageTransition';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import { useAnimationCleanup } from '@/animation/AnimationEngine';
 import { isTauri, getServerPort, onServerPort } from '@/lib/tauri-api';
 import { setApiBase } from '@/services/api';
 
 function App() {
   const fontFamily = useSettingsStore((s) => s.fontFamily);
   const [booting, setBooting] = useState(isTauri());
+
+  // 组件卸载时自动清理所有 GSAP 动画与 ScrollTrigger 实例
+  useAnimationCleanup();
 
   useEffect(() => {
     document.documentElement.setAttribute('data-font', fontFamily);
@@ -45,17 +51,19 @@ function App() {
 
   return (
     <>
-      {booting && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background">
-          <div className="flex flex-col items-center gap-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-            <p className="text-sm text-muted-foreground">Storyloom 正在启动…</p>
-          </div>
-        </div>
-      )}
-      <ParticleCanvas />
+      {/* 启动遮罩：使用 LoomSplash 替代原有的简单 spinner，提供主题感知动画 */}
+      <LoomSplash visible={booting} />
+
+      {/* 渲染层：统一入口，根据主题配置自动选择渲染方式（默认 Canvas 2D 粒子） */}
+      <RenderLayer />
+
       <WorkspaceInitializer />
-      <AppShell />
+
+      {/* 页面过渡包装：为 AppShell 提供统一的进入 / 退出动画 */}
+      <PageTransition viewId="app-shell" preset="fade-slide">
+        <AppShell />
+      </PageTransition>
+
       <UpdateNotifier />
     </>
   );

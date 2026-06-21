@@ -1,0 +1,11 @@
+{
+  "version": "1.4.0",
+  "notes": "Storyloom v1.4.0 — 全新美术架构升级",
+  "pub_date": "2026-06-21T12:32:20.160Z",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "RUR6wkYowoZ2UnBgfrykIAAosVShlGCvFpuxOY0cQ+SxPBYbJc1VmRxvvN3ivp1SHRPFKdVJjEJlftt8I2AX7rlmendw6c9u5AnueCSycSMmRF/DW9lryij3EcbJI74uA5vKMlBxoWa+HkuOlp9oGKIohNGIN5Dt/Rbm9r4V8j9AAochzOq14oNI",
+      "url": "https://github.com/YJLZSL/Storyloom/releases/download/v1.4.0/Storyloom_1.4.0_x64-setup.exe"
+    }
+  }
+}
