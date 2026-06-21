@@ -88,13 +88,13 @@ export function TopToolbar() {
       prefixIcon: <FolderOpenIcon />,
     })),
     ...(workspaces || []).length > 0 ? [{ content: '', value: '__divider__', divider: true }] : [],
-    ...(workspaces || []).map((ws) => ({
+    ...(workspaces || []).filter(ws => ws.id !== currentWorkspaceId).map((ws) => ({
       content: `${t('workspace.deleteWorkspace')}「${ws.name}」`,
       value: `${ACTION_DELETE_PREFIX}${ws.id}`,
       theme: 'error' as const,
       prefixIcon: <DeleteIcon />,
     })),
-    ...(workspaces || []).length > 0 ? [{ content: '', value: '__divider2__', divider: true }] : [],
+    ...(workspaces || []).filter(ws => ws.id !== currentWorkspaceId).length > 0 ? [{ content: '', value: '__divider2__', divider: true }] : [],
     {
       content: t('workspace.createNewWorkspace'),
       value: ACTION_NEW,
@@ -127,7 +127,9 @@ export function TopToolbar() {
           if (id === currentWorkspaceId) setCurrentWorkspace(null);
           toast.success(t('workspace.deleted'));
         },
-        onError: () => toast.error(t('workspace.deleteFailed')),
+        onError: (err) => {
+          toast.error(`${t('workspace.deleteFailed')}: ${err.message}`);
+        },
       });
       return;
     }

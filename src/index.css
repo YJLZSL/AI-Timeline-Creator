@@ -431,6 +431,59 @@
   background-size: var(--theme-texture-size);
 }
 
+/* 字体族数据属性切换 */
+[data-font="system"] { --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+[data-font="noto"] { --font-sans: 'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+[data-font="inter"] { --font-sans: 'Inter', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+[data-font="source-han"] { --font-sans: 'Source Han Sans SC', 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+[data-font="pixel"] { --font-sans: 'Press Start 2P', 'ZCOOL KuaiLe', 'Noto Sans SC', monospace; }
+
+/* Anime.js 风格 — 霓虹渐变与流畅动画 */
+.anime-gradient {
+  background: linear-gradient(135deg, #ff6b6b 0%, #feca57 25%, #48dbfb 50%, #ff9ff3 75%, #54a0ff 100%);
+  background-size: 400% 400%;
+  animation: anime-gradient-shift 8s ease infinite;
+}
+@keyframes anime-gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.anime-glow {
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.3), 0 0 40px rgba(72, 219, 251, 0.2);
+}
+
+.anime-text-glow {
+  text-shadow: 0 0 10px rgba(255, 107, 107, 0.5), 0 0 20px rgba(72, 219, 251, 0.3);
+}
+
+/* MC 像素风 */
+.mc-pixel {
+  font-family: 'Press Start 2P', 'ZCOOL KuaiLe', monospace;
+  image-rendering: pixelated;
+}
+
+.mc-border {
+  border: 4px solid #5d4037;
+  box-shadow: inset 4px 4px 0 #8d6e63, inset -4px -4px 0 #3e2723;
+}
+
+.mc-dirt-bg {
+  background: linear-gradient(180deg, #7cb342 0%, #7cb342 20%, #5d4037 20%, #5d4037 100%);
+}
+
+.mc-stone-bg {
+  background: #757575;
+  background-image:
+    linear-gradient(45deg, #616161 25%, transparent 25%),
+    linear-gradient(-45deg, #616161 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #616161 75%),
+    linear-gradient(-45deg, transparent 75%, #616161 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+}
+
 /* ===== 基础样式 ===== */
 * {
   border-color: rgb(var(--border));

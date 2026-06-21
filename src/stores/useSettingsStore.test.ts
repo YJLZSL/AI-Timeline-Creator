@@ -125,6 +125,7 @@ describe('serializeSettings', () => {
       autoSave: false,
       autoCheckUpdates: true,
       outlineFontSize: 16,
+      fontFamily: 'noto' as const,
     };
 
     // Act: 序列化

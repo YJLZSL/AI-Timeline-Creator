@@ -86,6 +86,7 @@
   "leftPanel": {
     "resourceDirectory": "资源目录",
     "searchPlaceholder": "搜索资源...",
+    "searchEventsPlaceholder": "搜索事件...",
     "creation": "创作",
     "tools": "工具",
     "workspaceOverview": "工作区概览",

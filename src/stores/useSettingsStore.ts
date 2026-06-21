@@ -7,6 +7,7 @@ export interface SettingsState {
   autoSave: boolean;
   autoCheckUpdates: boolean;
   outlineFontSize: number;
+  fontFamily: 'system' | 'noto' | 'inter' | 'source-han' | 'pixel';
 }
 
 export interface SettingsActions {
@@ -14,6 +15,7 @@ export interface SettingsActions {
   setAutoSave: (v: boolean) => void;
   setAutoCheckUpdates: (v: boolean) => void;
   setOutlineFontSize: (v: number) => void;
+  setFontFamily: (v: SettingsState['fontFamily']) => void;
   mergeSettings: (partial: Partial<SettingsState>) => void;
 }
 
@@ -24,6 +26,7 @@ const DEFAULT_SETTINGS: SettingsState = {
   autoSave: false,
   autoCheckUpdates: true,
   outlineFontSize: 14,
+  fontFamily: 'noto',
 };
 
 function sanitizeSettings(value: unknown): Partial<SettingsState> {
@@ -42,6 +45,10 @@ function sanitizeSettings(value: unknown): Partial<SettingsState> {
   if (typeof raw.autoCheckUpdates === 'boolean') {
     result.autoCheckUpdates = raw.autoCheckUpdates;
   }
+  const validFonts: SettingsState['fontFamily'][] = ['system', 'noto', 'inter', 'source-han', 'pixel'];
+  if (typeof raw.fontFamily === 'string' && validFonts.includes(raw.fontFamily as SettingsState['fontFamily'])) {
+    result.fontFamily = raw.fontFamily as SettingsState['fontFamily'];
+  }
   return result;
 }
 
@@ -53,6 +60,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
       setAutoSave: (v) => set({ autoSave: v }),
       setAutoCheckUpdates: (v) => set({ autoCheckUpdates: v }),
       setOutlineFontSize: (v) => set({ outlineFontSize: Math.max(12, Math.min(24, v)) }),
+      setFontFamily: (v) => set({ fontFamily: v }),
       mergeSettings: (partial) =>
         set((state) => ({
           ...state,
@@ -66,6 +74,7 @@ export const useSettingsStore = create<SettingsState & SettingsActions>()(
         autoSave: state.autoSave,
         autoCheckUpdates: state.autoCheckUpdates,
         outlineFontSize: state.outlineFontSize,
+        fontFamily: state.fontFamily,
       }),
       migrate: (persisted: unknown) => {
         const sanitized = sanitizeSettings(persisted);
@@ -81,6 +90,7 @@ export function serializeSettings(settings: SettingsState): string {
     autoSave: settings.autoSave,
     autoCheckUpdates: settings.autoCheckUpdates,
     outlineFontSize: settings.outlineFontSize,
+    fontFamily: settings.fontFamily,
   });
 }
 

@@ -150,22 +150,32 @@ export const crudRoutes: FastifyPluginAsync = async (app) => {
       return reply.status(404).send({ success: false, error: { code: 'NOT_FOUND', message: '工作区不存在' } });
     }
 
-    app.sqlite.transaction(() => {
-      app.db.delete(events).where(eq(events.workspaceId, id)).run();
-      app.db.delete(tracks).where(eq(tracks.workspaceId, id)).run();
-      app.db.delete(characters).where(eq(characters.workspaceId, id)).run();
-      app.db.delete(connections).where(eq(connections.workspaceId, id)).run();
-      app.db.delete(foreshadowings).where(eq(foreshadowings.workspaceId, id)).run();
-      app.db.delete(worldSettings).where(eq(worldSettings.workspaceId, id)).run();
-      app.db.delete(autoSaves).where(eq(autoSaves.workspaceId, id)).run();
-      app.db.delete(outlineVersions).where(eq(outlineVersions.workspaceId, id)).run();
-      app.db.delete(flags).where(eq(flags.workspaceId, id)).run();
-      app.db.delete(scenes).where(eq(scenes.workspaceId, id)).run();
-      app.db.delete(maps).where(eq(maps.workspaceId, id)).run();
-      app.db.delete(assets).where(eq(assets.workspaceId, id)).run();
-      app.db.delete(workspaces).where(eq(workspaces.id, id)).run();
-    })();
-
-    return { success: true, data: { id } };
+    try {
+      app.sqlite.transaction(() => {
+        app.db.delete(events).where(eq(events.workspaceId, id)).run();
+        app.db.delete(tracks).where(eq(tracks.workspaceId, id)).run();
+        app.db.delete(characters).where(eq(characters.workspaceId, id)).run();
+        app.db.delete(connections).where(eq(connections.workspaceId, id)).run();
+        app.db.delete(foreshadowings).where(eq(foreshadowings.workspaceId, id)).run();
+        app.db.delete(worldSettings).where(eq(worldSettings.workspaceId, id)).run();
+        app.db.delete(autoSaves).where(eq(autoSaves.workspaceId, id)).run();
+        app.db.delete(outlineVersions).where(eq(outlineVersions.workspaceId, id)).run();
+        app.db.delete(flags).where(eq(flags.workspaceId, id)).run();
+        app.db.delete(scenes).where(eq(scenes.workspaceId, id)).run();
+        app.db.delete(maps).where(eq(maps.workspaceId, id)).run();
+        app.db.delete(assets).where(eq(assets.workspaceId, id)).run();
+        // 清理没有 Drizzle schema 定义的表（仅硬编码 DDL）
+        try { app.sqlite.prepare('DELETE FROM revisions WHERE workspace_id = ?').run(id); } catch (e) { /* 表可能不存在 */ }
+        try { app.sqlite.prepare('DELETE FROM ai_conversations WHERE workspace_id = ?').run(id); } catch (e) { /* 表可能不存在 */ }
+        try { app.sqlite.prepare('DELETE FROM ai_cache WHERE workspace_id = ?').run(id); } catch (e) { /* 表可能不存在 */ }
+        app.db.delete(workspaces).where(eq(workspaces.id, id)).run();
+      })();
+    } catch (err: any) {
+      app.log.error({ err: err.message, workspaceId: id }, '删除工作区失败');
+      return reply.status(500).send({
+        success: false,
+        error: { code: 'DELETE_FAILED', message: `删除工作区失败: ${err.message}` },
+      });
+    }
   });
 };

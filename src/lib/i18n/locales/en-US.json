@@ -86,6 +86,7 @@
   "leftPanel": {
     "resourceDirectory": "Resources",
     "searchPlaceholder": "Search resources...",
+    "searchEventsPlaceholder": "Search events...",
     "creation": "Creation",
     "tools": "Tools",
     "workspaceOverview": "Overview",

@@ -74,11 +74,18 @@ export async function tracksRoutes(app: FastifyInstance) {
     if (updates.color !== undefined) allowedFields.color = updates.color;
     if (updates.orderIndex !== undefined) allowedFields.orderIndex = updates.orderIndex;
     if (updates.isVisible !== undefined) allowedFields.isVisible = updates.isVisible;
+  try {
     const result = app.db.update(tracks).set(allowedFields)
       .where(eq(tracks.id, trackId))
       .returning().get();
-
     return { success: true, data: result };
+  } catch (err: any) {
+    app.log.error({ err: err.message, trackId, workspaceId, updates }, '更新轨道失败');
+    return reply.status(500).send({
+      success: false,
+      error: { code: 'UPDATE_FAILED', message: `更新轨道失败: ${err.message}` },
+    });
+  }
   });
 
   // DELETE /:trackId — 删除轨道

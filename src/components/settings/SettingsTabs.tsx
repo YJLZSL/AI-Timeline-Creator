@@ -94,8 +94,10 @@ function TimelineSettingsTab() {
 function PreferencesTab() {
   const openLastWorkspace = useSettingsStore((s) => s.openLastWorkspace);
   const autoSave = useSettingsStore((s) => s.autoSave);
+  const fontFamily = useSettingsStore((s) => s.fontFamily);
   const setOpenLastWorkspace = useSettingsStore((s) => s.setOpenLastWorkspace);
   const setAutoSave = useSettingsStore((s) => s.setAutoSave);
+  const setFontFamily = useSettingsStore((s) => s.setFontFamily);
 
   const currentWorkspaceId = useWorkspaceStore((s) => s.currentWorkspaceId);
   const updateWorkspace = useUpdateWorkspace();
@@ -118,7 +120,15 @@ function PreferencesTab() {
         window.clearTimeout(debounceTimer.current);
       }
     };
-  }, [openLastWorkspace, autoSave, currentWorkspaceId, updateWorkspace]);
+  }, [openLastWorkspace, autoSave, fontFamily, currentWorkspaceId, updateWorkspace]);
+
+  const fontOptions: { value: typeof fontFamily; label: string }[] = [
+    { value: 'noto', label: 'Noto Sans SC（默认）' },
+    { value: 'system', label: '系统字体' },
+    { value: 'inter', label: 'Inter' },
+    { value: 'source-han', label: '思源黑体' },
+    { value: 'pixel', label: '像素风（MC）' },
+  ];
 
   return (
     <div className="flex flex-col gap-6">
@@ -140,6 +150,27 @@ function PreferencesTab() {
           value={autoSave}
           onChange={(v) => setAutoSave(Boolean(v))}
         />
+      </SettingsRow>
+
+      <SettingsRow
+        label="界面字体"
+        description="选择应用全局字体风格"
+      >
+        <div className="flex flex-wrap gap-2">
+          {fontOptions.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => setFontFamily(opt.value)}
+              className={`px-3 py-1.5 text-xs rounded-lg border transition-all ${
+                fontFamily === opt.value
+                  ? 'border-primary bg-primary/10 text-primary font-medium'
+                  : 'border-border/50 text-muted-foreground hover:border-primary/30 hover:text-foreground'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
       </SettingsRow>
     </div>
   );
