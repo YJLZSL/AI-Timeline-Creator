@@ -9,7 +9,7 @@
 **Storyloom** 是一款面向小说/剧本创作者的时间轴管理桌面应用。用户可以在时间轴上创建事件、角色、伏笔、世界观设定，并通过关联线梳理故事逻辑。应用内置 AI 助手，可读取工作区数据辅助创作。
 
 - **技术栈**：Electron 42 + React 19 + TypeScript + Vite 6 + Tailwind CSS v4 + TDesign React + Fastify 5 + SQLite (better-sqlite3) + Drizzle ORM
-- **版本**：v1.1.1（已发布）
+- **版本**：v1.2.1（已发布）
 - **仓库**：https://github.com/YJLZSL/Storyloom
 - **工作目录**：`D:\AIKFCC\Storyloom`
 - **Node 版本**：v24.15.1（通过 `C:\Users\23501\.astrbot_launcher\components\nodejs\`）
@@ -98,14 +98,21 @@ D:\AIKFCC\Storyloom
 
 ## 4. 已知问题与待办
 
-### 仍待解决（P1）
+### v1.2.1 已修复（P0/P1）
+- [x] 工作区删除失败（bookmarks 表 DDL 兜底缺失）
+- [x] 创建轨道失败（数据库完整性修复）
+- [x] 翻译键缺失（workspace.manageTitle / panels.bookmarks / panels.maps）
+- [x] 字体全局适配不彻底（TDesign font-family 覆盖）
+- [x] 右键菜单缺少书签/地图入口
+
+### 仍待解决
 - **AI 工作区上下文读取未在前端实现**：后端 `/api/ai/workspace-context` 已就绪，但 `AIPanel.tsx` 未调用
 - **AI 对话历史未持久化到数据库**：`aiConversations`/`aiCache` 表已创建，需后端 CRUD 路由 + 前端 hook 改 API
 - **状态栏小屏幕截断**：`StatusBar.tsx` 小屏幕下内容被截断
+- **自动更新旧版本引导**：v1.1.4 之前的用户需手动下载安装
 
-### 用户反馈（需要关注）
-- 用户认为"美术还是没什么改变"——需要更大幅度的视觉风格转变（如全新配色系统、更精致的阴影、更流畅的动画）
-- 建议方向：引入更现代的玻璃拟态、更柔和的多层阴影、更精细的微交互（如弹性动画、更明显的 hover 状态）
+### 后续方向
+- 详见 [`docs/ROADMAP-v1.3+.md`](./ROADMAP-v1.3+.md)（AI 深度集成 → 导出系统 → 视觉升级 → 全文搜索）
 
 ---
 
@@ -176,10 +183,11 @@ npm run build && npm run build:server && npm run build:electron && npm run build
 ## 8. 相关文档
 
 - [快速参考](docs/QUICKSTART.md)
-- [已知问题详细](docs/KNOWN_ISSUES.md)
 - [技术架构](docs/ARCHITECTURE.md)
-- [计划文档](plan-v3.5.md)
+- [后续规划](docs/ROADMAP-v1.3+.md)
+- [v1.2.0 交接文档](docs/HANDOVER-v1.2.0.md)
+- [v1.2.1 更新日志](docs/CHANGELOG-v1.2.1.md)
 
 ---
 
-*本文档最后更新：2026-06-20（v1.1.1 已发布）*
+*本文档最后更新：2026-06-21（v1.2.1 已发布）*

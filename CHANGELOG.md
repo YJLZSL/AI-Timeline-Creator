@@ -5,6 +5,19 @@
 > v3.0.1 起 GitHub Releases 列表只保留当前最新版（旧版本仍可通过 git tag 回溯，不再以 Release 形式陈列）。
 > **v1.0.0 是全面重构后的正式版本，代表 Storyloom 进入稳定阶段。**
 
+## [1.2.1] — 2026-06-21
+
+### 修复
+- **工作区删除失败**：`bookmarks` 表加入 DDL 兜底 + `ensureSchemaCompatibility` 补建，删除事务中 `bookmarks` 操作添加 try-catch 容错
+- **创建轨道失败**：数据库 DDL 兜底完整性修复，确保所有表结构存在
+- **翻译键缺失**：补充 `workspace.manageTitle`、`panels.bookmarks`、`panels.maps`（zh-CN + en-US）
+
+### UI/UX 优化
+- **字体统一**：TDesign 组件添加 `font-family: inherit` 覆盖，解决部分组件字体不一致
+- **右键菜单增强**：普通模式和专注模式右键菜单新增「书签」和「地图」面板切换入口
+
+---
+
 ## [1.2.0] — 2026-06-22
 
 ### 新功能
