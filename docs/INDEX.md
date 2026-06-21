@@ -39,6 +39,7 @@
 
 ### 规划文档
 - `docs/ROADMAP-v1.3+.md` — v1.3.0+ 后续方向规划
+- `docs/AI-INTEGRATION-GUIDE.md` — **AI 深度集成实施指南**（KV 缓存省钱 + 后端 + 前端 + 美术）
 - `docs/HANDOVER-v1.2.0.md` — v1.2.0 交接文档（含已知问题清单）
 
 ### 教程文档（应用内置）
