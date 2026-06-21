@@ -8,6 +8,7 @@ import { TutorialTab } from './TutorialTab';
 import { UpdateTab } from './UpdateTab';
 import { AISettingsTab } from './AISettingsTab';
 import { getAllShortcuts, getCategoryLabel } from '@/lib/shortcut-registry';
+import { getUserDataPath, isTauri } from '@/lib/tauri-api';
 import { useSettingsStore, serializeSettings } from '@/stores/useSettingsStore';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore';
 import { useUpdateWorkspace } from '@/services/api-hooks';
@@ -185,13 +186,15 @@ function AboutTab() {
   const [backupPath, setBackupPath] = useState<string>('~/.storyloom/backups');
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && window.electronAPI) {
-      window.electronAPI.getUserDataPath?.().then((p: string) => {
-        setUserDataPath(p);
-        setBackupPath(`${p}/backups`);
-      }).catch(() => {
-        // fallback: keep defaults
-      });
+    if (isTauri()) {
+      getUserDataPath()
+        .then((p) => {
+          setUserDataPath(p);
+          setBackupPath(`${p}/backups`);
+        })
+        .catch(() => {
+          // fallback: keep defaults
+        });
     }
   }, []);
 

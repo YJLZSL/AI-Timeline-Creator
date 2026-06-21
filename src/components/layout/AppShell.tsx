@@ -26,6 +26,7 @@ import { SettingsDialog } from '@/components/settings/SettingsDialog';
 import { EventDetailView } from '@/components/events/EventDetailView';
 import { tryHandleShortcut, getCurrentContext } from '@/lib/shortcut-registry';
 import { setApiBase } from '@/services/api';
+import { getServerPort, isTauri } from '@/lib/tauri-api';
 import { useWorkspace } from '@/services/api-hooks';
 import { PanelLeftIcon, LayersIcon, BookmarkIcon, MapIcon } from '@/lib/icons';
 import { TButton } from '@/components/ui-tdesign';
@@ -101,10 +102,14 @@ export function AppShell() {
   const ctxRef = useRef(ctx);
   ctxRef.current = ctx;
 
-  // 初始化 Electron 环境下的 API 基地址（动态获取实际服务器端口）
+  // 初始化 Tauri 环境下的 API 基地址（动态获取实际服务器端口）
   useEffect(() => {
-    if (window.electronAPI?.getServerPort) {
-      window.electronAPI.getServerPort().then(setApiBase);
+    if (isTauri()) {
+      getServerPort()
+        .then((port) => setApiBase(port))
+        .catch(() => {
+          // silently ignore port detection failure
+        });
     }
   }, []);
 

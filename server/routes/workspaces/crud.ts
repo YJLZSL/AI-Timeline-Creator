@@ -67,8 +67,9 @@ export const crudRoutes: FastifyPluginAsync = async (app) => {
       const result = app.db.select().from(workspaces).orderBy(desc(workspaces.updatedAt)).all();
       app.log.info({ count: result.length }, '[GET /workspaces] 查询成功');
       return { success: true, data: result };
-    } catch (err: any) {
-      app.log.error({ err: err.message }, '[GET /workspaces] 查询失败');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message }, '[GET /workspaces] 查询失败');
       return reply.status(500).send({ success: false, error: { code: 'QUERY_FAILED', message: '查询工作区失败' } });
     }
   });
@@ -86,8 +87,9 @@ export const crudRoutes: FastifyPluginAsync = async (app) => {
       }
       app.log.info({ workspaceId: id, name: result.name }, '[GET /workspaces/:id] 查询成功');
       return { success: true, data: result };
-    } catch (err: any) {
-      app.log.error({ err: err.message, workspaceId: id }, '[GET /workspaces/:id] 查询失败');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message, workspaceId: id }, '[GET /workspaces/:id] 查询失败');
       return reply.status(500).send({ success: false, error: { code: 'QUERY_FAILED', message: '查询工作区失败' } });
     }
   });
@@ -131,9 +133,10 @@ export const crudRoutes: FastifyPluginAsync = async (app) => {
 
       app.log.info({ workspaceId: id, trackId: defaultTrackId }, '[POST /workspaces] 默认轨道创建成功');
       return { success: true, data: result };
-    } catch (err: any) {
-      app.log.error({ err: err.message }, '[POST /workspaces] 创建工作区失败');
-      return reply.status(500).send({ success: false, error: { code: 'CREATE_FAILED', message: `创建工作区失败: ${err.message}` } });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message }, '[POST /workspaces] 创建工作区失败');
+      return reply.status(500).send({ success: false, error: { code: 'CREATE_FAILED', message: `创建工作区失败: ${message}` } });
     }
   });
 
@@ -170,9 +173,10 @@ export const crudRoutes: FastifyPluginAsync = async (app) => {
 
       app.log.info({ workspaceId: id, name: result.name }, '[PATCH /workspaces/:id] 更新成功');
       return { success: true, data: result };
-    } catch (err: any) {
-      app.log.error({ err: err.message, workspaceId: id }, '[PATCH /workspaces/:id] 更新失败');
-      return reply.status(500).send({ success: false, error: { code: 'UPDATE_FAILED', message: `更新工作区失败: ${err.message}` } });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message, workspaceId: id }, '[PATCH /workspaces/:id] 更新失败');
+      return reply.status(500).send({ success: false, error: { code: 'UPDATE_FAILED', message: `更新工作区失败: ${message}` } });
     }
   });
 
@@ -210,9 +214,10 @@ export const crudRoutes: FastifyPluginAsync = async (app) => {
           try {
             app.db.delete(table).where(eq(table.workspaceId, id)).run();
             app.log.info({ table: name, workspaceId: id }, '[DELETE] 表已清理');
-          } catch (err: any) {
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
             // 表可能不存在，记录但不中断
-            app.log.warn({ table: name, err: err.message, workspaceId: id }, '[DELETE] 表清理失败（已忽略）');
+            app.log.warn({ table: name, err: message, workspaceId: id }, '[DELETE] 表清理失败（已忽略）');
           }
         }
 
@@ -222,19 +227,21 @@ export const crudRoutes: FastifyPluginAsync = async (app) => {
           try {
             app.sqlite.prepare(`DELETE FROM ${rawTable} WHERE workspace_id = ?`).run(id);
             app.log.info({ table: rawTable, workspaceId: id }, '[DELETE] 原始表已清理');
-          } catch (err: any) {
-            app.log.warn({ table: rawTable, err: err.message, workspaceId: id }, '[DELETE] 原始表清理失败（已忽略）');
+          } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : String(err);
+            app.log.warn({ table: rawTable, err: message, workspaceId: id }, '[DELETE] 原始表清理失败（已忽略）');
           }
         }
 
         app.db.delete(workspaces).where(eq(workspaces.id, id)).run();
         app.log.info({ workspaceId: id }, '[DELETE] 工作区已删除');
       })();
-    } catch (err: any) {
-      app.log.error({ err: err.message, workspaceId: id }, '[DELETE] 删除工作区失败');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message, workspaceId: id }, '[DELETE] 删除工作区失败');
       return reply.status(500).send({
         success: false,
-        error: { code: 'DELETE_FAILED', message: `删除工作区失败: ${err.message}` },
+        error: { code: 'DELETE_FAILED', message: `删除工作区失败: ${message}` },
       });
     }
   });

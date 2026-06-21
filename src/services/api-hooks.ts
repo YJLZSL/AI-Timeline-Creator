@@ -96,7 +96,10 @@ const connectionHooks = createNestedHooks<
   Connection[]
 >('connections', 'connections', {
   idFieldName: 'connectionId',
-  listResponseTransformer: (result) => (Array.isArray(result) ? result : (result?.items ?? [])),
+  listResponseTransformer: (result) => {
+    if (Array.isArray(result)) return result as Connection[];
+    return ((result as Record<string, unknown>)?.items ?? []) as Connection[];
+  },
 });
 
 export const useConnections = connectionHooks.useList;

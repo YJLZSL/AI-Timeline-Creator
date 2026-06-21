@@ -9,19 +9,18 @@ import { useUIStore } from '@/stores/useUIStore';
 import { WorkspaceSelector } from '@/components/workspace/WorkspaceSelector';
 import { LanguageSelector } from '@/components/layout/LanguageSelector';
 import { SettingsDialog } from '@/components/settings/SettingsDialog';
+import { isTauri, openExternal, openLogFolder } from '@/lib/tauri-api';
 import packageJson from '../../../package.json';
 
 const APP_VERSION = (packageJson as { version?: string }).version ?? 'unknown';
 const GITHUB_URL = 'https://github.com/YJLZSL/Storyloom';
 
-function openLogFolder() {
-  const api = (window as unknown as { electronAPI?: { openLogFolder?: () => Promise<void> } })
-    .electronAPI;
-  if (api?.openLogFolder) {
-    void api.openLogFolder();
+function openLogFolderFn() {
+  if (isTauri()) {
+    void openLogFolder();
   } else {
     toast.info('日志路径', {
-      description: '%APPDATA%\\Storyloom\\app.log（仅 Electron 桌面端可用）',
+      description: 'app.log（仅桌面端可用）',
     });
   }
 }
@@ -227,9 +226,8 @@ export function EmptyShell() {
                 size="small"
                 className="justify-start gap-2 h-10"
                 onClick={() => {
-                  const api = (window as unknown as { electronAPI?: { openExternal?: (url: string) => Promise<void> } }).electronAPI;
-                  if (api?.openExternal) {
-                    void api.openExternal(GITHUB_URL);
+                  if (isTauri()) {
+                    void openExternal(GITHUB_URL);
                   } else {
                     window.open(GITHUB_URL, '_blank');
                   }
@@ -281,7 +279,7 @@ export function EmptyShell() {
             <TButton
               variant="outline"
               size="medium"
-              onClick={openLogFolder}
+              onClick={openLogFolderFn}
               className="self-start"
             >
               <FolderOpenIcon size={16} className="mr-1" />

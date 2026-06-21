@@ -1,56 +1,19 @@
 import { getDb, getSqlite } from './index.js';
 import * as schema from './schema.js';
 import pino from 'pino';
+import path from 'path';
+import fs from 'fs';
 
-const dbLog = pino({ name: 'db-init' });
-
-/**
- * 从 Drizzle schema 生成 CREATE TABLE IF NOT EXISTS 语句。
- * 不依赖 drizzle 的 migrate() 函数（在 asar 内不可靠）。
- */
-export function generateCreateTableSQL(): string {
-  const sqlite = getSqlite();
-  const statements: string[] = [];
-
-  // 获取 schema 中所有表定义
-  const tables = Object.entries(schema).filter(([_, value]) => {
-    // Drizzle 的 sqliteTable 返回的对象有特定结构
-    return value && typeof value === 'object' && 'name' in value;
-  });
-
-  for (const [tableName, tableDef] of tables) {
-    try {
-      // 使用 Drizzle 的 sqliteTable 生成建表语句
-      // 通过查询 sqlite_master 来检查表是否已存在
-      const exists = sqlite
-        .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")
-        .get(tableName) as { name: string } | undefined;
-
-      if (!exists) {
-        // 使用 Drizzle 的生成器创建表
-        // 这里我们使用更直接的方式：通过 drizzle 的表定义生成 SQL
-        const sql = generateTableSQL(tableName, tableDef);
-        if (sql) {
-          statements.push(sql);
-        }
-      }
-    } catch (err) {
-      dbLog.warn({ err, tableName }, '生成建表语句失败');
-    }
+const isSidecar = process.env.STORYLOOM_SIDECAR === '1';
+const dbLog = (() => {
+  if (isSidecar) {
+    const logDir = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+    const logStream = fs.createWriteStream(path.join(logDir, 'app.log'), { flags: 'a' });
+    return pino({ name: 'db-init', level: 'info' }, logStream);
   }
-
-  return statements.join('\\n');
-}
-
-/**
- * 生成单张表的 CREATE TABLE IF NOT EXISTS 语句
- * 基于 Drizzle schema 的定义
- */
-function generateTableSQL(tableName: string, tableDef: any): string | null {
-  // 对于复杂的 Drizzle 表定义，我们使用简化的方式
-  // 实际项目中，建议手动维护一份建表 SQL
-  return null;
-}
+  return pino({ name: 'db-init' });
+})();
 
 /**
  * 验证核心表是否全部存在
@@ -83,7 +46,7 @@ export function verifyEssentialTables(): { ok: boolean; missing: string[] } {
  * 1. 从 schema.ts 生成并执行 CREATE TABLE IF NOT EXISTS
  * 2. 执行 ensureSchemaCompatibility（补列 + 补表）
  */
-export function initDatabase(): void {
+export async function initDatabase(): Promise<void> {
   const sqlite = getSqlite();
 
   dbLog.info('[init] starting database initialization');
@@ -114,7 +77,7 @@ export function initDatabase(): void {
 
   // 第 2 层：ensureSchemaCompatibility（补列 + 补表）
   // 从 index.ts 导入
-  const { ensureSchemaCompatibility } = require('./index.js');
+  const { ensureSchemaCompatibility } = await import('./index.js');
   ensureSchemaCompatibility();
 
   // 验证核心表

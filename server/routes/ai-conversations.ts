@@ -1,8 +1,8 @@
 import type { FastifyPluginAsync } from 'fastify';
-import { eq, desc, and } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { aiConversations } from '../../db/schema.js';
-import { idParam } from '../../lib/validation.js';
+import { aiConversations } from '../db/schema.js';
+import { idParam } from '../lib/validation.js';
 
 export const aiConversationsRoutes: FastifyPluginAsync = async (app) => {
   // GET / — 列出工作区的所有对话（通过 query: workspaceId）
@@ -24,8 +24,9 @@ export const aiConversationsRoutes: FastifyPluginAsync = async (app) => {
         .all();
       app.log.info({ count: result.length, workspaceId }, '[GET /ai/conversations] 查询成功');
       return { success: true, data: result };
-    } catch (err: any) {
-      app.log.error({ err: err.message, workspaceId }, '[GET /ai/conversations] 查询失败');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message, workspaceId }, '[GET /ai/conversations] 查询失败');
       return reply.status(500).send({
         success: false,
         error: { code: 'QUERY_FAILED', message: '查询对话失败' },
@@ -51,8 +52,9 @@ export const aiConversationsRoutes: FastifyPluginAsync = async (app) => {
         });
       }
       return { success: true, data: result };
-    } catch (err: any) {
-      app.log.error({ err: err.message, id }, '[GET /ai/conversations/:id] 查询失败');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message, id }, '[GET /ai/conversations/:id] 查询失败');
       return reply.status(500).send({
         success: false,
         error: { code: 'QUERY_FAILED', message: '查询对话失败' },
@@ -92,8 +94,9 @@ export const aiConversationsRoutes: FastifyPluginAsync = async (app) => {
       app.db.insert(aiConversations).values(newConversation).run();
       app.log.info({ id, workspaceId: body.workspaceId }, '[POST /ai/conversations] 创建成功');
       return { success: true, data: newConversation };
-    } catch (err: any) {
-      app.log.error({ err: err.message, workspaceId: body.workspaceId }, '[POST /ai/conversations] 创建失败');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message, workspaceId: body.workspaceId }, '[POST /ai/conversations] 创建失败');
       return reply.status(500).send({
         success: false,
         error: { code: 'CREATE_FAILED', message: '创建对话失败' },
@@ -138,8 +141,9 @@ export const aiConversationsRoutes: FastifyPluginAsync = async (app) => {
 
       app.log.info({ id }, '[PATCH /ai/conversations/:id] 更新成功');
       return { success: true, data: { id, ...updates } };
-    } catch (err: any) {
-      app.log.error({ err: err.message, id }, '[PATCH /ai/conversations/:id] 更新失败');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message, id }, '[PATCH /ai/conversations/:id] 更新失败');
       return reply.status(500).send({
         success: false,
         error: { code: 'UPDATE_FAILED', message: '更新对话失败' },
@@ -173,8 +177,9 @@ export const aiConversationsRoutes: FastifyPluginAsync = async (app) => {
 
       app.log.info({ id }, '[DELETE /ai/conversations/:id] 删除成功');
       return { success: true, data: { id } };
-    } catch (err: any) {
-      app.log.error({ err: err.message, id }, '[DELETE /ai/conversations/:id] 删除失败');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      app.log.error({ err: message, id }, '[DELETE /ai/conversations/:id] 删除失败');
       return reply.status(500).send({
         success: false,
         error: { code: 'DELETE_FAILED', message: '删除对话失败' },

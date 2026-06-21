@@ -37,15 +37,26 @@ export async function createApp(options?: { logger?: boolean }) {
   // 让 5xx 错误能落到 stdout（被 setupLogging 重定向到 app.log）。
   // 浏览器 prod（如未来部署 web 版）仍然关 logger。
   const isElectron = process.env.STORYLOOM_ELECTRON === '1';
+  const isSidecar = process.env.STORYLOOM_SIDECAR === '1';
   const enableLogger =
-    options?.logger ?? (process.env.NODE_ENV !== 'production' || isElectron);
+    options?.logger ?? (process.env.NODE_ENV !== 'production' || isElectron || isSidecar);
+  let loggerConfig: boolean | { level: string; stream: fs.WriteStream } = enableLogger;
+  if (isSidecar) {
+    const dataDir = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    const logPath = path.join(dataDir, 'app.log');
+    const logStream = fs.createWriteStream(logPath, { flags: 'a' });
+    loggerConfig = { level: 'info', stream: logStream };
+  }
   const app = Fastify({
-    logger: enableLogger,
+    logger: loggerConfig,
     bodyLimit: 5 * 1024 * 1024, // 5MB
   });
 
   // 注册插件
-  const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+  const isDev = (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) && !isSidecar;
   await app.register(cors, {
     origin: isDev ? true : (origin, callback) => {
       // 生产模式仅允许 file:// 和 localhost

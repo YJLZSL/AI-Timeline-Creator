@@ -122,7 +122,7 @@ export interface NestedHooksOptions<ListT = unknown> {
   /** 自定义删除 URL */
   deleteUrl?: (workspaceId: string, id: string) => string;
   /** 转换列表查询响应（如 Connection 的 { items: Connection[] } 包装） */
-  listResponseTransformer?: (response: any) => ListT;
+  listResponseTransformer?: (response: unknown) => ListT;
   /** 乐观更新配置 */
   optimisticUpdate?: {
     /** 列表数据在响应中的路径，如 'items'。未设置则响应本身就是数组 */
@@ -171,7 +171,7 @@ export function createNestedHooks<
           ? listUrl(workspaceId!)
           : `/api/workspaces/${workspaceId}/${apiPath}`;
         if (listResponseTransformer) {
-          const response = await api.get<any>(url);
+          const response = await api.get<unknown>(url);
           return listResponseTransformer(response);
         }
         return api.get<ListT>(url);
@@ -212,7 +212,8 @@ export function createNestedHooks<
 
   function useUpdate(): UseMutationResult<T, Error, UpdateVars, unknown> {
     const qc = useQueryClient();
-    return useMutation({
+    type OptimisticContext = { previousList: ListT | undefined; previousDetail: T | undefined };
+    return useMutation<T, Error, UpdateVars, OptimisticContext>({
       mutationFn: (vars: UpdateVars) => {
         const id = vars[idFieldName as IdField];
         const url = updateUrl
@@ -230,10 +231,10 @@ export function createNestedHooks<
               await qc.cancelQueries({ queryKey: listKey });
               await qc.cancelQueries({ queryKey: detailKey });
 
-              const previousList = qc.getQueryData<any>(listKey);
+              const previousList = qc.getQueryData<ListT | undefined>(listKey);
               const previousDetail = qc.getQueryData<T>(detailKey);
 
-              const patch: any = { updatedAt: new Date() };
+              const patch: Record<string, unknown> = { updatedAt: new Date() };
               for (const field of optimisticUpdate.fields) {
                 if (vars.data[field as keyof UpdateT] !== undefined) {
                   patch[field] = vars.data[field as keyof UpdateT];
@@ -242,22 +243,23 @@ export function createNestedHooks<
 
               if (previousList) {
                 if (optimisticUpdate.listDataPath) {
+                  const prevObj = previousList as Record<string, unknown>;
                   qc.setQueryData(listKey, {
-                    ...previousList,
+                    ...prevObj,
                     [optimisticUpdate.listDataPath]:
-                      previousList[optimisticUpdate.listDataPath].map(
-                        (item: any) =>
-                          item.id === id
-                            ? ({ ...item, ...patch } as T)
+                      (prevObj[optimisticUpdate.listDataPath] as unknown[]).map(
+                        (item: unknown) =>
+                          (item as Record<string, unknown>).id === id
+                            ? ({ ...(item as Record<string, unknown>), ...patch } as T)
                             : item,
                       ),
                   });
                 } else {
                   qc.setQueryData(
                     listKey,
-                    previousList.map((item: any) =>
-                      item.id === id
-                        ? ({ ...item, ...patch } as T)
+                    (previousList as unknown[]).map((item: unknown) =>
+                      (item as Record<string, unknown>).id === id
+                        ? ({ ...(item as Record<string, unknown>), ...patch } as T)
                         : item,
                     ),
                   );
@@ -273,7 +275,7 @@ export function createNestedHooks<
 
               return { previousList, previousDetail };
             },
-            onError: (_err: any, vars: UpdateVars, context: any) => {
+            onError: (_err, vars, context) => {
               const id = vars[idFieldName as IdField];
               const listKey = [entityName, vars.workspaceId];
               const detailKey = [entityName, vars.workspaceId, id];
@@ -284,7 +286,7 @@ export function createNestedHooks<
                 qc.setQueryData(detailKey, context.previousDetail);
               }
             },
-            onSettled: (_: any, __: any, vars: UpdateVars) => {
+            onSettled: (_data, _err, vars) => {
               const id = vars[idFieldName as IdField];
               const listKey = [entityName, vars.workspaceId];
               const detailKey = [entityName, vars.workspaceId, id];
@@ -293,7 +295,7 @@ export function createNestedHooks<
             },
           }
         : {
-            onSuccess: (_: any, vars: UpdateVars) => {
+            onSuccess: (_data, vars) => {
               qc.invalidateQueries({ queryKey: [entityName, vars.workspaceId] });
               if (invalidatesDetail) {
                 const id = vars[idFieldName as IdField];

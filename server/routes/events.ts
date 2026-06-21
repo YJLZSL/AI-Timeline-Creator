@@ -1,9 +1,9 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { eq, and, between, like, desc, asc, sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { events, eventCharacters, eventWorldSettings, characters } from '../db/schema.js';
 import { workspaceIdParam, eventIdParam, createEventBody, updateEventBody, validateWorkspaceExists } from '../lib/validation.js';
-import type { CreateEventRequest, UpdateEventRequest, EventFilterParams, BatchOperation, BatchEventsRequest } from '../../shared/types.js';
+import type { CreateEventRequest, UpdateEventRequest, EventFilterParams, BatchEventsRequest } from '../../shared/types.js';
 
 export async function eventsRoutes(app: FastifyInstance) {
 

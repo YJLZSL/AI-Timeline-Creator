@@ -55,9 +55,9 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           const data = await res.json();
           if (!data.success) throw new Error(data.error?.message || '获取工作区失败');
           set({ workspaces: data.data || [], loading: false });
-        } catch (err: any) {
-          console.error('[fetchWorkspaces] 失败:', err);
-          set({ error: err.message || '获取工作区失败', loading: false });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          set({ error: message || '获取工作区失败', loading: false });
         }
       },
 
@@ -74,9 +74,9 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           await get().fetchWorkspaces();
           set({ loading: false });
           return data.data;
-        } catch (err: any) {
-          console.error('[createWorkspace] 失败:', err);
-          set({ error: err.message || '创建工作区失败', loading: false });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          set({ error: message || '创建工作区失败', loading: false });
           throw err;
         }
       },
@@ -94,9 +94,9 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           await get().fetchWorkspaces();
           set({ loading: false });
           return data.data;
-        } catch (err: any) {
-          console.error('[updateWorkspace] 失败:', err);
-          set({ error: err.message || '更新工作区失败', loading: false });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          set({ error: message || '更新工作区失败', loading: false });
           throw err;
         }
       },
@@ -113,9 +113,9 @@ export const useWorkspaceStore = create<WorkspaceState>()(
           }
           await get().fetchWorkspaces();
           set({ loading: false });
-        } catch (err: any) {
-          console.error('[deleteWorkspace] 失败:', err);
-          set({ error: err.message || '删除工作区失败', loading: false });
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : String(err);
+          set({ error: message || '删除工作区失败', loading: false });
           throw err;
         }
       },

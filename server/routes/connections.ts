@@ -1,9 +1,9 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { eq, and } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { connections } from '../db/schema.js';
 import { workspaceIdParam, connectionIdParam, createConnectionBody, updateConnectionBody, validateWorkspaceExists } from '../lib/validation.js';
-import type { CreateConnectionRequest, UpdateConnectionRequest, ConnectionType } from '../../shared/types.js';
+import type { CreateConnectionRequest, UpdateConnectionRequest } from '../../shared/types.js';
 
 export async function connectionsRoutes(app: FastifyInstance) {
   // GET / — 列出关联

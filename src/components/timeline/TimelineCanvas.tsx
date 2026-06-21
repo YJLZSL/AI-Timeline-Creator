@@ -340,7 +340,6 @@ export function TimelineCanvas() {
                     key={track.id}
                     track={track}
                     events={eventsByTrack.get(track.id) || []}
-                    allTracks={visibleTracks}
                     trackIndex={index}
                     pixelsPerMs={pixelsPerMs}
                     referenceDateMs={referenceDateMs}

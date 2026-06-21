@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { TTag } from '@/components/ui-tdesign';
 import { TimeIcon, LocalTwoIcon, TagIcon, EditIcon, LinkIcon, FileTextIcon } from '@/lib/icons';
@@ -58,7 +58,6 @@ export function TimelineEventCard({
   onResizeEnd,
   onDragEnd,
 }: TimelineEventCardProps) {
-  const cardRef = useRef<HTMLDivElement>(null);
   const selectedEventId = useSelectionStore((s) => s.selectedEventId);
   const selectedCharacterId = useSelectionStore((s) => s.selectedCharacterId);
   const selectEvent = useSelectionStore((s) => s.selectEvent);
@@ -252,7 +251,6 @@ export function TimelineEventCard({
   return (
     <motion.div
       data-event-id={event.id}
-      ref={cardRef}
       data-instant={isInstant ? 'true' : 'false'}
       className={`timeline-glow absolute rounded-xl border select-none overflow-hidden backdrop-blur-sm transition-all duration-200 ease-out ${getBorderClass()} ${
         isDragging ? 'cursor-grabbing' : 'cursor-grab'

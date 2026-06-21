@@ -1,7 +1,18 @@
 import pino from 'pino';
+import path from 'path';
+import fs from 'fs';
 import type { AIChatRequest, AIChatResponse } from '../../shared/types.js';
 
-const aiLog = pino({ name: 'ai-proxy' });
+const aiLog = (() => {
+  const isSidecar = process.env.STORYLOOM_SIDECAR === '1';
+  if (isSidecar) {
+    const logDir = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+    const logStream = fs.createWriteStream(path.join(logDir, 'app.log'), { flags: 'a' });
+    return pino({ name: 'ai-proxy', level: 'info' }, logStream);
+  }
+  return pino({ name: 'ai-proxy' });
+})();
 
 export type AIProvider = 'siliconflow' | 'openai' | 'deepseek' | 'kimi' | 'minimax' | 'glm' | 'custom';
 

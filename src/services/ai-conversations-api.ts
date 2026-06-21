@@ -1,9 +1,8 @@
 import type { AIConversation, AIChatMessage } from '../components/ai-panel/useAIConversations.js';
+import { isTauri } from '@/lib/tauri-api';
 
-const API_BASE =
-  typeof window !== 'undefined' && (window as unknown as { electronAPI?: unknown }).electronAPI
-    ? 'http://localhost:3001'
-    : '';
+const envApiBase = (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_BASE;
+const API_BASE = envApiBase || (isTauri() ? 'http://localhost:3001' : '');
 
 /** 获取工作区的所有 AI 对话 */
 export async function fetchAIConversations(workspaceId: string): Promise<AIConversation[]> {

@@ -4,6 +4,15 @@ import { toast } from 'sonner';
 import { DialogPlugin } from 'tdesign-react';
 import { useSettingsStore } from '@/stores/useSettingsStore';
 import { useUIStore } from '@/stores/useUIStore';
+import {
+  isPackaged,
+  isTauri,
+  openExternal,
+  onUpdaterEvent,
+  checkUpdate,
+  downloadUpdate,
+  installUpdate,
+} from '@/lib/tauri-api';
 
 const REPO_RELEASES_URL = 'https://github.com/YJLZSL/Storyloom/releases';
 
@@ -14,32 +23,32 @@ export function UpdateNotifier() {
   const downloadedRef = useRef(false);
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.updater) return;
-    const off = window.updater.onEvent((evt) => handleEvent(evt));
+    if (!isTauri()) return;
+    const off = onUpdaterEvent((evt) => handleEvent(evt));
     return off;
   }, []);
 
   useEffect(() => {
     if (!autoCheck) return;
-    if (!window.electronAPI?.isPackaged) return;
-    if (!window.updater) return;
+    if (!isPackaged()) return;
+    if (!isTauri()) return;
     const timer = window.setTimeout(() => {
-      window.updater?.check().catch((err) => {
-        console.error('[updater] auto check failed:', err);
+      checkUpdate().catch(() => {
+        // silently ignore auto-check failures
       });
     }, 5000);
     return () => window.clearTimeout(timer);
   }, [autoCheck]);
 
-  function openExternal(url: string) {
-    if (window.electronAPI?.openExternal) {
-      void window.electronAPI.openExternal(url);
+  function openExternalFn(url: string) {
+    if (isTauri()) {
+      void openExternal(url);
     } else {
       window.open(url, '_blank', 'noopener');
     }
   }
 
-  function handleEvent(evt: UpdateEventPayload) {
+  function handleEvent(evt: import('@/lib/tauri-api').UpdateEventPayload) {
     switch (evt.kind) {
       case 'checking':
         // 静默
@@ -50,7 +59,7 @@ export function UpdateNotifier() {
         break;
 
       case 'error':
-        console.warn('[updater] error event:', evt.message);
+        // 静默处理更新错误
         break;
 
       case 'available': {
@@ -65,7 +74,7 @@ export function UpdateNotifier() {
             confirmBtn: t('update.downloadNow'),
             cancelBtn: t('update.later'),
             onConfirm: () => {
-              window.updater?.download().then((res) => {
+              downloadUpdate().then((res) => {
                 if (!res.ok) {
                   toast.error(`${t('update.downloading', { percent: 0 })} ${res.error ?? ''}`);
                 }
@@ -79,7 +88,7 @@ export function UpdateNotifier() {
             duration: 8000,
             action: {
               label: t('update.openReleasePage'),
-              onClick: () => openExternal(REPO_RELEASES_URL),
+              onClick: () => openExternalFn(REPO_RELEASES_URL),
             },
           });
         }
@@ -111,7 +120,7 @@ export function UpdateNotifier() {
             confirmBtn: t('update.installNow'),
             cancelBtn: t('update.installLater'),
             onConfirm: () => {
-              void window.updater?.install();
+              void installUpdate();
               dialog.hide();
             },
             onClose: () => dialog.hide(),

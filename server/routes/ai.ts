@@ -2,7 +2,6 @@ import type { FastifyInstance } from 'fastify';
 import { chatCompletion, chatCompletionStream, testConnection, hasApiKey, listModels, type AIProvider } from '../services/ai-proxy.js';
 import { aiChatBody, aiTestBody } from '../lib/validation.js';
 import type { AIChatRequest } from '../../shared/types.js';
-import { getDb } from '../db/index.js';
 import { workspaces, tracks, events, characters, connections, foreshadowings, worldSettings } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
 
@@ -100,20 +99,18 @@ export async function aiRoutes(app: FastifyInstance) {
       return reply.status(400).send({ success: false, error: { code: 'BAD_REQUEST', message: 'workspaceId 不能为空' } });
     }
 
-    const db = getDb();
-
     try {
-      const ws = db.select().from(workspaces).where(eq(workspaces.id, workspaceId)).get();
+      const ws = app.db.select().from(workspaces).where(eq(workspaces.id, workspaceId)).get();
       if (!ws) {
         return reply.status(404).send({ success: false, error: { code: 'NOT_FOUND', message: '工作区不存在' } });
       }
 
-      const wsTracks = db.select().from(tracks).where(eq(tracks.workspaceId, workspaceId)).all();
-      const wsEvents = db.select().from(events).where(eq(events.workspaceId, workspaceId)).all();
-      const wsCharacters = db.select().from(characters).where(eq(characters.workspaceId, workspaceId)).all();
-      const wsConnections = db.select().from(connections).where(eq(connections.workspaceId, workspaceId)).all();
-      const wsForeshadowings = db.select().from(foreshadowings).where(eq(foreshadowings.workspaceId, workspaceId)).all();
-      const wsWorldSettings = db.select().from(worldSettings).where(eq(worldSettings.workspaceId, workspaceId)).all();
+      const wsTracks = app.db.select().from(tracks).where(eq(tracks.workspaceId, workspaceId)).all();
+      const wsEvents = app.db.select().from(events).where(eq(events.workspaceId, workspaceId)).all();
+      const wsCharacters = app.db.select().from(characters).where(eq(characters.workspaceId, workspaceId)).all();
+      const wsConnections = app.db.select().from(connections).where(eq(connections.workspaceId, workspaceId)).all();
+      const wsForeshadowings = app.db.select().from(foreshadowings).where(eq(foreshadowings.workspaceId, workspaceId)).all();
+      const wsWorldSettings = app.db.select().from(worldSettings).where(eq(worldSettings.workspaceId, workspaceId)).all();
 
       const context = {
         workspace: {

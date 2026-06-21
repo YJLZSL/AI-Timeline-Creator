@@ -1,14 +1,14 @@
 import type { AIChatRequest } from '../../shared/types.js';
 import { getAIConfig } from '@/lib/ai-config.js';
+import { isTauri } from '@/lib/tauri-api';
+
+const envApiBase = (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_BASE;
+const API_BASE = envApiBase || (isTauri() ? 'http://localhost:3001' : '');
 
 export interface AIChatMessage {
   role: 'system' | 'user' | 'assistant';
   content: string;
 }
-
-const isElectron = typeof window !== 'undefined' && (window as unknown as { electronAPI?: unknown }).electronAPI;
-const API_BASE = (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_BASE
-  || (isElectron ? 'http://localhost:3001' : '');
 
 export interface StreamAIChatOptions {
   messages: AIChatMessage[];

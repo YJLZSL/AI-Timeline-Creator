@@ -56,7 +56,7 @@ export function WorkspaceSelector() {
         onSuccess: () => {
           toast.success('工作区已删除');
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
           toast.error(`删除失败: ${err.message}`);
         },
       });
@@ -70,7 +70,7 @@ export function WorkspaceSelector() {
         onSuccess: () => {
           toast.success('工作区已重命名');
         },
-        onError: (err: any) => {
+        onError: (err: Error) => {
           toast.error(`重命名失败: ${err.message}`);
         },
       }

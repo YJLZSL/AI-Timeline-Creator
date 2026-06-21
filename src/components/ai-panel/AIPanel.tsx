@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { toast } from 'sonner';
 import { streamAIChat } from '@/services/ai-stream.js';
-import type { AIChatMessage as StreamChatMessage } from '@/services/ai-stream.js';
 import { useWorkspaceStore } from '@/stores/useWorkspaceStore.js';
 import { useSelectionStore } from '@/stores/useSelectionStore.js';
 import { useEvent } from '@/services/api-hooks.js';
@@ -29,10 +28,10 @@ import {
   type ContextConfig,
 } from '@/lib/ai-context.js';
 
-const API_BASE =
-  typeof window !== 'undefined' && (window as unknown as { electronAPI?: unknown }).electronAPI
-    ? 'http://localhost:3001'
-    : '';
+import { isTauri } from '@/lib/tauri-api';
+
+const envApiBase = (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_BASE;
+const API_BASE = envApiBase || (isTauri() ? 'http://localhost:3001' : '');
 
 interface FeatureItem {
   key: string;
@@ -226,30 +225,6 @@ export function AIPanel() {
     setInput('');
     await sendMessage(userText, currentConversationId || '');
   };
-
-  // 上下文压缩：历史消息过长时自动摘要
-  function compressHistory(
-    messages: Array<{ role: string; content: string }>,
-  ): StreamChatMessage[] {
-    const totalLength = messages.reduce((sum, m) => sum + m.content.length, 0);
-    if (totalLength < 4000) {
-      return messages.map((m) => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content }));
-    }
-
-    // 压缩：保留最近 3 条完整消息，对更早的消息进行摘要
-    const recent = messages.slice(-3);
-    const older = messages.slice(0, -3);
-
-    const summary = older
-      .filter((m) => m.role !== 'system')
-      .map((m) => `${m.role === 'user' ? '用户' : 'AI'}: ${m.content.slice(0, 100)}...`)
-      .join('\n');
-
-    return [
-      { role: 'system', content: `历史对话摘要：\n${summary}` },
-      ...recent.map((m) => ({ role: m.role as 'user' | 'assistant' | 'system', content: m.content })),
-    ];
-  }
 
   const sendMessage = async (userText: string, convId: string) => {
     // 确保存在当前对话

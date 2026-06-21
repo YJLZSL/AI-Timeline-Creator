@@ -249,7 +249,7 @@ export function OutlineView() {
       data.summary = trimmedSummary;
     }
 
-    queryClient.setQueryData(['events', workspaceId], (old: any) => {
+    queryClient.setQueryData(['events', workspaceId], (old: { items: TimelineEvent[]; total: number } | undefined) => {
       if (!old || !old.items) return old;
       return {
         ...old,

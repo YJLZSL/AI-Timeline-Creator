@@ -24,7 +24,6 @@ const MIN_EVENT_WIDTH = 96;
 export interface TimelineTrackProps {
   track: TrackType;
   events: TimelineEvent[];
-  allTracks: TrackType[];
   trackIndex: number;
   pixelsPerMs: number;
   referenceDateMs: number;
@@ -40,7 +39,6 @@ export interface TimelineTrackProps {
 export const TimelineTrack = memo(function TimelineTrack({
   track,
   events,
-  allTracks: _allTracks,
   trackIndex,
   pixelsPerMs,
   referenceDateMs,

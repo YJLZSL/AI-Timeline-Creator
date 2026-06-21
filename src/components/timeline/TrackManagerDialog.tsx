@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Dialog, TButton } from '@/components/ui-tdesign';
-import { TSwitch } from '@/components/ui-tdesign';
+import { Dialog, TButton, TSwitch } from '@/components/ui-tdesign';
 import {
   EditIcon,
   EyesIcon,

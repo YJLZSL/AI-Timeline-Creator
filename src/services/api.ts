@@ -1,8 +1,18 @@
-// Electron 环境下动态获取服务器端口，Web 环境下使用相对路径（由 Vite proxy 或 Fastify static 处理）
-const isElectron = typeof window !== 'undefined' && window.electronAPI;
+import { isTauri, getServerPort } from '@/lib/tauri-api';
 
 const envApiBase = (import.meta as unknown as { env: Record<string, string> }).env.VITE_API_BASE;
-let API_BASE = envApiBase || (isElectron ? 'http://localhost:3001' : '');
+let API_BASE = envApiBase || '';
+
+// Tauri 环境下动态获取服务器端口
+if (isTauri() && !API_BASE) {
+  getServerPort()
+    .then((port) => {
+      API_BASE = `http://localhost:${port}`;
+    })
+    .catch(() => {
+      API_BASE = 'http://localhost:3001';
+    });
+}
 
 export function setApiBase(port: number): void {
   API_BASE = `http://localhost:${port}`;

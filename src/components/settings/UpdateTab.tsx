@@ -2,6 +2,15 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { TButton, TSwitch } from '@/components/ui-tdesign';
 import { useSettingsStore } from '@/stores/useSettingsStore';
+import {
+  isPackaged,
+  isTauri,
+  openExternal,
+  onUpdaterEvent,
+  checkUpdate,
+  downloadUpdate,
+  installUpdate,
+} from '@/lib/tauri-api';
 import packageJson from '../../../package.json';
 
 const APP_VERSION = (packageJson as { version?: string }).version ?? 'unknown';
@@ -28,12 +37,12 @@ export function UpdateTab() {
   const [errorMsg, setErrorMsg] = useState<string | undefined>(undefined);
   const [currentVersion, setCurrentVersion] = useState<string | undefined>(undefined);
 
-  const isPackaged = window.electronAPI?.isPackaged ?? false;
-  const canCheck = isPackaged && !!window.updater;
+  const isPackagedVal = isPackaged();
+  const canCheck = isPackagedVal && isTauri();
 
   useEffect(() => {
-    if (!window.updater) return;
-    const off = window.updater.onEvent((evt) => {
+    if (!isTauri()) return;
+    const off = onUpdaterEvent((evt) => {
       switch (evt.kind) {
         case 'checking':
           setStatus('checking');
@@ -64,18 +73,18 @@ export function UpdateTab() {
   }, []);
 
   function openReleasePage() {
-    if (window.electronAPI?.openExternal) {
-      void window.electronAPI.openExternal(REPO_RELEASES_URL);
+    if (isTauri()) {
+      void openExternal(REPO_RELEASES_URL);
     } else {
       window.open(REPO_RELEASES_URL, '_blank', 'noopener');
     }
   }
 
   async function handleCheck() {
-    if (!window.updater) return;
+    if (!isTauri()) return;
     setStatus('checking');
     try {
-      const res = await window.updater.check();
+      const res = await checkUpdate();
       if (!res.ok) {
         setStatus('error');
         setErrorMsg(res.error ?? 'unknown');
@@ -87,14 +96,16 @@ export function UpdateTab() {
   }
 
   function handleDownload() {
-    window.updater?.download().catch((e) => {
+    if (!isTauri()) return;
+    downloadUpdate().catch((e) => {
       setStatus('error');
       setErrorMsg(e instanceof Error ? e.message : String(e));
     });
   }
 
   function handleInstall() {
-    void window.updater?.install();
+    if (!isTauri()) return;
+    void installUpdate();
   }
 
   const truncatedNotes =

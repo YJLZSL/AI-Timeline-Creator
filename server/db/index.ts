@@ -7,14 +7,28 @@ import * as schema from './schema.js';
 import path from 'path';
 import fs from 'fs';
 
-const dbLog = pino({ name: 'db' });
+const dbLog = (() => {
+  const sidecar = process.env.STORYLOOM_SIDECAR === '1';
+  if (sidecar) {
+    const logDir = process.env.DATA_DIR || path.join(process.cwd(), 'data');
+    if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+    const logStream = fs.createWriteStream(path.join(logDir, 'app.log'), { flags: 'a' });
+    return pino({ name: 'db', level: 'info' }, logStream);
+  }
+  return pino({ name: 'db' });
+})();
 
 // 环境分离：开发环境使用项目目录 ./data/dev.db；生产环境使用 Electron 设置的 DATA_DIR/timeline.db
-const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
+const isSidecar = process.env.STORYLOOM_SIDECAR === '1';
+const isDev = (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) && !isSidecar;
 
 const DATA_DIR = isDev
   ? path.resolve(process.cwd(), 'data')
   : path.resolve(process.env.DATA_DIR || path.join(process.cwd(), 'data'));
+
+if (isSidecar && !process.env.DATA_DIR) {
+  dbLog.warn('DATA_DIR not set in sidecar mode, falling back to cwd/data');
+}
 
 const DB_FILENAME = isDev ? 'dev.db' : 'timeline.db';
 
@@ -510,7 +524,7 @@ export function runMigrations(): void {
  * 仅覆盖最关键的几张主表；其它表如缺列会在使用时报 SQL 错误，
  * 由 v3.0.1 的 5xx error-handler 把 error.code (SQLITE_ERROR) 暴露给用户。
  */
-function ensureSchemaCompatibility(): void {
+export function ensureSchemaCompatibility(): void {
   if (!sqliteInstance) return;
   const sqlite = sqliteInstance;
 
@@ -680,12 +694,6 @@ export function closeDb(): void {
     sqliteInstance = null;
     dbInstance = null;
   }
-}
-
-// 数据库备份
-export function backupDatabase(backupPath: string): void {
-  const sqlite = getSqlite();
-  sqlite.backup(backupPath);
 }
 
 export { DATA_DIR };

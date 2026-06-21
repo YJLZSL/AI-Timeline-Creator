@@ -79,8 +79,9 @@ export function useAIConversations(workspaceId: string | null) {
       setAllConversations((prev) => [...prev, conv]);
       setCurrentConversationId(conv.id);
       return conv.id;
-    } catch (err: any) {
-      toast.error(`创建对话失败: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`创建对话失败: ${message}`);
       return null;
     }
   }, [workspaceId]);
@@ -94,8 +95,9 @@ export function useAIConversations(workspaceId: string | null) {
         return null;
       });
       toast.success('对话已删除');
-    } catch (err: any) {
-      toast.error(`删除对话失败: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`删除对话失败: ${message}`);
     }
   }, []);
 
@@ -134,8 +136,9 @@ export function useAIConversations(workspaceId: string | null) {
           title,
         });
       }
-    } catch (err: any) {
-      toast.error(`保存消息失败: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`保存消息失败: ${message}`);
     }
 
     return msgId;
@@ -163,8 +166,9 @@ export function useAIConversations(workspaceId: string | null) {
           messagesJson: messagesToJson(updatedMessages),
         });
       }
-    } catch (err: any) {
-      toast.error(`更新消息失败: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`更新消息失败: ${message}`);
     }
   }, [allConversations]);
 
@@ -185,8 +189,9 @@ export function useAIConversations(workspaceId: string | null) {
           messagesJson: messagesToJson(updatedMessages),
         });
       }
-    } catch (err: any) {
-      toast.error(`删除消息失败: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`删除消息失败: ${message}`);
     }
   }, [allConversations]);
 
@@ -199,8 +204,9 @@ export function useAIConversations(workspaceId: string | null) {
         ),
       );
       toast.success('对话已重命名');
-    } catch (err: any) {
-      toast.error(`重命名失败: ${err.message}`);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      toast.error(`重命名失败: ${message}`);
     }
   }, []);
 

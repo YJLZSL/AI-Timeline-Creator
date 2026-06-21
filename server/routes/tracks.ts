@@ -1,4 +1,4 @@
-import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { eq, and, asc, sql } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 import { tracks } from '../db/schema.js';
@@ -79,11 +79,12 @@ export async function tracksRoutes(app: FastifyInstance) {
       .where(eq(tracks.id, trackId))
       .returning().get();
     return { success: true, data: result };
-  } catch (err: any) {
-    app.log.error({ err: err.message, trackId, workspaceId, updates }, '更新轨道失败');
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    app.log.error({ err: message, trackId, workspaceId, updates }, '更新轨道失败');
     return reply.status(500).send({
       success: false,
-      error: { code: 'UPDATE_FAILED', message: `更新轨道失败: ${err.message}` },
+      error: { code: 'UPDATE_FAILED', message: `更新轨道失败: ${message}` },
     });
   }
   });
