@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { EyesIcon, EyesOffIcon } from '@/lib/icons';
 import { TDialog, TButton, TInput, TSelect, TOption } from '@/components/ui-tdesign';
-import { type AIConfig, getAIConfig, setAIConfig } from '@/lib/ai-config.js';
+import { getAIConfig, setAIConfig, type AIConfig } from '@/lib/ai-config.js';
 
 interface AIConfigPanelProps {
   open: boolean;
