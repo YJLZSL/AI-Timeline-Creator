@@ -1,17 +1,39 @@
+# ⚠️ 该项目已废弃停止更新
+
+> **本项目（织叙 / Storyloom）已停止维护，不再接受任何更新或 Bug 修复。**
+>
+> 当前版本存在无法修复的架构性问题（如后端服务启动失败、图标不一致等），继续维护的成本超过了收益。
+>
+> 建议寻找其他替代工具，或基于此仓库的最后一个版本自行 fork 维护。
+>
+> 感谢所有用户的支持。
+
+---
+
 # 织叙 / Storyloom — 用一根时间线，把故事织成宇宙
 
 > 面向小说作者、编剧、游戏叙事设计师的全功能创作工具
 
-[![Version](https://img.shields.io/badge/version-v1.0.0-amber)](https://github.com/YJLZSL/Storyloom/releases/tag/v1.0.0)
-[![Status](https://img.shields.io/badge/status-active-brightgreen)](https://github.com/YJLZSL/Storyloom)
+> **状态：已废弃 ⚠️ 停止维护**
+
+[![Version](https://img.shields.io/badge/version-v1.1.1-amber)](https://github.com/YJLZSL/Storyloom/releases/tag/v1.1.1)
+[![Status](https://img.shields.io/badge/status-deprecated-red)](https://github.com/YJLZSL/Storyloom)
 [![License](https://img.shields.io/badge/license-MIT-blue)](./LICENSE)
-[![Tauri](https://img.shields.io/badge/tauri-2.11-FFC131)](https://tauri.app/)
-[![React](https://img.shields.io/badge/react-19-61DAFB)](https://react.dev/)
-[![TypeScript](https://img.shields.io/badge/typescript-5.8-3178C6)](https://www.typescriptlang.org/)
 
 **织叙（Storyloom）** 是一款面向小说作者、编剧、游戏叙事设计师的本地桌面创作工作台。以「织机」为隐喻，将时间线编织为立体的故事结构——角色、事件、伏笔、世界观在时间轴上经纬交织，最终可一键导出到主流 Visual Novel 引擎。
 
-[English](#english) | [功能特性](#功能特性) | [下载](#下载) | [快速开始](#快速开始) | [技术架构](#技术架构) | [文档](#文档)
+---
+
+## ⚠️ 废弃声明
+
+本项目已停止维护。以下是已知但无法修复的问题：
+
+- **后端服务启动失败**：在生产构建中，Node.js sidecar 进程无法正确加载原生模块（`better-sqlite3`），导致工作区创建失败
+- **图标不一致**：Windows 任务栏、安装程序和桌面快捷方式的图标显示不一致
+- **启动延迟**：首次启动时 sidecar 启动超时，用户需等待较长时间
+- **自动更新不可用**：签名密钥配置问题导致自动更新功能无法使用
+
+由于这些问题源于底层架构选择（Tauri + Node.js sidecar），修复成本过高，因此决定停止本项目。
 
 ---
 
@@ -69,31 +91,31 @@
 - 工作区导入 / 导出（JSON + ZIP）
 
 ### 🔄 自动更新
-Tauri 内置自动更新机制（`tauri-plugin-updater`），新版本自动推送。
+⚠️ 由于签名密钥配置问题，自动更新功能已不可用。
 
 ---
 
 ## 下载
 
-📥 [**下载最新版**](https://github.com/YJLZSL/Storyloom/releases/latest)
+> ⚠️ **注意：以下版本存在已知 Bug（后端服务无法启动），不建议在生产环境中使用。**
 
-| 平台 | 文件 | 体积 |
-|------|------|------|
-| Windows (x64) | `Storyloom_1.0.0_x64-setup.exe` | ~27 MB |
+📥 [**下载最新版（v1.1.1）**](https://github.com/YJLZSL/Storyloom/releases/latest)
 
-> 旧版本：v1.2.x 及更早版本为 Electron 构建，产物约 125MB。v1.3.0 起全面迁移至 Tauri，体积缩减 80%。
+| 平台 | 文件 | 体积 | 状态 |
+|------|------|------|------|
+| Windows (x64) | `Storyloom_1.1.1_x64-setup.exe` | ~28 MB | ⚠️ 存在已知 Bug |
 
 ---
 
 ## 快速开始
+
+> ⚠️ 以下命令仅适用于开发/学习目的，不建议用于新项目的开发。
 
 ### 环境要求
 
 - **Node.js** 20.x LTS 或更高
 - **Rust** 1.77+（Tauri 需要）
 - **VS BuildTools 2022**（含 "Desktop development with C++" 工作负载）
-
-详见 [`docs/环境配置指南.md`](./docs/环境配置指南.md)。
 
 ### 安装与启动
 
@@ -168,46 +190,31 @@ npm run test             # 运行单元测试（193 用例）
 | 🛠️ [`docs/开发指南.md`](./docs/开发指南.md) | 本地开发环境、调试、常见问题 | 开发者 |
 | 🚀 [`docs/发版指南.md`](./docs/发版指南.md) | 标准发版 10 步流程 | 发布者 |
 | 🤖 [`docs/agents.md`](./docs/agents.md) | 智能体编码指南 | AI 协作者 |
-| 📝 [`docs/更新日志-v1.4.0.md`](./docs/更新日志-v1.4.0.md) | v1.4.0 美术架构升级 | 所有人 |
-| 📝 [`CHANGELOG.md`](./CHANGELOG.md) | 全版本历史记录 | 所有人 |
-| 📚 [`docs/README.md`](./docs/README.md) | 文档导航大全 | 所有人 |
+| 📝 [`docs/更新日志.md`](./docs/更新日志.md) | 版本更新记录 | 所有人 |
 
 ---
 
 ## 贡献指南
 
-我们欢迎所有形式的贡献——Bug 反馈、功能建议、代码提交、文档改进。
+> ⚠️ **本项目已停止维护，不再接受新的 Pull Request。**
 
-1. **Fork** 本仓库
-2. **创建分支** `git checkout -b feat/your-feature`
-3. **提交更改** `git commit -am 'Add some feature'`
-4. **推送分支** `git push origin feat/your-feature`
-5. **创建 Pull Request**
-
-提交前请确保：
-- `npm run typecheck` 无错误
-- `npm run test` 全部通过
-- `npm run lint` 无警告
+如需基于本代码继续开发，请自行 fork 仓库。
 
 ---
 
 ## English
 
-**Storyloom** is a local desktop authoring workbench for visual novel, novel, and screenplay writers. Built on the metaphor of a **loom**, it weaves timelines into three-dimensional story structures—characters, events, foreshadowing, and worldbuilding interlace on the timeline like warp and weft threads, ultimately exportable to mainstream Visual Novel engines.
+> ⚠️ **This project is deprecated and no longer maintained.**
 
-### Core Features
+**Storyloom** was a local desktop authoring workbench for visual novel, novel, and screenplay writers. Built on the metaphor of a **loom**, it weaves timelines into three-dimensional story structures.
 
-- **7 Timeline Views** — Timeline / Outline / Narrative / Gantt / Tree / Stats / Relationship
-- **AI Writing Assistant** — Persistent conversation history, workspace context injection, event continuation, character dialogue, foreshadowing resolution, consistency checks
-- **Character & Worldbuilding** — Character cards, relationship graph (D3 force-directed), world settings, foreshadowing tracking
-- **Writing & Screenplay** — Three-column writing layout, Zen Mode, screenplay editor, daily word goal
-- **Knowledge Base** — Notes, folder tree, tag system, quick capture
-- **Maps & Bookmarks** — Location maps, event bookmarks with colors
-- **One-Click Export** — Export to WebGAL and other visual novel engines
-- **Offline-First** — All data stored locally (SQLite), no internet required
-- **Auto-Update** — Built-in Tauri updater
-- **8 Themes** — Preset themes + custom color palette
-- **Zen Mode** — Full-screen immersive writing
+### Deprecated Notice
+
+This project is no longer maintained due to fundamental architecture issues that are too costly to fix:
+- Backend service (Node.js sidecar) fails to start in production builds
+- Icon inconsistencies on Windows
+- Startup delays caused by sidecar initialization timeout
+- Auto-updater is broken due to signing key issues
 
 ### Tech Stack
 
